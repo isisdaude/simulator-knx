@@ -1,5 +1,5 @@
 """
-Gather the class definitions for the devices
+Gather the class definitions for the simulated KNX devices
 """
 
 
