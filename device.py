@@ -21,3 +21,8 @@ class Sensor(Device):
 class Actuator(Device):
     def __init__(self):
         super().__init__(name, id, location, status)
+
+
+class SysDevice(Device):
+    def __init__(self, name):
+        self.name = name
