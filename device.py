@@ -15,9 +15,3 @@ class Sensor(Device):
     def __init__(self, sensor_type):
         super().__init__(name, id, location, status)
         self.sensor_type = sensor_type  # active or passive, just to add a specific argument to class sensor
-
-
-
-class Actuator(Device):
-    def __init__(self):
-        super().__init__(name, id, location, status)
