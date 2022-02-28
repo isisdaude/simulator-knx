@@ -19,5 +19,6 @@ class Sensor(Device):
 
 
 class Actuator(Device):
-    def __init__(self):
+    def __init__(self, act_state):
         super().__init__(name, id, location, status)
+        self.actuator_state = act_state
