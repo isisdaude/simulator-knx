@@ -1,5 +1,5 @@
 from device import *
-# device_type, name, id, location, status
+# device_type, name, id, location, status, sensor/actuator_type
 
 sensor1 = Sensor('sensor', 'GePro Brightness Sensor', 'M-0091_A111', '1/1/1', 'ON', 'Brightness sensor')
 

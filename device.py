@@ -15,7 +15,7 @@ class Device:
         return f"Device({self.device_type!r}, {self.name!r}, {self.id!r}, {self.location!r}, {self.status!r})"
 
     def __str__(self):
-        return f"DEvice: {self.device_type} {self.name} {self.id} {self.location} {self.status}"
+        return f"Device: {self.device_type} {self.name} {self.id} {self.location} {self.status}"
 
 
 class Sensor(Device):
