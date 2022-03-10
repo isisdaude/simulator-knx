@@ -8,10 +8,10 @@ from abc import ABC, abstractmethod
 class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)
     """
-    def __init__(self, name, refid, location, default_status): #The constructor is also a good place for imposing various checks on attribute values
+    def __init__(self, name, refid, line, default_status): #The constructor is also a good place for imposing various checks on attribute values
         self.name = name
         self.refid = refid
-        self.location = location # Do we need that?
+        self.line = line
         self.status = default_status  # status determine if sensor is activated or not, kind of ON/OFF
         # Init addresses
         self.individual_addr = 'ia not set'
@@ -29,7 +29,7 @@ class Device(ABC):
     def get_group_addr(self):
         return self.group_addr
          
-    def getStatus(self):
+    def get_status(self):
         return self.status
 
     def __repr__(self): # syntax to return when instance is called in the interactive python interpreter
@@ -40,15 +40,15 @@ class Device(ABC):
 
 
 class Sensor(Device, ABC):
-    def __init__(self, name, refid, location, default_status, sensor_type):
-        super().__init__(name, refid, location, default_status)
+    def __init__(self, name, refid, line, default_status, sensor_type):
+        super().__init__(name, refid, line, default_status)
         self.sensor_type = sensor_type  # active or passive, just to add a specific argument to class sensor => do we really need to?
 
 class Actuator(Device, ABC):
-    def __init__(self, name, refid, location, default_status,  actuator_type):
-        super().__init__(name, refid, location, default_status)
+    def __init__(self, name, refid, line, default_status,  actuator_type):
+        super().__init__(name, refid, line, default_status)
         self.actuator_type = actuator_type
 
 class SysDevice(Device, ABC):
-    def __init__(self, name, refid, location, default_status):
-        super().__init__(name, refid, location, default_status)
+    def __init__(self, name, refid, line, default_status):
+        super().__init__(name, refid, line, default_status)
