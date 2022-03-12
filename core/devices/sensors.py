@@ -9,7 +9,7 @@ class Button(Sensor):
         super().__init__(name, refid, location, default_status, "button")
     
     def press(self):
-        if(self.status == 1):
-            self.status = 0
+        if(self.status == True):
+            self.status = False
         else:
-            self.status = 1
+            self.status = True

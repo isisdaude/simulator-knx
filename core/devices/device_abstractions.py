@@ -29,7 +29,7 @@ class Device(ABC):
     def get_group_addr(self):
         return self.group_addr
          
-    def get_status(self):
+    def get_status(self): #TODO: rename it to on/off, and add attribute that really represent status to sensors
         return self.status
 
     def __repr__(self): # syntax to return when instance is called in the interactive python interpreter
@@ -48,6 +48,12 @@ class Actuator(Device, ABC):
     def __init__(self, name, refid, line, default_status,  actuator_type):
         super().__init__(name, refid, line, default_status)
         self.actuator_type = actuator_type
+    
+    def turnOn(self):
+        self.status = True
+    
+    def turnOff(self):
+        self.status = False
 
 class SysDevice(Device, ABC):
     def __init__(self, name, refid, line, default_status):
