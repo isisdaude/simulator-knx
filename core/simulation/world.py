@@ -2,7 +2,8 @@
 Some class definitions for the simulation of the physical world
 """
 
-import schedule, time
+from typing import List
+import time, math,schedule
 
 
 class Time:
@@ -15,7 +16,7 @@ class Time:
 
     VIRTUAL_INTERVAL = 60
     ''' Clock ticks every X amount of time '''
-    
+
     PHYSICAL_INTERVAL = 3600
     ''' Real time that passed between 2 clock ticks '''
 
@@ -25,15 +26,15 @@ class Time:
     def set_physical_interval(self, interval:int):
         self.PHYSICAL_INTERVAL = interval
 
-    def add_task(task):
+    def add_task(self, task):
         '''Adds a task to the scheduler which executes every virtual time interval to represent some physical time interval'''
         schedule.every(Time.VIRTUAL_INTERVAL)
-    
-    def remove_task():
+
+    def remove_task(self):
         '''Removes a task from the scheduler'''
         pass
 
-    def bigbang():
+    def bigbang(self):
         '''Starts time and the execution of tasks every certain intervals'''
         while True:
             schedule.run_pending()
@@ -64,7 +65,7 @@ class Temperature:
             self.temperature = self.OUTSIDE_TEMPERATURE
         else:
             self.temperature += sum(self.update_rules)
-    
+
     def __str__(self):
         return f"{self.temperature}"
 
@@ -72,11 +73,37 @@ class Temperature:
         return f"{self.temperature}"
 
 
+class AmbiantLight:
+    '''Class that implements Light in a room'''
+    def __init__(self): # light_sources is a list of all devices that emit light
+        self.lightsources = []
+
+    def add_lightsource(self, lightsource):
+        self.lightsources.append(lightsource) #lightsource is an object of type light
+
+    def get_brightness(self, brightness_sensor):
+        sensor_loc_x = brightness_sensor.loc_x
+        sensor_loc_y = brightness_sensor.loc_y
+        brightness = 0 # resulting lumen at the brightness sensor location
+        for source in self.lightsources:
+            source_loc_x = source.loc_x  ## TODO: replace all this by a function compute_distance
+            source_loc_y = source.loc_y
+            delta_x = abs(source_loc_x-sensor_loc_x)
+            delta_y = abs(source_loc_y-sensor_loc_y)
+            dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
+
+            residual_lumen = (1/dist)*source.lm # residual lumens from the source at the brightness location
+            brightness += residual_lumen # we basically add the lumen
+        return brightness
+
+
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
-    
+
     ## INSTANCES TO REPRESENT THE WORLD ##
+
     time = Time()
+    temperature = Temperature(default_temp=10.0)
 
     def change_virtual_interval(self, interval:int):
         self.time.set_virtual_interval(interval)
@@ -84,11 +111,11 @@ class World:
     def change_physical_interval(self, interval:int):
         self.time.set_physical_interval(interval)
 
-    temperature = Temperature(default_temp=10.0)
 
     ## INITIALISATION & GETTERS
+
     def __init__(self):
-        pass
+        self.ambiant_light = AmbiantLight()
 
     def get_temperature(self):
         return self.temperature
@@ -99,6 +126,9 @@ class World:
     ## STATUS FUNCTIONS ##
     def update_all(self):
         self.temperature.update()
+
+    def add_lightsource(self, lightsource):
+        self.ambiant_light.add_lightsource(lightsource)
 
     def print_status(self):
         print("+---------- STATUS ----------+")

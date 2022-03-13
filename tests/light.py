@@ -13,18 +13,18 @@ class Light(Device):
     status = 0
     def turnOn(self):
         self.status = 1
-    
+
     def turnOff(self):
         self.status = 0
 
     def getStatus(self):
         print("Status is " + str(self.status) + ", lamp is " + ("on" if self.status == 1 else "off") + ".")
 
-    def lumentoLux(lm, area):
+    def lumentoLux(self, lm, area):
         ''' The conversion from Lumens to Lux given the surface area in squared meters '''
         return lm/area
 
-    def luxtoLumen(lx, area):
+    def luxtoLumen(self, lx, area):
         ''' The conversion from Lux to Lumen given the surface area in squared meters '''
         return area*lx
 
@@ -72,7 +72,7 @@ class RDevice:
 
     def impactsOn(self, other):
         self.dependencies.append(other)
-    
+
     def trigger(self):
         if(type(self) is Button):
             Button(self).press()
@@ -86,13 +86,13 @@ class RDevice:
         print(f"{self} has impact on :")
         for d in self.dependencies:
             print("    " + str(d.__repr__()))
-    
+
     def __str__(self):
         return f"{self.device.name}, at position {self.x} {self.y} in the room"
 
     def __repr__(self):
         return f"Device {self.device}"
-                            
+
 class Room:
 
     devices: List[RDevice] = []
@@ -100,11 +100,11 @@ class Room:
     def __init__(self, name, width, length):
         self.name = name
         self.width = width
-        self.length = length    
+        self.length = length
 
     def __str__(self):
         return f"{self.name} is a room of dimensions {self.width} x {self.length} m2"
-    
+
     def __repr__(self):
         return f"Room {self.name}"
 
@@ -125,7 +125,7 @@ class Room:
             if(d.device == device):
                 return d
         return None
-    
+
     def addDependency(self, device: RDevice, other: RDevice):
         if(self.containsDevice(device) and self.containsDevice(other)):
             d1 = self.getDevice(device)
