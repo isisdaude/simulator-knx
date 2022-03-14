@@ -4,7 +4,7 @@ Some class definitions for the simulated KNX actuators.
 from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 
-class Light(Actuator, ABC):
+class LightDevice(Actuator, ABC):
     def __init__(self, name, refid, individual_addr, default_status, state):
         super().__init__(name, refid, individual_addr, default_status, "light", state)
 
@@ -16,14 +16,14 @@ class Light(Actuator, ABC):
         ''' The conversion from Lux to Lumen given the surface area in squared meters '''
         return area*lux
 
-class LED(Light):
+class LED(LightDevice):
     def __init__(self, name, refid, individual_addr, default_status, state=False): #state is ON/OFF=True/False
         super().__init__(name, refid, individual_addr, default_status, state)
         self.lumen = 800 #800 lumens at 1 meter
 
 
 
-class Temperature(Actuator, ABC):
+class TemperatureDevice(Actuator, ABC):
     def __init__(self, name, refid, individual_addr, default_status, actuator_type, state):
         super().__init__(name, refid, individual_addr, default_status, actuator_type, state)
     update_rule = 0
@@ -35,7 +35,7 @@ class Temperature(Actuator, ABC):
     def get_update_rule(self):
         return self.update_rule
 
-class Heater(Temperature):
+class Heater(TemperatureDevice):
     def __init__(self, name, refid, individual_addr, default_status, state=False):
         super().__init__(name, refid, individual_addr, default_status, "heater", state)
 
@@ -43,7 +43,7 @@ class Heater(Temperature):
         assert(rule >= 0)
         super().set_update_rule(rule)
 
-class Cooler(Temperature):
+class Cooler(TemperatureDevice):
     def __init__(self, name, refid, individual_addr, default_status, state=False):
         super().__init__(name, refid, individual_addr, default_status, "cooler", state)
 
