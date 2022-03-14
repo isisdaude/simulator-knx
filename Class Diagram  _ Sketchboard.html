@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html id="app" ng-app="myApp">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <meta content="" name="description">
+    <meta content="" name="keywords">
+    <meta content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+
+    <link href="/pwa/manifest.json" rel="manifest">
+    <link href="https://s3-eu-west-1.amazonaws.com/pub.sketchboard.io/img/sketchboard_192x192.png" rel="apple-touch-icon">
+    <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
+
+    <title>Class Diagram Template | Sketchboard</title>
+
+    
+
+    <script src="https://d1sqtd1h3vkwkp.cloudfront.net/resources-static-1/js/app-keep/lib/jquery-1.10.2.min.js" data-attr="src"></script>
+
+
+    
+
+    <link href="https://d1sqtd1h3vkwkp.cloudfront.net/resources-static-1/css/jqueryui/jquery-ui-1.10.3.custom.min.css" data-attr="href" type="text/css" rel="stylesheet">
+
+
+    
+    <link href="https://d1sqtd1h3vkwkp.cloudfront.net/dist/bootstrap-c1.0v2.min.css" rel="stylesheet" data-attr="href">
+    
+    
+    <link href="https://d1sqtd1h3vkwkp.cloudfront.net/dist/codemirror-5.2.0.min.css" rel="stylesheet" data-attr="href">
+
+    <link href="https://d1sqtd1h3vkwkp.cloudfront.net/dist/39ea14452d3fd53830beecb22c81e3ed-styles.min.css" rel="stylesheet">
+    
+    
+
+    
+
+    
+    
+
+      
+
+    
+    
+
+ 
+    
+    
+
+    
+    <style type="text/css">
+        body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+        }
+    </style>
+
+    <script type="text/javascript">
+      var currentEditor = null
+
+      function addOnLoadEditor(editor) {
+        currentEditor = editor
+      }
+
+      function sketchoEditorLoaded() {
+        try {
+          if (currentEditor) {
+            loadSketch(currentEditor.spaceId, currentEditor.name, currentEditor.editable)
+          }
+        } catch (e) {
+          console.error("sketchoEditorLoaded... failed", e)
+        }
+      }
+    </script>
+
+    
+    <style type="text/css">
+        /* <![CDATA[ */
+        .edit_error_class {
+        display: block;
+        color: red;
+        }
+
+        .sidebar ul {
+        margin:0;
+        padding:0;
+        border-bottom:1px solid #ccc;
+        }
+
+
+        .sidebar ul li {
+        margin:0;
+        padding:0;
+        list-style:none;
+        border:1px solid #ccc;
+        border-bottom:none;
+        }
+
+        .sidebar ul li a {
+        display:block;
+        padding:3px;
+        text-indent:30px;
+        text-decoration:none;
+        }
+
+        .sidebar ul li span {
+        display:block;
+        padding:3px;
+        text-indent:30px;
+        text-decoration:none;
+        }
+
+        .sidebar ul li a:hover {
+        background-color: #eee;
+        }
+
+        div.footer {
+        color: #999;
+        text-align: center;
+        font-size: 90%;
+        }
+
+        /* ]]> */
+    </style>
+
+    
+	
+
+            <script type="text/javascript" language="javascript"
+                    src='https://d1sqtd1h3vkwkp.cloudfront.net/dist/8b69938c6889bb433e7a55af1ed74566-gwt/sketcho_confluence_app/sketcho_confluence_app.nocache.js'></script>
+
+	
+<script type="text/javascript">
+// <![CDATA[
+
+    var _gaq = _gaq || [];
+
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-29429423-1', 'auto');
+
+    ga('create', 'UA-26995893-4', 'auto', {'name': 'cdTracker', 'allowLinker': true});
+    ga('cdTracker.require', 'linker');
+    ga('cdTracker.linker:autoLink', ['sketchboard.io'] );
+
+    ga('send', 'pageview');
+    ga('cdTracker.send', 'pageview');
+  
+    var _track = function(event, data) {
+
+      try {
+
+        
+
+        if (typeof ga !== 'undefined') {
+          ga('send', 'event', event, data.category, data.label)
+          ga('cdTracker.send', 'event', event, data.category, data.label)
+        }
+
+        if (typeof mixpanel !== 'undefined') {
+          mixpanel.track(event, data);
+        }
+
+        if (typeof gtag !== 'undefined') {
+          gtag("event", data.category, data.action, data.label)
+        }
+      } catch (e) {
+        console.error("_track", e)
+      }
+    }
+
+    var _trackGA = function(category, action, label) {
+      try {
+        
+
+        if (typeof ga !== 'undefined') {
+          ga('send', 'event', category, action, label)
+          ga('cdTracker.send', 'event', category, action, label)
+        }
+
+        if (typeof mixpanel !== 'undefined') {
+          mixpanel.track(event, data);
+        }
+
+        if (typeof gtag !== 'undefined') {
+          gtag("event", category, action, label)
+        }
+      } catch(e) {
+        console.error("_trackGA", e)
+      }
+    }
+  ;
+// ]]>
+</script>
+
+	
+<style>
+        </style>
+
+	
+<script name="boardscript" type="text/javascript">
+// <![CDATA[
+jQuery(document).ready(function() {jQuery('.download-btn').tooltip();;});
+// ]]>
+</script>
+
+	
+<script name="scripts" type="text/javascript">
+// <![CDATA[
+
+    function requestBoard(name) {
+      F191696314128QNL50I({'command': "requestBoard", 'params':[name]
+});
+    }
+
+    function sendOperation(name, originator, siteId, operations, checksum, version) {
+    F191696314128QNL50I({'command': "sendOperation", 'params':[name, originator, siteId, operations, checksum, version]
+});
+    }
+
+    function debugServer(board, msg, checksum, json, serverChecksum, serverVersion) {
+      F191696314128QNL50I({'command': "debugServer", 'params':[board, msg, checksum, json, serverChecksum, serverVersion]
+});
+      }
+    ;
+// ]]>
+</script>
+
+	
+<span name="chatscripts"></span>
+
+	
+</head>
+<body data-lift-session-id="F191696314031WMYIXC" data-lift-gc="F191696325817S03MAP" class="bodystyle theme-grid" app-context="" theme-changed="" ng-controller="MainController">
+
+
+
+
+<script type="text/javascript">
+// <![CDATA[
+var themeName = {
+        value:"grid"
+      }
+      var showWelcome = {
+        value:"false"
+      }
+      var initialState = {
+        diagramType: 1,
+        boardId: "NDabfIGVitO",
+        diagramName: "Class Diagram Template",
+        diagramOwned: true, 
+        diagramOwner: "me",
+        userType: 'consumer',
+        defaultAccountType: 1,
+        notifContent: '',
+        notifNmbr: 0,
+        ntitle: '',
+        userProperties: 33,
+        diagramEditable: true,
+        firstLogin: false,
+        firstTeamLogin: false,
+        account_hash: 'F1916963141293AGZMW',
+        setupDomain: false
+      }
+      var _initialUser = {
+  "email":"leo.alvarezsobole@gmail.com",
+  "firstName":"Léo",
+  "lastName":"",
+  "displayName":"Léo",
+  "currentTeam":{
+    "team_id":"tm_szgU03dK",
+    "team_name":"knx-simulator",
+    "notExpired":false,
+    "client":false
+  },
+  "team_id":"tm_szgU03dK",
+  "team_name":"knx-simulator",
+  "notExpired":false,
+  "client":false,
+  "defaultAccountName":"knx-simulator",
+  "defaultAccountType":1,
+  "defaultAccountExpired":true,
+  "avatarUrl":"https://secure.gravatar.com/avatar/aceebdbca2410f56ab70185806e49ef3",
+  "sketchboardAvatar":false,
+  "newsletter":true,
+  "defaultDrawingStyle":"awesome",
+  "commentNotification":"all",
+  "boardSharedNotification":true,
+  "properties":33,
+  "authType":2,
+  "tutorialDone":true
+}
+      var _initialBoard = {
+  "boardId":"NDabfIGVitO",
+  "name":"Class Diagram Template",
+  "createdAt":1647222932635,
+  "updatedAt":1647239380063,
+  "owner":"me",
+  "accountname":"knx-simulator",
+  "team_id":"tm_szgU03dK",
+  "diagramType":1,
+  "visibility":0,
+  "passwordProtected":false,
+  "new_board":false,
+  "properties":1,
+  "paidBoard":false,
+  "boardAccountExpired":true
+}
+      var _auState={
+  "createdAt":"2022-03-14"
+};var _appState={
+  "slackLink":"/settings/tm_szgU03dK/slack"
+};var _config={
+  "supportCursorMove":true,
+  "mousewsURL":"/NDabfIGVitO/mouse",
+  "wsURL":"/NDabfIGVitO/socket.io",
+  "galleryUrl":"https://gallery.sketchboard.me",
+  "galleryLaunchDate":1422352800000,
+  "staticPrefix":"https://d1sqtd1h3vkwkp.cloudfront.net",
+  "impressJs":"/dist/06b03489714454040a74618feabec0d9-impress-1.1.0.min.js",
+  "impressCss":"/dist/cd7276d724e7480eed31ae10a54b5501-impress-1.1.0.min.css",
+  "publicPath":"https://d1sqtd1h3vkwkp.cloudfront.net/dist/",
+  "newOnboardingEnabled":true,
+  "onboardingURL":"https://s3-eu-west-1.amazonaws.com/pub.sketchboard.io/json/onboarding-steps.json",
+  "sketchboardURL":"https://sketchboard.me",
+  "releaseURL":"https://s3-eu-west-1.amazonaws.com/pub.sketchboard.io/release"
+};;
+// ]]>
+</script>
+
+    <script>
+      if (typeof initialState !== 'undefined') {
+        dataLayer = [{
+          'usertype': initialState.userType
+        }];
+      }
+    </script>
+
+    <!-- Google Tag Manager -->
+    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-5LZB5K"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5LZB5K');</script>
+    <!-- End Google Tag Manager -->
+  
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J09ZWCV276"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-J09ZWCV276');
+    </script>
+  
+
+<div style="display: none;" id="AnalyticsController" ng-controller="AnalyticsController"></div>
+
+
+
+<div class="container">
+    
+    <img class="ajaxspin" src="/static/images/ajax-loader.gif" style="visibility: hidden; margin-bottom: 0px; margin-left: 5px" id="ajax-loader" alt="">
+
+    <div class="column span-15">
+        <div id="main">
+    
+
+    <div>
+
+
+<div data-lift-comet-version="191696325421" id="F1916963141244SJPH3_outer" style="display: inline"><div id="F1916963141244SJPH3" style="display: inline"><div name="boardcomet">
+    
+    <div id='NDabfIGVitO:580.1'></div>
+       <script type="text/javascript">
+        $(document).ready(function() {
+          addOnLoadEditor({
+            spaceId : "NDabfIGVitO:580.1",
+            name : "NDabfIGVitO",
+            editable : "true"
+          })
+        })
+       </script>
+
+    
+</div><script type="text/javascript">
+// <![CDATA[
+/* JSON Func NDabfIGVitO $$ F191696314128QNL50I */function F191696314128QNL50I(obj) {lift.ajax('F191696314128QNL50I='+ encodeURIComponent(JSON.stringify(obj)), null,null);}
+// ]]>
+</script></div></div>
+
+<div class="main-menu">
+  <div class="main-btn-group">
+
+    
+    
+    
+    
+    <ul id="main-menu" class="ul-none ul-horizontal">
+        <li ng-show="currentUser.isLoggedIn()" id="settings-menu-id">
+          
+          <a tooltip="" title="Menu" class="menu-btn-circle" open-or-close="/menu">
+            
+            <svg class="sprite-menu-icons"><use xlink:href="#menu-icon--menu"></use></svg>
+          </a>
+        </li>
+
+        <li ng-cloak="" class="dropup menu-share" name="share-loggedin-pro-board" ng-show="currentBoard.isUserBoardTeamMember() && !isVersion() && !isWebex">
+
+          <a open-or-close="/menushare" tooltip="" title="Share" class="menu-btn-circle">
+            <svg class="sprite-menu-icons"><use xlink:href="#menu-icon--share"></use></svg>
+          </a>
+        </li>           
+
+        <li class="menu-login" ng-cloak="" ng-show="!isLoggedIn">
+          <a onclick="lift.ajax(&quot;F191696325908WRMKCK=true&quot;, null, null, null)" tooltip="" title="Login" class="menu-btn-circle" name="login">
+            
+            <svg class="sprite-menu-icons"><use xlink:href="#menu-icon--login"></use></svg>
+          </a>
+        </li>
+
+        <li class="menu-copy-to-clipboard" style="padding:3px 3px 0 0;" ng-cloak="" ng-show="!currentBoard.isUserBoardTeamMember() && currentBoard.isFree()">
+          <button style="border: none;" copy-text="" type="button" data-copied-hint="Link copied! Share it e.g. with email." data-clipboard-text="{{currentBoardLink()}}" class="menu-btn-circle menu-copy-main" title="Copy link to clipboard">
+            
+            <svg style="margin:-2px 0 0 4px;" class="sprite-menu-icons"><use xlink:href="#menu-icon--clipboard"></use></svg>
+          </button>
+        </li>
+
+        
+        <li class="menu-comments" ng-show="!isVersion() && (currentBoard.isUserBoardTeamMember() || isComments().length > 0)">
+          
+          <a comments-button="" tooltip="" title="Comments | C" class="menu-btn-circle" open-or-close="/comments2" id="thread-resolved-target">
+            <svg class="sprite-menu-icons"><use xlink:href="#menu-icon--comments"></use></svg>
+          </a>
+        </li>
+
+        <li ng-show="!currentUser.isLoggedIn()" class="menu-signup ng-cloak" style="white-space: nowrap;">
+          <a title="Sign Up" class="pure-button pure-button-primary p-font-large menu-item-signup" ng-click="signup()">Sign Up</a>
+        </li>
+
+    </ul>
+    
+    
+    
+    
+    
+    
+    
+    </div>
+</div>
+
+<div ng-controller="BoardNameController" id="BoardNameController">
+    <div class="free-board-info " style="display: none;" ng-cloak="" ng-class="{'um':showsUserMessage}" name="free-board-info" ng-show="currentBoard.isFree()">
+      
+        
+        
+      <div ng-if="currentUser.isLoggedIn()">
+        
+        
+
+        
+
+        <div ng-cloak="" ng-if="!currentBoard.noOwner() && !currentBoard.iAmTheOwner() && currentBoard.editable">
+          This is <strong>public board</strong>. Only teammates can edit the board.
+        </div>
+
+        <div ng-cloak="" ng-if="currentBoard.noOwner() && currentBoard.editable">
+          This is <strong>public board</strong>, anyone can edit this board. <a ng-click="takeOwnership()" class="pure-button button-secondary">Take Ownership</a> (only team members can edit after that)
+        </div>
+
+        <div ng-cloak="" ng-if="currentUser.isDefaultAccountExpired() && currentBoard.isPro()">
+          Your default team {{currentUser.defaultAccountName}} is expired. Subscribe to <a ng-click="upgradeCurrentTeam()" class="action-text">activate your team.</a>
+        </div>        
+      </div>
+    </div>
+
+    <div ng-cloak="" class="nofitication" ng-if="currentUser.isAccountRoleReadOnly() && !currentBoard.isPublic()">
+      Read-only
+    </div>
+
+    <div ng-cloak="" ng-class="{'um':showsUserMessage}" class="free-board-info" name="expired-board-info" ng-show="!currentBoard.isFree() && !currentBoard.editable">
+        <span name="expired-board-desc">Your team knx-simulator is on the free plan, and the board is read-only.</span>
+
+        <a ng-click="upgradeCurrentTeam()" class="action-text" ng-show="!isMsTeams"> <span name="expired-board-action">Upgrade now for unlimited editable boards.</span></a>
+        <a ref="noopener" target="_blank" ng-href="{{upgradeCurrentTeamLink()}}" class="action-text" ng-show="isMsTeams"> <span name="expired-board-action">Upgrade now for unlimited editable boards.</span></a>
+    </div>
+
+    <div class="boardname-wrapper">
+        
+        
+        <div title="Rename the board" ng-class="{'board-name-only':!currentUser.isTrial()}" class="boardNameOrTypeLink tooltip-enabled" name="boardNameOrTypeLink" ng-click="renameBoard()" style="display:none;">
+            <span title="{{currentBoard.getTitle()}}" style="margin-right:3px" ng-class="currentBoard.getProClass()"></span><span ng-cloak="">{{currentBoard.name}}</span>
+        </div>
+    </div>
+</div>
+
+<div ng-show="showUpgradeButton()" class="upgrade-button">
+    <a ng-href="{{upgradeCurrentTeamLink()}}" ng-cloak="" style="background-color:#e94374" class="pure-button pure-button-primary p-font-large">Upgrade</a>
+</div>
+
+<div name="chatcomet">
+  
+</div>
+
+<div hide-on-offline="" id="ChatController" ng-controller="ChatController" class="bt">
+    <div id="NDabfIGVitO-chatbox" hide-on="hide-chat" show-on="show-chat" close-click-outside="" close-on-esc="" class="sketchBoardChat" name="boardchat">
+        <div class="chatName">
+            <div class="chatlabel-box">
+                <b>Board emphemeral chat</b>
+                
+            </div>
+            <div class="closeChat" ng-click="hideChat()" name="closeChat"> </div>
+        </div>
+        <div scroll-to-bottom-on="chat-focused" when-scrolled-up="loadOld()" class="messageArea">
+            <ul>
+                <li ng-repeat="msg in messages"><b>{{msg.user}}:  </b>{{msg.message}}</li>
+            </ul>
+        </div>
+        <div>
+            <input chat-input="" on-focus="chat-focused" focus-on-event="show-chat" ng-model="msg" enter-key="sendMessage" type="text">
+        </div>
+    </div>
+
+    <div hide-on-offline="" class="boardmenu">
+      <div class="main-btn-group">
+        
+        
+        
+        
+        <a chat-button="" tooltip="" title="Board emphemeral chat" class="menu-btn-circle" name="chatbutton" ng-click="showChat()">
+          
+          <svg class="sprite-menu-icons"><use xlink:href="#menu-icon--chat"></use></svg>
+        </a>
+
+
+      </div>
+    </div>
+</div>
+
+<div id="react-dynamic"></div>
+
+<span id="ExportCallback" ng-controller="ExportCallback"></span>
+
+<div mentions-popup2="" class="comment-options-menu mentions-popup" ng-controller="MentionPopupController">
+  <div class="mentions-popup-header">
+    Notify users about this comment <span><strong>↑</strong><strong>↓</strong> to navigate</span><span><strong>↵</strong> to select</span>
+  </div>
+  <div class="mention-listing">
+    <ul ng-repeat="mention in mentions">
+      <li ng-class="{'mention-highlight': $index == mentionSelectedIndex}" ng-click="addMention(mention)">{{mention.display}} <span class="mention-help">{{mention.help}}</span></li>
+    </ul>
+  </div>
+</div>
+
+
+</div>
+    
+        
+            
+        
+        
+    
+
+    
+        
+    
+</div>
+    </div>
+
+    <div style="background: url(&quot;https://d1sqtd1h3vkwkp.cloudfront.net/images/sketchboard-loading-02.gif&quot;) no-repeat center center;background-size: auto 400px;" class="splash">
+    </div>
+</div>
+
+
+
+
+
+
+<div style="display: none;" slide-on-state-visible="" ng-controller="NotifyController" class="noticebubble noticebubble-angular">
+    <div class="dropbubble"></div>
+    <div class="noticescontainer2">
+        <div class="pure-g">
+            <div style="padding: 15px;" class="pure-u-1">
+                {{state.msg}}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="noticebubble">
+    <div id="lift__noticesContainer__"></div>
+</div>
+
+
+<span ng-view=""></span>
+
+<div id="vueapp"></div>
+<div>
+<div html-layer="" ng-controller="BoardCommentsController" id="board-comments">
+
+	<div ng-cloak="" comment-thread="" class="comment-thread" ng-repeat="thread in commentThreads" ng-show="showBoardComments">
+
+		<div mini-thread="" title="Show comments" ng-click="openThread(thread)" class="mini-thread button-hover" ng-if="!thread.open">
+			
+			<svg class="sprite-board-circle-icon"><use xlink:href="#menu-icon--comments"></use></svg>
+		</div>
+
+		<div class="thread-section" ng-if="thread.open">
+
+			<div ng-class="{'close-btn': !currentBoard.isUserBoardTeamMember()}" class="header">
+				<span ng-if="currentBoard.isUserBoardTeamMember()">
+					<a hide-if-read-only="" ng-click="replyThread($event, thread)" class="pure-button"><i class="fa fa-reply"></i> Reply</a><a hide-if-read-only="" ng-click="resolveThread($event, thread)" class="pure-button"><i class="fa fa-check"></i> Resolve</a>
+				</span>
+				<a double-esc-exec="minimizeThread(thread)" title="Minimize | ESC ESC" ng-click="minimizeThread(thread)" ng-class="{'close-btn-right': currentBoard.isUserBoardTeamMember()}" class="pure-button"><i class="fa fa-minus"></i></a>
+			</div>
+
+			<div board-thread-reply="{{thread.threadid}}"></div>
+
+
+			<ul class="comments">
+
+				<li class="alert alert-error" ng-if="failedToCreateComment">
+				Sorry failed to create comment. Please contact <a href="mailto:support@sketchboard.io">support</a>.
+				</li>
+
+				<li class="alert alert-info" ng-if="infoPlanRestriction">
+					<p>
+						The free plan includes max 500 comments to be created altogether within the team.
+					</p>
+			
+					<p>
+						You can <a style="text-decoration:underline;font-weight:bold;" class="pointer" ng-click="upgradeCurrentTeam()">upgrade</a> to create more comments or delete older comments.
+					</p>
+				</li>
+			
+				<li class="separator" ng-repeat="comment in thread.comments">
+
+					<div class="comment-header">
+						<img height="30" width="30" ng-src="{{avatarUrl(comment.email)}}">
+
+						<div class="name-time">
+							<div title="{{comment.email}}" class="name">{{comment | createdBy}}</div>
+							<div class="time">{{comment.uat | simplifyDate}}</div>
+						</div>
+
+						<a hide-if-read-only="" ng-click="showOptions($event, comment, thread)" class="comment-options" ng-if="shouldEnableCommentMenu(thread, comment)"><i class="fa fa-caret-down"></i></a>
+					</div>
+
+					<div ng-class="{'hidden':comment.opts === 0}" class="smsg">{{comment | statusMessage}}</div>
+
+					<div board-comment-edit="{{comment.id}}"></div>
+
+					<div hide-on-comment-edit="{{comment.id}}" class="markdown" ng-bind-html="markdown(comment.comment_text)"></div>
+
+				</li>
+			</ul>
+
+		</div>
+
+	</div>
+
+
+	<div comment-options-menu="" class="comment-options-menu" ng-if="showCommentOptions">
+		<a ng-click="editComment($event)" ng-show="!editMode">Edit</a>
+		<a ng-click="deleteComment()">Delete</a>
+	</div>
+
+	<div mentions-event="open-mentions-selector-1" mentions-popup="" class="comment-options-menu mentions-popup" ng-controller="MentionPopupBoardController">
+		<div class="mentions-popup-header">
+			Notify users about this comment <span><strong>↑</strong><strong>↓</strong> to navigate</span><span><strong>↵</strong> to select</span>
+		</div>
+
+		<div class="mention-listing">
+			<ul ng-repeat="mention in mentions">
+				<li ng-class="{'mention-highlight': $index == mentionSelectedIndex}" ng-click="addMention(mention)">{{mention.display}} <span class="mention-help">{{mention.help}}</span></li>
+			</ul>
+		</div>
+	</div>
+
+</div>
+
+<div html-layer="">
+	<div id="link-layer"></div>
+</div>
+
+</div>
+
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/e2fda6e7aaee26c84ec239f6938b448ba23ad086-library.js"></script><script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/29e2ab3aff70681eef7cc7041465ac052f630b3f-context.js"></script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/resources-static-1/js/app-keep/lib/clipboard-2.0.4.min.js" data-attr="src"></script>
+
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/socket.io.slim-1.7.2.min.js" type="text/javascript" data-attr="src"></script>
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/ce61abb5c753d867c47f641f90630506-lib.js"></script><script type="text/javascript" src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/735ff3567f0de0a68d0367f028356d2c-dojo-sketchboard.min.js" djConfig="parseOnLoad:true,gfxRenderer:'svg'"></script>
+
+
+
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/codemirror-md-xml-5.2.0.min.js" type="text/javascript" data-attr="src"></script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/resources-static-1/js/app-keep/lib/marked-0.3.3.min.js" data-attr="src"></script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/resources-static-1/js/app-keep/lib/animate-1.4.0.min.js" data-attr="src"></script>
+
+<script type="text/javascript">
+    require2(["dojox/gfx", "dojox/color", "dojo/touch"], function(gfx, color, touch) {
+    });
+
+    var storeServicePath = {
+    value:"/sketcho_confluence_app/store"
+    };
+
+    var contentServicePath = {
+    value:"/sketcho_confluence_app/contentImage"
+    };
+
+    var jsonService = {
+    value:"true"
+    };
+
+</script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/a17b63308d2dad071702-manifest.bundle.min.js" data-attr="src"></script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/e4351acc80a36733878e-reactvendor.bundle.min.js" data-attr="src"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/5c99e46009dd822c6f0f-signinutils.bundle.min.js" data-attr="src"></script>  
+
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/975e5667e035d30a54e6e67593a8fca1-app.js"></script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/6d769ce8aaf4dd77cbdc-sketchboard_rt.bundle.min.js" data-attr="src"></script>
+
+
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/ba37f5c7daaad93e27bc-reactapp.bundle.min.js" data-attr="src"></script>
+
+<script>
+    function isTouch() {
+        return 'ontouchstart' in document.documentElement;
+    }
+    var touchEnabledDevice = isTouch()
+
+</script>
+
+<div style="overflow:hidden;" ng-controller="FileUploadController" id="FileUploadController">
+    <input style="display:none;" hidesoonish="" profile-img-upload="" name="files[]" type="file">
+
+    <div class="notification-center">
+        <div ng-cloak="" ng-controller="NotificationCenterController" class="notification-area" ng-show="showNotificationCenter()">
+          <div class="popover top">
+            <div class="arrow"></div>
+            <h3 class="popover-title">Notifications <button ng-click="closeNotifications()" class="close" type="button">×</button></h3>
+            <div class="popover-content white-text">
+              <div ng-include="notificationPart" class="pendingaccounts"></div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+
+<div library-settings="" class="image-library" ng-controller="LibrarySettingsController">
+</div>
+
+<div image-library="" class="image-library" ng-controller="ImageLibraryController">
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+<div ng-controller="VersionController" class="version-placeholder">
+  <div ng-include="versionsrc"></div>
+</div>
+
+
+
+
+
+
+<div id="TipContainer"></div><div id="TipMapViewController" ng-controller="TipMapViewController"></div>
+
+
+
+
+<div ng-cloak="" offline="" ng-class="{offline: true,deployment: deploying}" ng-controller="OfflineController">
+
+	<div ng-switch="deploying">
+
+		<div ng-switch-when="1">
+			We are updating Sketchboard.
+			
+			<br>Sorry, for the trouble!
+			<div style="margin: 7px auto;">
+				<a ng-click="reload()" class="pure-button p-font-small">Connect Now</a>
+			</div>
+			<div>
+				<a href="mailto:info@sketchboard.io?subject=About%20Sketchboard%20deployment" class="p-font-small">Feedback</a>
+
+				<a rel="noopener noreferrer" target="_blank" ng-href="{{releaseNotes}}" ng-show="hasReleaseNotes()" class="p-font-small">Release Notes</a>
+			</div>
+
+			
+		</div>
+		
+		<div ng-switch-default="">
+			
+			Restore connection.
+			<br>Changes made now may not be saved.
+			<br><a ng-click="reload()" class="pure-button p-font-small">Connect Now</a>
+		</div>
+
+	</div>
+
+	
+
+</div>
+
+<span esc-handler="closeIfEmpty()" create-comment="" class="create-comment-thread" ng-controller="CreateCommentController"></span>
+
+
+
+
+
+<div id="clipboard-container"></div>
+
+
+
+
+
+
+
+
+
+<script src="/classpath/lift.js" type="text/javascript"></script>
+
+	<script type="text/javascript" src="/lift/page/F191696325817S03MAP.js"></script>
+	
+</body>
+</html>  
+  

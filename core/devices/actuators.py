@@ -5,23 +5,27 @@ from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 
 class Light(Actuator, ABC):
-    def __init__(self, name, refid, location, default_status):
-        super().__init__(name, refid, location, default_status, "light")
+    def __init__(self, name, refid, individual_addr, default_status, state):
+        super().__init__(name, refid, individual_addr, default_status, "light", state)
 
-    def lumentoLux(self, lm, area):
+    def lumen_to_Lux(self, lumen, area):
         ''' The conversion from Lumens to Lux given the surface area in squared meters '''
-        return lm/area
+        return lumen/area
 
-    def luxtoLumen(self, lx, area):
+    def lux_to_Lumen(self, lux, area):
         ''' The conversion from Lux to Lumen given the surface area in squared meters '''
-        return area*lx
+        return area*lux
 
 class LED(Light):
-    def __init__(self, name, refid, location, default_status):
-        super().__init__(name, refid, location, default_status)
-        self.lm = 800 #800 lumens at 1 meter
+    def __init__(self, name, refid, individual_addr, default_status, state=False): #state is ON/OFF=True/False
+        super().__init__(name, refid, individual_addr, default_status, state)
+        self.lumen = 800 #800 lumens at 1 meter
 
-class TemperatureVariators(Actuator, ABC):
+
+
+class Temperature(Actuator, ABC):
+    def __init__(self, name, refid, individual_addr, default_status, actuator_type, state):
+        super().__init__(name, refid, individual_addr, default_status, actuator_type, state)
     update_rule = 0
 
     @abstractmethod
@@ -31,17 +35,17 @@ class TemperatureVariators(Actuator, ABC):
     def get_update_rule(self):
         return self.update_rule
 
-class Heater(TemperatureVariators):
-    def __init__(self, name, refid, line):
-        super().__init__(name, refid, line, 0, "heater")
+class Heater(Temperature):
+    def __init__(self, name, refid, individual_addr, default_status, state=False):
+        super().__init__(name, refid, individual_addr, default_status, "heater", state)
 
     def set_update_rule(self, rule: int):
         assert(rule >= 0)
         super().set_update_rule(rule)
 
-class AC(TemperatureVariators):
-    def __init__(self, name, refid, line, default_status):
-        super().__init__(name, refid, line, default_status, "ac")
+class Cooler(Temperature):
+    def __init__(self, name, refid, individual_addr, default_status, state=False):
+        super().__init__(name, refid, individual_addr, default_status, "cooler", state)
 
     def set_update_rule(self, rule: int):
         assert(rule <= 0)

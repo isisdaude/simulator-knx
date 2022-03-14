@@ -21,22 +21,40 @@ class Room:
         self.length = length #y
         self.world = sim.World()
 
+    def add_device(self, device, x, y): #device is an object
+        if(x < 0 or x > self.width or y < 0 or y > self.length):
+            print("Cannot add a device outside the room!")
+        else:
+            device.set_physical_location(x, y)
+            if device.dev_type == "actuator":
+                if device.actuator_type == "light":
+                    self.world.ambiant_light.add_lightsource(device) # add device to the light sources list, to be able to calculate brightness from any point of the room
+                    print("light added")
+                elif device.actuator_type == "heater":
+                    self.world.ambiant_temperature.add_heatingsource(device)
+                    print("heater added")
+                elif device.actuator_type == "cooler":
+                    self.world.ambiant_temperature.add_coolingsource(device)
+                    print("cooler added")
+            if device.dev_type == "sensor":
+                if device.sensor_type == "button":
+                    print("button added")
+                elif device.sensor_type == "brightness":
+                    print("brightness sensor added")
+            self.devices.append(device)
+
     def __str__(self):
-        return f"{self.name} is a room of dimensions {self.width} x {self.length} m2"
+        str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 with devices:\n"
+        for device in self.devices:
+            str_repr += f"-> {device.name} at location ({device.loc_x}, {device.loc_y})"
+            if device.dev_type == "actuator":
+                state = "ON" if device.state else "OFF"
+                str_repr += f" is {state}"
+            str_repr += "\n"
+        return str_repr
 
     def __repr__(self):
         return f"Room {self.name}"
-
-    def add_device(self, device, x, y): #device is an object
-        if(x < 0 or x > self.width or y < 0 or y > self.length):
-            print("Cannot add a device that's outside the room!")
-        else:
-            device.set_physical_location(x, y)
-            if device.type == "actuator":
-                if device.actuator_type == "light":
-                    self.world.ambiant_light.add_lightsource(device) # add device to the light sources list, to be able to calculate brightness from any point of the room
-            self.devices.append(device)
-
 
 
 class System:

@@ -1,2 +1,9 @@
 # KNX Smart Home simulator
+
 A simulator of a KNX smart home according to the user's configurations.
+
+when modifying classes:
+-> modify the `__init__.py` files
+
+When adding new devices types ("light",...):
+-> modify the list in devices.abstractions

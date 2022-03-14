@@ -18,3 +18,8 @@ class Button(Sensor):
 class Brightness(Sensor):
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "brightness")
+
+
+class Thermometer(Sensor):
+    def __init__(self, name, refid, location, default_status):
+        super().__init__(name, refid, location, default_status, "temperature")
