@@ -51,7 +51,7 @@ while True:
         if "bright" in name: # brightness sensor
             for device in room1.devices:
                 if device.name == name:
-                    print("The brightness received on sensor %s located at (%d,%d) is %.2f" % (name, device.loc_x, device.loc_y, room1.world.ambiant_light.get_brightness(device)))
+                    print("The brightness received on sensor %s located at (%d,%d) is %.2f" % (name, device.loc_x, device.loc_y, room1.world.ambient_light.get_brightness(device)))
     elif command in ('h', 'H'):
         print(command_help)
     elif command in ('q','Q'):

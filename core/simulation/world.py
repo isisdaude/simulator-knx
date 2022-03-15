@@ -3,7 +3,7 @@ Some class definitions for the simulation of the physical world
 """
 
 from typing import List
-import time, math,schedule
+import time, math, schedule
 
 
 class Time:
@@ -36,7 +36,7 @@ class Time:
     #         schedule.run_pending()
     #         time.sleep(1)
 
-class AmbiantTemperature:
+class AmbientTemperature:
     '''Class that implements temperature in a system'''
 
     update_rules = []
@@ -57,29 +57,29 @@ class AmbiantTemperature:
     def add_coolingsource(self, coolingsource): # heatsource is an object that heats the room
         self.cooling_sources.append(coolingsource)
 
-    # def get_temperature(self):
-    #     return self.temperature
-    # def add_update_rule(self, rule:float): #TODO: should we make a class representing a rule so that we can say on what interval or its name or id? or is it overkill?
-    #     '''Add a rule to the list of rules'''
-    #     self.update_rules.append(rule)
-    # def remove_update_rule(self):
-    #     pass
-    # def update(self): ##TODO: for the moment we suppose it is only sums, to see if becomes not enough
-    #     '''Appply the update rules, if none then go back to default outside temperature'''
-    #     if(not self.update_rules):
-    #         self.temperature = self.OUTSIDE_TEMPERATURE
-    #     else:
-    #         self.temperature += sum(self.update_rules)
-    # def __repr__(self):
-    #     return f"{self.temperature}"
-    #
-    # def __str__(self):
-    #     return f"{self.temperature}"
+    def get_temperature(self):
+        return self.temperature
+    def add_update_rule(self, rule:float): #TODO: should we make a class representing a rule so that we can say on what interval or its name or id? or is it overkill?
+        '''Add a rule to the list of rules'''
+        self.update_rules.append(rule)
+    def remove_update_rule(self):
+        pass
+    def update(self): ##TODO: for the moment we suppose it is only sums, to see if becomes not enough
+        '''Appply the update rules, if none then go back to default outside temperature'''
+        if(not self.update_rules):
+            self.temperature = self.outside_temperature
+        else:
+            self.temperature += sum(self.update_rules)
+    def __repr__(self):
+        return f"{self.temperature}"
+
+    def __str__(self):
+        return f"{self.temperature}"
 
 
 
 
-class AmbiantLight:
+class AmbientLight:
     '''Class that implements Light in a room'''
     def __init__(self): # light_sources is a list of all devices that emit light
         self.light_sources = []
@@ -110,8 +110,8 @@ class World:
     ## INITIALISATION ##
     def __init__(self):
         self.time = Time(simulation_speed_factor=240) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
-        self.ambiant_temperature = AmbiantTemperature(default_temp=(20.0))
-        self.ambiant_light = AmbiantLight()
+        self.ambient_temperature = AmbientTemperature(default_temp=(20.0))
+        self.ambient_light = AmbientLight()
 
     # def get_time(self):
     #     pass
@@ -121,6 +121,6 @@ class World:
 
     def print_status(self): # one world per room, so status of the room
         print("+---------- STATUS ----------+")
-        print(f" Temperature: {self.ambiant_temperature.temperature}")
+        print(f" Temperature: {self.ambient_temperature.temperature}")
         #TODO: add others when availaible
         print("+----------------------------+")

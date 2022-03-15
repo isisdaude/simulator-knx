@@ -1,2 +1,2 @@
 #__init__.py
-from .world import Time, AmbiantTemperature, AmbiantLight, World
+from .world import Time, AmbientTemperature, AmbientLight, World
