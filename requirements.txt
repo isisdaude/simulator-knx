@@ -1,1 +1,7 @@
 schedule
+
+asyncio
+aioconsole
+pynput
+datetime
+apscheduler

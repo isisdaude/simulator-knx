@@ -5,6 +5,9 @@ Some class definitions for the simulation of the physical world
 from typing import List
 import time, math, schedule
 
+from abc import ABC, abstractmethod
+from aioreactive import AsyncSubject
+
 
 class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
@@ -59,6 +62,7 @@ class AmbientTemperature:
 
     def get_temperature(self):
         return self.temperature
+
     def add_update_rule(self, rule:float): #TODO: should we make a class representing a rule so that we can say on what interval or its name or id? or is it overkill?
         '''Add a rule to the list of rules'''
         self.update_rules.append(rule)
@@ -66,6 +70,8 @@ class AmbientTemperature:
         pass
     def update(self): ##TODO: for the moment we suppose it is only sums, to see if becomes not enough
         '''Appply the update rules, if none then go back to default outside temperature'''
+        print("update temperature")
+        #TODO: update all temperature sensors, maybe necessary to store them in a list like heating/cooling sources
         if(not self.update_rules):
             self.temperature = self.outside_temperature
         else:
@@ -81,8 +87,10 @@ class AmbientTemperature:
 
 class AmbientLight:
     '''Class that implements Light in a room'''
-    def __init__(self): # light_sources is a list of all devices that emit light
+    def __init__(self, default_brightness:float): # light_sources is a list of all devices that emit light
         self.light_sources = []
+        self.brightness = default_brightness
+
 
     def add_lightsource(self, lightsource):
         self.light_sources.append(lightsource) #lightsource is an object of type light
@@ -103,15 +111,69 @@ class AmbientLight:
                 brightness += residual_lumen # we basically add the lumen
         return brightness
 
+    def update(self):
+        print("update brightness")
+        #TODO: update all brightness sensors, maybe necessary to store them in a list like lightsources
+        #self.brightness = get_brightness(brightness_sensor)
+
+
+class Observer:
+    '''Class that implements the transmission over the KNX Bus, between Actuators and FuntionalModules'''
+    def __init__(self):
+        self.name = "Central Observer"
+        self.functional_modules = []
+        self.states = []
+        self._observers = [] #_ because private list, still visible from outside, but convention to indicate privacy with _
+
+    def add_functional_module(self, device):
+        self.functional_modules.append(device)
+        self.states.append(device.state) # states of all functional modules added, with respecting indexes
+
+    # def attach_to_functional_modules(self):
+    #     for device in functional_modules:
+    #         device.attach(self)
+
+    ### TODO: adapt this system with group addresses
+
+    def notify(self): # alert the _observers
+        for observer in self._observers:
+            observer.update(self.functional_modules[self._observers.index(observer)]) #the observer (Observer class in room) must have an update method
+
+    def attach(self, observer): #If not in list, add the observer to the list
+        if observer not in self._observers:
+            self._observers.append(observer)
+
+    def detach(self, observer): # Remove the observer from the list
+        try:
+            self._observers.remove(observer)
+        except ValueError:
+            pass
+
+
+    def update(self, notifier):
+        self.states[self.functional_modules.index(notifier)] = notifier.state
+        print(f"{notifier.name} notified {self.name} of its state: {notifier.state}")
+        self.notify()
+
+
+
+
+
+
+
 
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
-
     ## INITIALISATION ##
     def __init__(self):
         self.time = Time(simulation_speed_factor=240) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.ambient_temperature = AmbientTemperature(default_temp=(20.0))
-        self.ambient_light = AmbientLight()
+        self.ambient_light = AmbientLight(default_brightness = 0) #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
+        self.ambient_world = [self.ambient_temperature, self.ambient_light]
+
+    def update(self):
+        for ambient in self.ambient_world:
+            ambient.update()
 
     # def get_time(self):
     #     pass

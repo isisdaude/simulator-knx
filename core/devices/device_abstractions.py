@@ -3,6 +3,8 @@ Gather the abstract class definitions for the simulated KNX devices.
 """
 
 from abc import ABC, abstractmethod
+#from aioreactive import AsyncAnonymousObserver
+#from aioreactive.types import AsyncObservable
 
 
 class Device(ABC):
@@ -13,10 +15,10 @@ class Device(ABC):
         self.refid = refid
         self.individual_addr = individual_addr
         self.status = default_status  # enable/disable status determine if sensor is activated or not, kind of ON/OFF
-        if dev_type in ["actuator", "sensor", "sysdevice"]: #TODO: maybe create a config file, with the list of different types?
+        if dev_type in ["actuator", "sensor", "functional_module", "sys_device"]: #TODO: maybe create a config file, with the list of different types?
             self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
         else:
-            print("error, device type unknown")
+            print("error, device type unknown")#TODO: write an error handling code
             #TODO: raise error
         # Init addresses
         self.group_addr = 'ga not set'
@@ -36,7 +38,7 @@ class Device(ABC):
         self.loc_x = x ##TODO: change with a class location
         self.loc_y = y ## so that we have self.loc.x et self.loc.y
 
-    def get_status(self): #TODO: rename it to on/off, and add attribute that really represent status to sensors
+    def get_status(self): # should we keep the get and/or set atstu methods? or directly set the attribute
         return self.status
 
     def __repr__(self): # syntax to return when instance is called in the interactive python interpreter
@@ -46,13 +48,40 @@ class Device(ABC):
         return f"Device : {self.name}  {self.refid}  {self.status}  {self.individual_addr}  {self.group_addr}"
 
 
+class FunctionalModules(Device, ABC):
+    def __init__(self, name, refid, individual_addr, default_status, input_type):
+        super().__init__(name, refid, individual_addr, default_status, "functional_module")
+        if input_type in ["button", "dimmer"]:
+            self.input_type = input_type
+        else:
+            print("input type unknown") #TODO: write an error handling code
+
+        self._observers = [] #_ because private list, still visible from outside, but convention to indicate privacy with _
+
+
+    def notify(self, notifier): # alert the _observers
+        for observer in self._observers:
+            observer.update(notifier) #the observer (Observer class in room) must have an update method
+
+    def attach(self, observer): #If not in list, add the observer to the list
+        if observer not in self._observers:
+            self._observers.append(observer)
+
+    def detach(self, observer): # Remove the observer from the list
+        try:
+            self._observers.remove(observer)
+        except ValueError:
+            pass
+
+
+
 class Sensor(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status, sensor_type):
         super().__init__(name, refid, individual_addr, default_status, "sensor")
-        if sensor_type in ["button", "brightness", "temperature"]:
+        if sensor_type in ["brightness", "temperature"]:
             self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
         else:
-            print("sensor type unknown")
+            print("sensor type unknown")#TODO: write an error handling code
 
 
 class Actuator(Device, ABC):
@@ -74,4 +103,4 @@ class Actuator(Device, ABC):
 
 class SysDevice(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status):
-        super().__init__(name, refid, individual_addr, default_status, "sysdevice")
+        super().__init__(name, refid, individual_addr, default_status, "sys_device")
