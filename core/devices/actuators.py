@@ -8,6 +8,7 @@ class LightDevice(Actuator, ABC):
     """Abstract class to represent light devices"""
     def __init__(self, name, refid, individual_addr, default_status, state):
         super().__init__(name, refid, individual_addr, default_status, "light", state)
+        self.lumen = 0
 
     def lumen_to_Lux(self, lumen, area):
         ''' The conversion from Lumens to Lux given the surface area in squared meters '''

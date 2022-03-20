@@ -4,6 +4,7 @@ Some class definitions for the simulation of the physical world
 
 from typing import List
 import time, math, schedule
+from core.devices.sensors import Brightness
 from core.system.room import InRoomDevice
 from core.devices.actuators import Actuator, TemperatureDevice, LightDevice
 
@@ -45,7 +46,7 @@ class AmbientTemperature:
         self.outside_temperature = default_temp
         self.sources: List[InRoomDevice] = []
 
-    def add_source(self, source): # heatsource is an object that heats the room
+    def add_source(self, source: InRoomDevice): # heatsource is an object that heats the room
         self.sources.append(source)
 
     def get_temperature(self):
@@ -67,14 +68,19 @@ class AmbientTemperature:
         return f"{self.temperature}"
 
 
-
+def compute_distance(source: InRoomDevice, sensor: InRoomDevice) -> float:
+    delta_x = abs(source.get_x_position() - sensor.get_x_position())
+    delta_y = abs(source.get_y_position() - sensor.get_y_position())
+    dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
+    return dist
 
 class AmbientLight:
     '''Class that implements Light in a room'''
-    def __init__(self): # light_sources is a list of all devices that emit light
-        self.light_sources = []
+    def __init__(self):
+        self.light_sources: List[InRoomDevice] = []
+        """List of all devices that emit light"""
 
-    def add_lightsource(self, lightsource):
+    def add_lightsource(self, lightsource: InRoomDevice):
         self.light_sources.append(lightsource) #lightsource is an object of type light
 
     def get_brightness(self, brightness_sensor):
@@ -92,6 +98,17 @@ class AmbientLight:
                 residual_lumen = (1/dist)*source.lumen # residual lumens from the source at the brightness location
                 brightness += residual_lumen # we basically add the lumen
         return brightness
+
+    def update_sensor(self, sensor: InRoomDevice):
+        brightness = 0
+        for source in self.light_sources:
+            s = LightDevice(source.get_device())
+            if s.is_connected(): #TODO:s.state()??
+                dist = compute_distance(source, sensor)
+                residual_lumen = (1/dist)*s.lumen
+                brightness += residual_lumen
+        return Brightness(sensor.get_device()) # TODO: need to add a state here 
+
 
 
 class World:
