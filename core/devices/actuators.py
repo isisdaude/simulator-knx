@@ -5,6 +5,7 @@ from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 
 class LightDevice(Actuator, ABC):
+    """Abstract class to represent light devices"""
     def __init__(self, name, refid, individual_addr, default_status, state):
         super().__init__(name, refid, individual_addr, default_status, "light", state)
 
@@ -17,6 +18,7 @@ class LightDevice(Actuator, ABC):
         return area*lux
 
 class LED(LightDevice):
+    """Concrete class to represent LED lights"""
     def __init__(self, name, refid, individual_addr, default_status, state=False): #state is ON/OFF=True/False
         super().__init__(name, refid, individual_addr, default_status, state)
         self.lumen = 800 #800 lumens at 1 meter
@@ -24,6 +26,7 @@ class LED(LightDevice):
 
 
 class TemperatureDevice(Actuator, ABC):
+    """Abstract class to represent temperature devices"""
     def __init__(self, name, refid, individual_addr, default_status, actuator_type, state):
         super().__init__(name, refid, individual_addr, default_status, actuator_type, state)
     update_rule = 0
@@ -36,6 +39,7 @@ class TemperatureDevice(Actuator, ABC):
         return self.update_rule
 
 class Heater(TemperatureDevice):
+    """Concrete class to represent a heating device"""
     def __init__(self, name, refid, individual_addr, default_status, state=False):
         super().__init__(name, refid, individual_addr, default_status, "heater", state)
 
@@ -44,6 +48,7 @@ class Heater(TemperatureDevice):
         super().set_update_rule(rule)
 
 class Cooler(TemperatureDevice):
+    """Concrete class to represent a cooling device"""
     def __init__(self, name, refid, individual_addr, default_status, state=False):
         super().__init__(name, refid, individual_addr, default_status, "cooler", state)
 

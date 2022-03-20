@@ -5,6 +5,7 @@ from .device_abstractions import Sensor
 from abc import ABC, abstractclassmethod
 
 class Button(Sensor):
+    """Concrete class to represent buttons"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "button")
         self.state = False
@@ -16,10 +17,12 @@ class Button(Sensor):
             self.state = True
 
 class Brightness(Sensor):
+    """Concrete class to represent a sensor of brightness"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "brightness")
 
 
 class Thermometer(Sensor):
+    """Concrete class to represent a thermometer"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "temperature")

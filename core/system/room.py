@@ -2,26 +2,21 @@
 Some class definitions for the rooms contained in the system
 """
 from typing import List
-
-import devices as dev
-import simulation as sim
-
-#from devices.device_abstractions import *
-#import devices.device_abstractions
-#from core.simulation.world import *
+from devices import *
+from simulation import *
 from abc import ABC, abstractclassmethod
 
 class Room:
     #devices: List[Device] = []
     devices = []
 
-    def __init__(self, name, width, length):
+    def __init__(self, name: str, width: int, length: int):
         self.name = name
         self.width = width #x
         self.length = length #y
-        self.world = sim.World()
+        self.world = World()
 
-    def add_device(self, device, x, y): #device is an object
+    def add_device(self, device: Device, x: float, y: float):
         if(x < 0 or x > self.width or y < 0 or y > self.length):
             print("Cannot add a device outside the room!")
         else:
