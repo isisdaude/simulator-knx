@@ -5,7 +5,7 @@ Some class definitions for the simulation of the physical world
 from typing import List
 import time, math, schedule
 from core.system.room import InRoomDevice
-
+from core.devices.actuators import Actuator, TemperatureDevice, LightDevice
 
 class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
@@ -57,7 +57,8 @@ class AmbientTemperature:
             self.temperature = self.outside_temperature
         else:
             for s in self.sources:
-                s.
+                if s.get_device().is_connected() and Actuator(s.get_device()).state:#TODO: Every device should have a state
+                    self.temperature += TemperatureDevice(s.get_device()).get_update_rule()
 
     def __repr__(self):
         return f"{self.temperature}"

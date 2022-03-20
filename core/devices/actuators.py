@@ -30,7 +30,7 @@ class TemperatureDevice(Actuator, ABC):
     update_rule = 0
 
     @abstractmethod
-    def set_update_rule(self, rule:int):
+    def set_update_rule(self, rule:float):
         self.update_rule = rule
 
     def get_update_rule(self):
