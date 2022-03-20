@@ -23,8 +23,6 @@ class LED(LightDevice):
         super().__init__(name, refid, individual_addr, default_status, state)
         self.lumen = 800 #800 lumens at 1 meter
 
-
-
 class TemperatureDevice(Actuator, ABC):
     """Abstract class to represent temperature devices"""
     def __init__(self, name, refid, individual_addr, default_status, actuator_type, state):
