@@ -89,7 +89,7 @@ class AmbientLight:
     #     brightness = 0 # resulting lumen at the brightness sensor location
     #     for source in self.light_sources:
     #         if (source.state): # if the light is on
-    #             source_loc_x = source.loc_x  ## TODO: replace all this by a function compute_distance
+    #             source_loc_x = source.loc_x 
     #             source_loc_y = source.loc_y
     #             delta_x = abs(source_loc_x-sensor_loc_x)
     #             delta_y = abs(source_loc_y-sensor_loc_y)
@@ -103,11 +103,16 @@ class AmbientLight:
         brightness = 0
         for source in self.light_sources:
             s = LightDevice(source.get_device())
-            if s.is_connected(): #TODO:s.state()??
+
+            # If the light is on and connected to the bus
+            if s.is_connected() and s.state():
+                # Compute distance between sensor and each source
                 dist = compute_distance(source, sensor)
+                # Compute the new brightness
                 residual_lumen = (1/dist)*s.lumen
                 brightness += residual_lumen
-        return Brightness(sensor.get_device()) # TODO: need to add a state here 
+        # Update the sensor's brightness
+        Brightness(sensor.get_device()).update_brightness(brightness) 
 
 
     def update(self):

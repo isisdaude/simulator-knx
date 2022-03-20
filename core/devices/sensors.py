@@ -22,9 +22,14 @@ class Brightness(Sensor):
         super().__init__(name, refid, location, default_status, "brightness")
         self.brightness = 0
     
+    def update_brightness(self, new_brightness):
+        self.brightness = new_brightness
 
 class Thermometer(Sensor):
     """Concrete class to represent a thermometer"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "temperature")
         self.temperature = 0
+    
+    def update_temperature(self, new_temp):
+        self.temperature = new_temp
