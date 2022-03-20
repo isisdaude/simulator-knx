@@ -2,58 +2,69 @@
 Some class definitions for the rooms contained in the system
 """
 from typing import List
-
-import devices as dev
-import simulation as sim
-
-#from devices.device_abstractions import *
-#import devices.device_abstractions
-#from core.simulation.world import *
+from devices import *
+from simulation import *
 from abc import ABC, abstractclassmethod
 
+class InRoomDevice:
+        """Inner class to represent a device located at a certain position in a room"""
+        def __init__(self, device: Device, x:float, y:float):
+            self.device = device
+            self.position = (x,y)
+            self.name = device.name
+            self.type = type(device)
+        
+        def get_device(self) -> Device:
+            return self.device
+
+        def get_position(self):
+            return self.position
+
+        def get_x_position(self) -> float:
+            return self.position[0]
+
+        def get_y_position(self) -> float:
+            return self.position[1]
+
 class Room:
-    #devices: List[Device] = []
-    devices = []
+    """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
+   
 
-    def __init__(self, name, width, length):
+    devices: List[InRoomDevice] = []
+    """List of devices in the room at certain positions"""
+
+    def __init__(self, name: str, width: int, length: int):
         self.name = name
-        self.width = width #x
-        self.length = length #y
-        self.world = sim.World()
-        self.observer = sim.Observer() # Manage KNX Bus communications
+        """The room's given name"""
+        self.width = width
+        """Along x axis"""
+        self.length = length
+        """Along y axis"""
+        self.world = World()
+        """Representation of the world"""
 
-    def add_device(self, device, x, y): #device is an object
+    def add_device(self, device: Device, x: float, y: float):
+        """Adds a device to the room at the given position"""
         if(x < 0 or x > self.width or y < 0 or y > self.length):
             print("Cannot add a device outside the room!")
-        else:
-            device.set_physical_location(x, y)
-            if device.dev_type == "actuator":
-                if device.actuator_type == "light":
-                    self.world.ambient_light.add_lightsource(device) # add device to the light sources list, to be able to calculate brightness from any point of the room
-                    self.observer.attach(device) #We add all lights to the observer list, TODO: manage with group addresses, for now, index of light corresponds to index of button
-                    print("light added")
-                elif device.actuator_type == "heater":
-                    self.world.ambient_temperature.add_heatingsource(device)
-                    print("heater added")
-                elif device.actuator_type == "cooler":
-                    self.world.ambient_temperature.add_coolingsource(device)
-                    print("cooler added")
+            return
+        
+        in_room_device = InRoomDevice(device, x, y)
+        self.devices.append(in_room_device)
 
-            elif device.dev_type == "sensor":
-                if device.sensor_type == "brightness":
-                    print("brightness sensor added")
-                elif device.sensor_type == "temperature":
-                    print("temperature sensor added")
-
-            elif device.dev_type == "functional_module":
-                if device.input_type == "button":
-                    print("button added")
-                elif device.input_type == "dimmer":
-                    print("dimmer added")
-                self.observer.add_functional_module(device)
-                device.attach(self.observer) # We attach the functional device to the observer class
-
-            self.devices.append(device)
+        if isinstance(device, Actuator):
+            if isinstance(device, LightDevice):
+                self.world.ambient_light.add_lightsource(in_room_device)
+                print(f"A light source was added at {x} : {y}.")
+            elif isinstance(device, TemperatureDevice):
+                self.world.ambient_temperature.add_heatingsource(in_room_device)
+                print(f"A device acting on temperature was added at {x} : {y}.")
+        elif isinstance(device, Sensor):
+            if isinstance(device, Button):
+                print(f"A button was added at {x} : {y}.")
+            elif isinstance(device, Brightness):
+                print(f"A brightness sensor was added at {x} : {y}.")
+        
 
 
 
@@ -62,11 +73,11 @@ class Room:
 
     def __str__(self):
         str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 with devices:\n"
-        for device in self.devices:
-            str_repr += f"-> {device.name} at location ({device.loc_x}, {device.loc_y})"
-            if device.dev_type == "actuator":
-                state = "ON" if device.state else "OFF"
-                str_repr += f" is {state}"
+        for room_device in self.devices:
+            str_repr += f"-> {room_device.name} at location ({room_device.get_x_position()}, {room_device.get_y_position()})"
+            if room_device.type == Actuator:
+                str_repr += "ON" if Actuator(room_device.device).state else "OFF"
+                str_repr += f" is {Actuator(room_device.device).state}"
             str_repr += "\n"
         return str_repr
 

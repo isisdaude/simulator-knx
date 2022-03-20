@@ -10,42 +10,39 @@ from abc import ABC, abstractmethod
 class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)
     """
-    def __init__(self, name, refid, individual_addr, default_status, dev_type): #The constructor is also a good place for imposing various checks on attribute values
+    def __init__(self, name, refid, individual_addr, default_connected, dev_type): #The constructor is also a good place for imposing various checks on attribute values
         self.name = name
         self.refid = refid
-        self.individual_addr = individual_addr
-        self.status = default_status  # enable/disable status determine if sensor is activated or not, kind of ON/OFF
-        if dev_type in ["actuator", "sensor", "functional_module", "sys_device"]: #TODO: maybe create a config file, with the list of different types?
-            self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
-        else:
-            print("error, device type unknown")#TODO: write an error handling code
-            #TODO: raise error
+        self.connected: bool = default_connected  # enable/disable status determine if sensor is activated or not, kind of ON/OFF
+        
         # Init addresses
         self.group_addr = 'ga not set'
+        self.individual_addr = individual_addr
+        
+        #TODO: not necessary because already included in device types:
+        if dev_type in ["actuator", "sensor", "sysdevice"]: #TODO: maybe create a config file, with the list of different types?
+            self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
+        else:
+            print("error, device type unknown") # -> Cannot happen because we give th epossible types
 
-    #def set_individual_addr(self, individual_addr):
-        #self.individual_addr = individual_addr
-    #def get_individual_addr(self):
-        #return self.individual_addr
 
     def set_group_addr(self, group_addr):
+        """Method to make this device part of a certain group address"""
         self.group_addr = group_addr
 
     def get_group_addr(self):
+        """Method to get the group addresses of this device"""
         return self.group_addr
 
-    def set_physical_location(self, x, y): # relative to the current room, for now
-        self.loc_x = x ##TODO: change with a class location
-        self.loc_y = y ## so that we have self.loc.x et self.loc.y
-
-    def get_status(self): # should we keep the get and/or set atstu methods? or directly set the attribute
-        return self.status
+    def is_connected(self) -> bool:
+        """True if the device is connected on the KNX bus"""
+        return self.connected
 
     def __repr__(self): # syntax to return when instance is called in the interactive python interpreter
-        return f"Device({self.name!r}, {self.refid!r}, {self.status!r}, {self.individual_addr!r}, {self.group_addr!r})"
+        return f"Device({self.name!r}, {self.refid!r}, {self.is_connected()!r}, {self.individual_addr!r}, {self.group_addr!r})"
 
     def __str__(self): # syntax when instance is called with print()
-        return f"Device : {self.name}  {self.refid}  {self.status}  {self.individual_addr}  {self.group_addr}"
+        return f"Device : {self.name}  {self.refid}  {self.is_connected()}  {self.individual_addr}  {self.group_addr}"
 
 
 class FunctionalModules(Device, ABC):
@@ -76,30 +73,30 @@ class FunctionalModules(Device, ABC):
 
 
 class Sensor(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status, sensor_type):
-        super().__init__(name, refid, individual_addr, default_status, "sensor")
-        if sensor_type in ["brightness", "temperature"]:
+    def __init__(self, name, refid, individual_addr, default_connected, sensor_type):
+        super().__init__(name, refid, individual_addr, default_connected, "sensor")
+
+        #TODO: necessary?
+        if sensor_type in ["button", "brightness", "temperature"]:
             self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
         else:
             print("sensor type unknown")#TODO: write an error handling code
 
 
 class Actuator(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, state):
+    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, default_state):
         super().__init__(name, refid, individual_addr, default_status, "actuator")
+        
+        self.state = default_state
+
+        #TODO: necessary?
         if actuator_type in ["light", "heater", "cooler"]:
             self.actuator_type = actuator_type
         else:
             print("actuator_type unknown")
-        self.state = state # init at False=off for all actuators, unless especially expressed
-
+        
     def switch_state(self):
         self.state = not (self.state)
-
-    # def turnOn(self):
-    #     self.status = True
-    # def turnOff(self):
-    #     self.status = False
 
 class SysDevice(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status):
