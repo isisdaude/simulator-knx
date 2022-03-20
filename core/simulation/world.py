@@ -83,21 +83,21 @@ class AmbientLight:
     def add_lightsource(self, lightsource: InRoomDevice):
         self.light_sources.append(lightsource) #lightsource is an object of type light
 
-    def get_brightness(self, brightness_sensor):
-        sensor_loc_x = brightness_sensor.loc_x
-        sensor_loc_y = brightness_sensor.loc_y
-        brightness = 0 # resulting lumen at the brightness sensor location
-        for source in self.light_sources:
-            if (source.state): # if the light is on
-                source_loc_x = source.loc_x  ## TODO: replace all this by a function compute_distance
-                source_loc_y = source.loc_y
-                delta_x = abs(source_loc_x-sensor_loc_x)
-                delta_y = abs(source_loc_y-sensor_loc_y)
-                dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
+    # def get_brightness(self, brightness_sensor):
+    #     sensor_loc_x = brightness_sensor.loc_x
+    #     sensor_loc_y = brightness_sensor.loc_y
+    #     brightness = 0 # resulting lumen at the brightness sensor location
+    #     for source in self.light_sources:
+    #         if (source.state): # if the light is on
+    #             source_loc_x = source.loc_x  ## TODO: replace all this by a function compute_distance
+    #             source_loc_y = source.loc_y
+    #             delta_x = abs(source_loc_x-sensor_loc_x)
+    #             delta_y = abs(source_loc_y-sensor_loc_y)
+    #             dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
 
-                residual_lumen = (1/dist)*source.lumen # residual lumens from the source at the brightness location
-                brightness += residual_lumen # we basically add the lumen
-        return brightness
+    #             residual_lumen = (1/dist)*source.lumen # residual lumens from the source at the brightness location
+    #             brightness += residual_lumen # we basically add the lumen
+    #     return brightness
 
     def update_sensor(self, sensor: InRoomDevice):
         brightness = 0

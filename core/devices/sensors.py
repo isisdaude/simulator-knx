@@ -20,9 +20,11 @@ class Brightness(Sensor):
     """Concrete class to represent a sensor of brightness"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "brightness")
-
+        self.brightness = 0
+    
 
 class Thermometer(Sensor):
     """Concrete class to represent a thermometer"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "temperature")
+        self.temperature = 0
