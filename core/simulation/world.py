@@ -4,6 +4,7 @@ Some class definitions for the simulation of the physical world
 
 from typing import List
 import time, math, schedule
+from core.system.room import InRoomDevice
 
 
 class Time:
@@ -39,37 +40,25 @@ class Time:
 class AmbientTemperature:
     '''Class that implements temperature in a system'''
 
-    update_rules = []
-    '''Represents the updating rules used to impact on temperature'''
-
-    '''List of rules representing how temperature should be impacted at every physical interval, as functions'''
-
     def __init__(self, default_temp:float):
         self.temperature = default_temp
         self.outside_temperature = default_temp
-        self.heating_sources = [] #to keep track of all sources of heat/AC/cooling in the room
-        self.cooling_sources = []
+        self.sources: List[InRoomDevice] = []
 
-
-    def add_heatingsource(self, heatingsource): # heatsource is an object that heats the room
-        self.heating_sources.append(heatingsource)
-
-    def add_coolingsource(self, coolingsource): # heatsource is an object that heats the room
-        self.cooling_sources.append(coolingsource)
+    def add_source(self, source): # heatsource is an object that heats the room
+        self.sources.append(source)
 
     def get_temperature(self):
         return self.temperature
-    def add_update_rule(self, rule:float): #TODO: should we make a class representing a rule so that we can say on what interval or its name or id? or is it overkill?
-        '''Add a rule to the list of rules'''
-        self.update_rules.append(rule)
-    def remove_update_rule(self):
-        pass
-    def update(self): ##TODO: for the moment we suppose it is only sums, to see if becomes not enough
-        '''Appply the update rules, if none then go back to default outside temperature'''
-        if(not self.update_rules):
+
+    def update(self): 
+        '''Apply the update rules, if none then go back to default outside temperature'''
+        if(not self.sources):
             self.temperature = self.outside_temperature
         else:
-            self.temperature += sum(self.update_rules)
+            for s in self.sources:
+                s.
+
     def __repr__(self):
         return f"{self.temperature}"
 

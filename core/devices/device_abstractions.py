@@ -55,16 +55,17 @@ class Sensor(Device, ABC):
 
 
 class Actuator(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, state):
+    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, default_state):
         super().__init__(name, refid, individual_addr, default_status, "actuator")
         
+        self.state = default_state
+
         #TODO: necessary?
         if actuator_type in ["light", "heater", "cooler"]:
             self.actuator_type = actuator_type
         else:
             print("actuator_type unknown")
-        self.state = state # init at False=off for all actuators, unless especially expressed
-
+        
     def switch_state(self):
         self.state = not (self.state)
 

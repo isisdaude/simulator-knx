@@ -6,10 +6,7 @@ from devices import *
 from simulation import *
 from abc import ABC, abstractclassmethod
 
-class Room:
-    """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
-
-    class InRoomDevice:
+class InRoomDevice:
         """Inner class to represent a device located at a certain position in a room"""
         def __init__(self, device: Device, x:float, y:float):
             self.device = device
@@ -28,7 +25,10 @@ class Room:
 
         def get_y_position(self) -> float:
             return self.position[1]
-    
+
+class Room:
+    """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
+   
 
     devices: List[InRoomDevice] = []
     """List of devices in the room at certain positions"""
@@ -49,7 +49,7 @@ class Room:
             print("Cannot add a device outside the room!")
             return
         
-        in_room_device = self.InRoomDevice(device, x, y)
+        in_room_device = InRoomDevice(device, x, y)
         self.devices.append(in_room_device)
 
         if isinstance(device, Actuator):
@@ -69,7 +69,7 @@ class Room:
     def __str__(self):
         str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 with devices:\n"
         for room_device in self.devices:
-            str_repr += f"-> {room_device.name} at location ({room_device.get_x_position()}, {device.get_y_position()})"
+            str_repr += f"-> {room_device.name} at location ({room_device.get_x_position()}, {room_device.get_y_position()})"
             if room_device.type == Actuator:
                 str_repr += "ON" if Actuator(room_device.device).state else "OFF"
                 str_repr += f" is {Actuator(room_device.device).state}"
