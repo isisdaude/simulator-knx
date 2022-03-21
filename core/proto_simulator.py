@@ -55,17 +55,19 @@ async def user_input_loop():
             name = command[4:]
             for device in room1.devices:
                 if device.name == name:
-                    device.switch_state()
+                    device.device.switch_state()
         elif command[:3] == 'get': #Sensor
             name = command[4:]
             if "bright" in name: # brightness sensor
                 for device in room1.devices:
                     if device.name == name:
-                        print("The brightness received on sensor %s located at (%d,%d) is %.2f" % (name, device.loc_x, device.loc_y, room1.world.ambient_light.get_brightness(device)))
+                        print("The brightness received on sensor %s located at (%d,%d) is %.2f" % (name, device.get_x(), device.get_y(), room1.world.ambient_light.read_brightness(device)))
         elif command in ('h', 'H'):
             print(command_help)
         elif command in ('q','Q'):
             break
+        else:
+            print("Unknown input, please " + command_help)
 
 # async def knx_bus_communication():
 #     stream = rx.AsyncSubject()

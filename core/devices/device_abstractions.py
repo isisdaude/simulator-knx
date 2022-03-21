@@ -3,49 +3,46 @@ Gather the abstract class definitions for the simulated KNX devices.
 """
 
 from abc import ABC, abstractmethod
-#from aioreactive import AsyncAnonymousObserver
-#from aioreactive.types import AsyncObservable
 
 
 class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)
     """
-    def __init__(self, name, refid, individual_addr, default_connected, dev_type): #The constructor is also a good place for imposing various checks on attribute values
+    def __init__(self, name, refid, individual_addr, default_status, dev_type): #The constructor is also a good place for imposing various checks on attribute values
         self.name = name
         self.refid = refid
-        self.connected: bool = default_connected  # enable/disable status determine if sensor is activated or not, kind of ON/OFF
-        
+        self.status: bool = default_status  # enable/disable status determine if sensor is activated or not, kind of power switch
+
         # Init addresses
         self.group_addr = 'ga not set'
         self.individual_addr = individual_addr
-        
+
         #TODO: not necessary because already included in device types:
         if dev_type in ["actuator", "sensor", "sysdevice"]: #TODO: maybe create a config file, with the list of different types?
             self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
         else:
             print("error, device type unknown") # -> Cannot happen because we give th epossible types
 
+    # def set_group_addr(self, group_addr):
+    #     """Method to make this device part of a certain group address"""
+    #     self.group_addr = group_addr
+    #
+    # def get_group_addr(self):
+    #     """Method to get the group addresses of this device"""
+    #     return self.group_addr
 
-    def set_group_addr(self, group_addr):
-        """Method to make this device part of a certain group address"""
-        self.group_addr = group_addr
-
-    def get_group_addr(self):
-        """Method to get the group addresses of this device"""
-        return self.group_addr
-
-    def is_connected(self) -> bool:
-        """True if the device is connected on the KNX bus"""
-        return self.connected
+    def is_enabled(self) -> bool:
+        """True if the device is enabled (= active+connected) on the KNX bus"""
+        return self.status
 
     def __repr__(self): # syntax to return when instance is called in the interactive python interpreter
-        return f"Device({self.name!r}, {self.refid!r}, {self.is_connected()!r}, {self.individual_addr!r}, {self.group_addr!r})"
+        return f"Device({self.name!r}, {self.refid!r}, status:{self.is_enabled()!r}, {self.individual_addr!r}, {self.group_addr!r})"
 
     def __str__(self): # syntax when instance is called with print()
-        return f"Device : {self.name}  {self.refid}  {self.is_connected()}  {self.individual_addr}  {self.group_addr}"
+        return f"Device : {self.name}  {self.refid}  status:{self.is_enabled()}  {self.individual_addr}  {self.group_addr}"
 
 
-class FunctionalModules(Device, ABC):
+class FunctionalModule(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status, input_type):
         super().__init__(name, refid, individual_addr, default_status, "functional_module")
         if input_type in ["button", "dimmer"]:
@@ -53,12 +50,12 @@ class FunctionalModules(Device, ABC):
         else:
             print("input type unknown") #TODO: write an error handling code
 
-        self._observers = [] #_ because private list, still visible from outside, but convention to indicate privacy with _
+        self._observers = [] #list of _ because private list, still visible from outside, but convention to indicate privacy with _
 
 
     def notify(self, notifier): # alert the _observers
         for observer in self._observers:
-            observer.update(notifier) #the observer (Observer class in room) must have an update method
+            observer.update(notifier) #the observer (KNXBus class in room) must have an update method
 
     def attach(self, observer): #If not in list, add the observer to the list
         if observer not in self._observers:
@@ -73,8 +70,8 @@ class FunctionalModules(Device, ABC):
 
 
 class Sensor(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_connected, sensor_type):
-        super().__init__(name, refid, individual_addr, default_connected, "sensor")
+    def __init__(self, name, refid, individual_addr, default_status, sensor_type):
+        super().__init__(name, refid, individual_addr, default_status, "sensor")
 
         #TODO: necessary?
         if sensor_type in ["button", "brightness", "temperature"]:
@@ -84,19 +81,24 @@ class Sensor(Device, ABC):
 
 
 class Actuator(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, default_state):
+    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, default_state=False):
         super().__init__(name, refid, individual_addr, default_status, "actuator")
-        
-        self.state = default_state
+
+        self.state = default_state #=OFF if not indicated
 
         #TODO: necessary?
         if actuator_type in ["light", "heater", "cooler"]:
             self.actuator_type = actuator_type
         else:
             print("actuator_type unknown")
-        
+
     def switch_state(self):
         self.state = not (self.state)
+
+    def update(self, functional_module):
+        print(f"KNX Bus notified {self.name} of the state: {functional_module.state} of the functional module {functional_module.name}")
+        self.state = functional_module.state
+
 
 class SysDevice(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status):

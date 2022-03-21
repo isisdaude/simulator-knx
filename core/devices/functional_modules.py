@@ -1,14 +1,15 @@
 """
 Some class definitions for the simulated KNX functional modules (button, switch, Temp controller,...).
 """
-from .device_abstractions import FunctionalModules
+from .device_abstractions import FunctionalModule
 #from abc import ABC, abstractclassmethod
 
 
-class Button(FunctionalModules):
+class Button(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "button")
         self.state = 0
+        self.name = name
 
     # @property
     # def state(self):
@@ -16,6 +17,7 @@ class Button(FunctionalModules):
 
     #@state.setter
     def switch_state(self):
+        print(f"switch state of {self.name}")
         if (self.state):
             self.state = 0
         else:
