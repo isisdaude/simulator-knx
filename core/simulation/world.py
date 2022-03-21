@@ -16,8 +16,6 @@ from system import InRoomDevice, compute_distance
 class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
 
-    ##TODO: instead of using scheduler, should notify everyone at a clock tick?
-
     def __init__(self, simulation_speed_factor:float):
         # Real world simulated time that passed between 2 clock ticks
         self.physical_interval = 3600
@@ -50,7 +48,7 @@ class AmbientTemperature:
             self.temperature = self.outside_temperature
         else:
             for source in self.sources: # sources of heat of cold
-                if source.device.is_enabled() and source.device.state:#TODO: Every device should have a state
+                if source.device.is_enabled():
                     self.temperature += source.device.update_rule
 
     def __repr__(self):
@@ -95,9 +93,8 @@ class AmbientLight:
                     # Compute the new brightness
                     residual_lumen = (1/dist)*source.device.lumen
                     brightness += residual_lumen
+            # Update the sensor's brightness
             sensor.device.brightness = brightness # set the newly calculated sensor brightness
-            # # Update the sensor's brightness
-            # sensor.device.update_brightness(brightness)
 
 
 class World:

@@ -13,12 +13,10 @@ class InRoomDevice:
         """Inner class to represent a device located at a certain position in a room"""
         def __init__(self, device: Device, room,  x:float, y:float):
             self.device = device
-            self.location = Location(room, x, y) #abstract clas for location
+            self.location = Location(room, x, y)
             self.name = device.name
             self.type = type(device)
 
-        # def get_device(self) -> Device:
-        #     return self.device
         def get_position(self):
             return self.location.pos #(x,y)
 
@@ -30,7 +28,6 @@ class InRoomDevice:
 
 class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
-
 
     devices: List[InRoomDevice] = []
     """List of devices in the room at certain positions"""
