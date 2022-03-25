@@ -6,6 +6,9 @@ Some class definitions for the simulation of the physical world
 from typing import List
 import time, math, schedule
 import sys
+from numpy import mean
+
+from soupsieve import escape
 sys.path.append("..") # Adds higher directory to python modules path, for relative includes
 sys.path.append("core")
 
@@ -32,23 +35,38 @@ class Time:
 class AmbientTemperature:
     '''Class that implements temperature in a system'''
 
-    def __init__(self, default_temp:float):
+    def __init__(self, room_volume, default_temp:float):
         self.temperature = default_temp # Will be obsolete when we introduce gradient of temperature
         self.outside_temperature = default_temp
-        self.source = []
+        self.room_volume = room_volume
+        """Describes room volume in m3"""
+        self.temp_sources = []
+        """List of temperature actuators sources in the room"""
+        self.temp_sensors = []
+        """List of temperature sensors in the room"""
 
-    def add_source(self, source): # heatsource is an object that heats the room
-        self.sources.append(source)
+    def add_source(self, source): # Heatsource is an object that heats the room
+        self.temp_sources.append(source)
+
+    def add_sensor(self, tempsensor):
+        self.temp_sensors.append(tempsensor)
 
     def update(self):
-        '''Apply the update rules, if none then go back to default outside temperature'''
+        '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         print("update Temperature")
         if(not self.sources):
-            self.temperature = self.outside_temperature
+            self.temperature = (self.temperature + self.outside_temperature)//2 # Decreases by the average of temp and outside_temp, is a softer slope
         else:
-            for source in self.sources: # sources of heat of cold
+            max_temps = []
+            for source in self.sources: # sources of heat or cold
                 if source.device.is_enabled():
+                    if isinstance(source.device, Heater):
+                        max_temps.append(Heater(source.device).max_temperature_in_room(self.room_volume,"average"))
                     self.temperature += source.device.update_rule
+            max_temp = mean(max_temps)
+            if self.temperature >= max_temp:
+                self.temperature = max_temp
+
 
     def __repr__(self):
         return f"{self.temperature} °C"
@@ -64,8 +82,10 @@ class AmbientLight:
         self.light_sensors: List = []
         """List of all devices that measure brightness"""
 
-    def add_source(self, lightsource, lightsensor):
-        self.light_sources.append(lightsource) #lightsource is an object of type    def add_sensor(self, lightsensor::
+    def add_source(self, lightsource):
+        self.light_sources.append(lightsource) #lightsource is an object of type    
+        
+    def add_sensor(self, lightsensor):
         self.light_sensors.append(lightsensor)
 
     def compute_distance(source, sensor) -> float:
@@ -74,7 +94,6 @@ class AmbientLight:
         delta_y = abs(source.location.y - sensor.location.y)
         dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
         return dist
-
 
     def read_brightness(self, brightness_sensor): #Read brightness at a particular sensor
         brightness = 0 # resulting lumen at the brightness sensor location
@@ -104,22 +123,16 @@ class AmbientLight:
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
-    def __init__(self):
+    def __init__(self, room_width, room_length, room_height):
         self.time = Time(simulation_speed_factor=240) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
-        self.ambient_temperature = AmbientTemperature(default_temp=(20.0))
+        self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, default_temp=(20.0))
         self.ambient_light = AmbientLight() #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
         self.ambient_world = [self.ambient_temperature, self.ambient_light]
 
     def update(self):
         for ambient in self.ambient_world:
             ambient.update()
-
-    # def get_time(self):
-    #     pass
-    ## STATUS FUNCTIONS ##
-    # def update_all(self):
-    #     self.temperature.update()
-
+            
     def print_status(self): # one world per room, so status of the room
         print("+---------- STATUS ----------+")
         print(f" Temperature: {self.ambient_temperature.temperature}")

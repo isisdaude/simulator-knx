@@ -11,15 +11,6 @@ class LightActuator(Actuator, ABC):
         super().__init__(name, refid, individual_addr, default_status, "light", state)
         self.lumen = lumen
 
-    # @property #getter in a pythonic way, but creates overhead!!! use only if usefull
-    # def lumen(self):
-    #     return self._lumen
-    #
-    # @lumen.setter
-    # def lumen(self, lumen:int):
-    #     # condition on rule value, e.g. raise error if rule ==0
-    #     self._lumen = lumen
-
     def lumen_to_Lux(self, lumen, area):
         ''' The conversion from Lumens to Lux given the surface area in squared meters '''
         return lumen/area
@@ -78,7 +69,4 @@ class Cooler(TemperatureActuator):
         # Verification of update_rule sign
         assert update_rule <= 0, "The Cooler should have update_rule<=0."  #Syntax for an error message
         super().__init__(name, refid, individual_addr, default_status, "cooler", state, update_rule, max_power)
-    
-h = Heater("1", "1", "1.1.1", "on", 1500, state=True, update_rule=1)
-print(h.max_temperature_in_room(40, "good"))
-print()
+   

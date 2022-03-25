@@ -32,13 +32,15 @@ class Room:
     devices: List[InRoomDevice] = []
     """List of devices in the room at certain positions"""
 
-    def __init__(self, name: str, width: int, length: int):
+    def __init__(self, name: str, width: int, length: int, height:int):
         self.name = name
         """The room's given name"""
         self.width = width
         """Along x axis"""
         self.length = length
         """Along y axis"""
+        self.height = height
+        """Along z axis"""
         self.world = sim.World()
         """Representation of the world"""
         self.knxbus= KNXBus()
