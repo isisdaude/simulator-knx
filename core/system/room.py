@@ -5,8 +5,8 @@ Some class definitions for the rooms contained in the system
 from typing import List
 from devices import *
 import simulation as sim
-from .tools import Location
-from .knxbus import KNXBus
+from tools import Location
+from knxbus import KNXBus
 from abc import ABC, abstractclassmethod
 
 class InRoomDevice:

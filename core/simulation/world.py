@@ -7,10 +7,9 @@ from typing import List
 import time, math, schedule
 import sys
 sys.path.append("..") # Adds higher directory to python modules path, for relative includes
+sys.path.append("core")
 
 from devices import *
-from system import InRoomDevice, compute_distance
-
 
 
 class Time:
@@ -36,9 +35,9 @@ class AmbientTemperature:
     def __init__(self, default_temp:float):
         self.temperature = default_temp # Will be obsolete when we introduce gradient of temperature
         self.outside_temperature = default_temp
-        self.sources: List[InRoomDevice] = []
+        self.source = []
 
-    def add_source(self, source: InRoomDevice): # heatsource is an object that heats the room
+    def add_source(self, source): # heatsource is an object that heats the room
         self.sources.append(source)
 
     def update(self):
@@ -57,26 +56,46 @@ class AmbientTemperature:
     def __str__(self):
         return f"{self.temperature} °C"
 
+    def required_power_of_heater_for_room(m3=1, desired_temperature=20, insulation_state="good"):
+        temp_to_watts = [(24, 93), (22, 85), (20, 77), (18, 70)]
+        """Recommended temperature associated to required number of watts per m3"""
 
+        insulation_to_correction_factor = {"good": -10/100, "bad": 15/100}
+        """Situation of the insulation of the room associated to the correction factor for the heating"""
+        watt = [watt[1] for watt in temp_to_watts if watt[0] == desired_temperature][0]
+
+        desired_wattage = m3*watt
+        desired_wattage += desired_wattage*insulation_to_correction_factor[insulation_state]
+
+        return desired_wattage
+
+print(AmbientTemperature.required_power_of_heater_for_room(20, 18, "good"))
 
 class AmbientLight:
     '''Class that implements Light in a room'''
     def __init__(self):
-        self.light_sources: List[InRoomDevice] = []
+        self.light_sources: List = []
         """List of all devices that emit light"""
-        self.light_sensors: List[InRoomDevice] = []
+        self.light_sensors: List = []
         """List of all devices that measure brightness"""
 
-    def add_source(self, lightsource: InRoomDevice):
-        self.light_sources.append(lightsource) #lightsource is an object of type InRoomDevice
-    def add_sensor(self, lightsensor: InRoomDevice):
+    def add_source(self, lightsource, lightsensor):
+        self.light_sources.append(lightsource) #lightsource is an object of type    def add_sensor(self, lightsensor::
         self.light_sensors.append(lightsensor)
 
-    def read_brightness(self, brightness_sensor: InRoomDevice): #Read brightness at a particular sensor
+    def compute_distance(source, sensor) -> float:
+        """ Computes euclidian distance between a sensor and a actuator"""
+        delta_x = abs(source.location.x - sensor.location.x)
+        delta_y = abs(source.location.y - sensor.location.y)
+        dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
+        return dist
+
+
+    def read_brightness(self, brightness_sensor): #Read brightness at a particular sensor
         brightness = 0 # resulting lumen at the brightness sensor location
         for source in self.light_sources:
             if (source.device.state): # if the light is on
-                dist = compute_distance(brightness_sensor, source) # InrRoomDevice types
+                dist = self.compute_distance(brightness_sensor, source) # InrRoomDevice types
                 residual_lumen = (1/dist)*source.device.lumen # residual lumens from the source at the brightness location
                 brightness += residual_lumen # we basically add the lumen
         return brightness
@@ -89,7 +108,7 @@ class AmbientLight:
                 # If the light is on and enabled on the bus
                 if source.device.is_enabled() and source.device.state:
                     # Compute distance between sensor and each source
-                    dist = compute_distance(source, sensor) #InRoomDevice Types
+                    dist = self.compute_distance(source, sensor)
                     # Compute the new brightness
                     residual_lumen = (1/dist)*source.device.lumen
                     brightness += residual_lumen

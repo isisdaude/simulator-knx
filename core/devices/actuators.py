@@ -33,29 +33,21 @@ class LED(LightActuator):
         super().__init__(name, refid, individual_addr, default_status, state, lumen=800)
 
 
-
 class TemperatureActuator(Actuator, ABC):
     """Abstract class to represent temperature devices"""
-    def __init__(self, name, refid, individual_addr, default_status, actuator_type, state, update_rule=0):
+    def __init__(self, name, refid, individual_addr, default_status, actuator_type, state, update_rule, power=0):
         super().__init__(name, refid, individual_addr, default_status, actuator_type, state)
         self.update_rule = update_rule
-
-    # @property #getter in a pythonic way
-    # def update_rule(self):
-    #     return self._update_rule
-    #
-    # @update_rule.setter
-    # def update_rule(self, rule:float):
-    #     # condition on rule value, e.g. raise error if rule ==0
-    #     self._update_rule = rule
+        self.max_power = power
+        """Power of the device in Watts"""
 
 
 class Heater(TemperatureActuator):
     """Concrete class to represent a heating device"""
-    def __init__(self, name, refid, individual_addr, default_status, state=False, update_rule=1):
+    def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=1):
         # Verification of update_rule sign
         assert update_rule >= 0, "The Heater should have update_rule>=0."  #Syntax for an error message
-        super().__init__(name , refid, individual_addr, default_status, "heater", state, update_rule)
+        super().__init__(name , refid, individual_addr, default_status, "heater", state, update_rule, max_power)
 
 
 class Cooler(TemperatureActuator):
