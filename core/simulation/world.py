@@ -61,12 +61,13 @@ class AmbientTemperature:
             for source in self.sources: # sources of heat or cold
                 if source.device.is_enabled():
                     if isinstance(source.device, Heater):
-                        max_temps.append(Heater(source.device).max_temperature_in_room(self.room_volume,"average"))
+                        max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
                     self.temperature += source.device.update_rule
             max_temp = mean(max_temps)
             if self.temperature >= max_temp:
-                self.temperature = max_temp
-
+                self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
+        for sensor in self.temp_sensors:
+            sensor.temperature = self.temperature
 
     def __repr__(self):
         return f"{self.temperature} °C"

@@ -4,17 +4,17 @@ Some class definitions for the simulated KNX sensors.
 from .device_abstractions import Sensor
 from abc import ABC, abstractclassmethod
 
-class Button(Sensor):
-    """Concrete class to represent buttons"""
-    def __init__(self, name, refid, location, default_status):
-        super().__init__(name, refid, location, default_status, "button")
-        self.state = False
+# class Button(Sensor):
+#     """Concrete class to represent buttons"""
+#     def __init__(self, name, refid, location, default_status):
+#         super().__init__(name, refid, location, default_status, "button")
+#         self.state = False
 
-    def press(self):
-        if(self.state == True):
-            self.state = False
-        else:
-            self.state = True
+#     def press(self):
+#         if(self.state == True):
+#             self.state = False
+#         else:
+#             self.state = True
 
 class Brightness(Sensor):
     """Concrete class to represent a sensor of brightness"""
@@ -22,14 +22,9 @@ class Brightness(Sensor):
         super().__init__(name, refid, location, default_status, "brightness")
         self.brightness = 0
 
-    def update_brightness(self, new_brightness): #Really necessary?
-        self.brightness = new_brightness
-
 class Thermometer(Sensor):
     """Concrete class to represent a thermometer"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "temperature")
         self.temperature = 0
-
-    def update_temperature(self, new_temp): #Really necessary?
-        self.temperature = new_temp
+        

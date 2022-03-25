@@ -27,11 +27,13 @@ class LED(LightActuator):
 
 class TemperatureActuator(Actuator, ABC):
     """Abstract class to represent temperature devices"""
-    def __init__(self, name, refid, individual_addr, default_status, actuator_type, state, update_rule, power=0):
+    def __init__(self, name, refid, individual_addr, default_status, actuator_type, state, update_rule, max_power=0):
         super().__init__(name, refid, individual_addr, default_status, actuator_type, state)
         self.update_rule = update_rule
-        self.max_power = power
+        self.max_power = max_power
         """Power of the device in Watts"""
+        self.power = max_power 
+        """Power really used, max by default"""
 
 
 class Heater(TemperatureActuator):
@@ -59,7 +61,7 @@ class Heater(TemperatureActuator):
     
     def max_temperature_in_room(self, m3=1, insulation_state="good"):
         """Maximum reachable temperature for this heater in the specified room"""
-        watts = self.max_power/((1+self.insulation_to_correction_factor[insulation_state])*m3)
+        watts = self.power/((1+self.insulation_to_correction_factor[insulation_state])*m3)
         return self.watts_to_temp(watts)
 
 

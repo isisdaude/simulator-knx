@@ -9,7 +9,6 @@ class Button(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "button")
         self.state = 0
-        self.name = name
 
     # @property
     # def state(self):
@@ -27,3 +26,13 @@ class Button(FunctionalModule):
 
     # async def subscribe_async(self, observer):
     #     return None
+
+class TemperatureController(FunctionalModule):
+    def __init__(self, name, refid, individual_addr, default_status):
+        super().__init__(name, refid, individual_addr, default_status, "thermostat")
+        self.state = 0
+    
+    def define_temperature(self, wished_temp):
+        print(f"asked to reach {wished_temp} on controller {self.name}")
+        self.state = wished_temp
+        self.notify(self)
