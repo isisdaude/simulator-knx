@@ -56,21 +56,6 @@ class AmbientTemperature:
     def __str__(self):
         return f"{self.temperature} °C"
 
-    def required_power_of_heater_for_room(m3=1, desired_temperature=20, insulation_state="good"):
-        temp_to_watts = [(24, 93), (22, 85), (20, 77), (18, 70)]
-        """Recommended temperature associated to required number of watts per m3"""
-
-        insulation_to_correction_factor = {"good": -10/100, "bad": 15/100}
-        """Situation of the insulation of the room associated to the correction factor for the heating"""
-        watt = [watt[1] for watt in temp_to_watts if watt[0] == desired_temperature][0]
-
-        desired_wattage = m3*watt
-        desired_wattage += desired_wattage*insulation_to_correction_factor[insulation_state]
-
-        return desired_wattage
-
-print(AmbientTemperature.required_power_of_heater_for_room(20, 18, "good"))
-
 class AmbientLight:
     '''Class that implements Light in a room'''
     def __init__(self):
