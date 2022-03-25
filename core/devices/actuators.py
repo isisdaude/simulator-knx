@@ -67,6 +67,7 @@ class Heater(TemperatureActuator):
         return desired_wattage
     
     def max_temperature_in_room(self, m3=1, insulation_state="good"):
+        """Maximum reachable temperature for this heater in the specified room"""
         watts = self.max_power/((1+self.insulation_to_correction_factor[insulation_state])*m3)
         return self.watts_to_temp(watts)
 
