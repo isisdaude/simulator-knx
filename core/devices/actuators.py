@@ -1,9 +1,10 @@
 """
 Some class definitions for the simulated KNX actuators.
 """
-from .device_abstractions import Actuator
+from device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
-
+import sys
+sys.path.append("core")
 class LightActuator(Actuator, ABC):
     """Abstract class to represent light devices"""
     def __init__(self, name, refid, individual_addr, default_status, state, lumen):
@@ -49,18 +50,26 @@ class Heater(TemperatureActuator):
         assert update_rule >= 0, "The Heater should have update_rule>=0."  #Syntax for an error message
         super().__init__(name , refid, individual_addr, default_status, "heater", state, update_rule, max_power)
 
-    def required_power_of_heater_for_room(m3=1, desired_temperature=20, insulation_state="good"):
-        temp_to_watts = [(24, 93), (22, 85), (20, 77), (18, 70)]
-        """Recommended temperature associated to required number of watts per m3"""
+    insulation_to_correction_factor = {"average":0, "good": -10/100, "bad": 15/100}
+    """Situation of the insulation of the room associated to the correction factor for the heating"""
 
-        insulation_to_correction_factor = {"good": -10/100, "bad": 15/100}
-        """Situation of the insulation of the room associated to the correction factor for the heating"""
-        watt = [watt[1] for watt in temp_to_watts if watt[0] == desired_temperature][0]
+    def temp_to_watts(self, temp):
+        dist = 18 - temp
+        return 70 - (dist * 7)/2
 
-        desired_wattage = m3*watt
-        desired_wattage += desired_wattage*insulation_to_correction_factor[insulation_state]
-
+    def watts_to_temp(self, watts):
+        return ((watts - 70)*2)/7 + 18
+    
+    def required_power_of_heater_for_room(self, desired_temperature=20, m3=1, insulation_state="good"):
+        assert desired_temperature >= 10 and desired_temperature <= 40
+        desired_wattage = m3*self.temp_to_watts(desired_temperature)
+        desired_wattage += desired_wattage*self.insulation_to_correction_factor[insulation_state]
         return desired_wattage
+    
+    def max_temperature_in_room(self, m3=1, insulation_state="good"):
+        watts = self.max_power/((1+self.insulation_to_correction_factor[insulation_state])*m3)
+        return self.watts_to_temp(watts)
+
 
 class Cooler(TemperatureActuator):
     """Concrete class to represent a cooling device"""
@@ -69,3 +78,6 @@ class Cooler(TemperatureActuator):
         assert update_rule <= 0, "The Cooler should have update_rule<=0."  #Syntax for an error message
         super().__init__(name, refid, individual_addr, default_status, "cooler", state, update_rule, max_power)
     
+h = Heater("1", "1", "1.1.1", "on", 1500, state=True, update_rule=1)
+print(h.max_temperature_in_room(40, "good"))
+print()
