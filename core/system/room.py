@@ -5,17 +5,18 @@ Some class definitions for the rooms contained in the system
 from typing import List
 from devices import *
 import simulation as sim
-from tools import Location
-from knxbus import KNXBus
+
+from .tools import Location
+from .knxbus import KNXBus
 from abc import ABC, abstractclassmethod
 
 class InRoomDevice:
         """Inner class to represent a device located at a certain position in a room"""
-        def __init__(self, device: Device, room,  x:float, y:float):
+        def __init__(self, device: Device, room,  x:float, y:float, z:float):
             self.device = device
-            self.location = Location(room, x, y)
             self.name = device.name
-            self.type = type(device)
+            self.location = Location(room, x, y, z)
+            self.type = type(device)  ## whait is this ?
 
         def get_position(self):
             return self.location.pos #(x,y)
@@ -26,10 +27,12 @@ class InRoomDevice:
         def get_y(self) -> float:
             return self.location.pos[1]
 
+        def get_z(self) -> float:
+            return self.location.pos[2]
+
 class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
-    devices: List[InRoomDevice] = []
     """List of devices in the room at certain positions"""
 
     def __init__(self, name: str, width: int, length: int, height:int):
@@ -41,43 +44,44 @@ class Room:
         """Along y axis"""
         self.height = height
         """Along z axis"""
-        self.world = sim.World()
+        self.world = sim.World(self.width, self.length, self.height)
         """Representation of the world"""
         self.knxbus= KNXBus()
         """Representation of the KNX Bus"""
+        self.devices: List[InRoomDevice] = []
+        """List of all devices in the room"""
 
-    def add_device(self, device: Device, x: float, y: float):
+    def add_device(self, device: Device, x: float, y: float, z:float):
         """Adds a device to the room at the given position"""
         if(x < 0 or x > self.width or y < 0 or y > self.length):
-            print("Cannot add a device outside the room!")
+            print("[ERROR] Cannot add a device outside the room!")
             return None
 
-        in_room_device = InRoomDevice(device, self, x, y) #self is for the room, important if we want to find the room of a certain device
+        in_room_device = InRoomDevice(device, self, x, y, z) #self is for the room, important if we want to find the room of a certain device
         self.devices.append(in_room_device)
 
         if isinstance(device, Actuator):
             if isinstance(device, LightActuator):
-                self.knxbus.attach(device) # Actuator subscribes to KNX Bus
+                #self.knxbus.attach(device) # Actuator subscribes to KNX Bus
                 self.world.ambient_light.add_source(in_room_device)
-                print(f"A light source was added at {x} : {y}.")
+                #print(f"A light source was added at {x} : {y}.")
             elif isinstance(device, TemperatureActuator):
                 self.world.ambient_temperature.add_source(in_room_device)
-                print(f"A device acting on temperature was added at {x} : {y}.")
+                #print(f"A device acting on temperature was added at {x} : {y}.")
         elif isinstance(device, Sensor):
             if isinstance(device, Brightness):
-                print(f"A brightness sensor was added at {x} : {y}.")
-
+                self.world.ambient_light.add_sensor(in_room_device)
+                #print(f"A brightness sensor was added at {x} : {y}.")
         elif isinstance(device, FunctionalModule):
             if isinstance(device, Button):
-                device.attach(self.knxbus) # KNX Bus subscribes to the sensor
-                self.knxbus.add_functional_module(device)
-                print(f"A button was added at {x} : {y}.")
+                device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
+                #print(f"A button was added at {x} : {y}.")
 
     def update_world(self):
-        self.world.update() #call the update function of all ambient modules in world
+        self.world .update() #call the update function of all ambient modules in world
 
     def __str__(self):
-        str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 with devices:\n"
+        str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"
         for room_device in self.devices:
             str_repr += f"-> {room_device.name} at location ({room_device.get_x()}, {room_device.get_y()})"
             if room_device.type == Actuator:

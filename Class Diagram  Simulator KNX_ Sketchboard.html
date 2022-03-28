@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html id="app">
+<head>
+    <title>Sketchboard</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <meta content="" name="description">
+    <meta content="" name="keywords">
+    <meta content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+    <link href="/pwa/manifest.json" rel="manifest">
+
+    
+    <script src="https://d1sqtd1h3vkwkp.cloudfront.net/resources-static-1/js/app-keep/lib/jquery-1.10.2.min.js" data-attr="src"></script>
+
+    
+    <link href="https://d1sqtd1h3vkwkp.cloudfront.net/dist/ec9745c9ce7d51f3de59663ec8176627-bootstrap-simple.min.css" rel="stylesheet">
+
+    <link href="https://d1sqtd1h3vkwkp.cloudfront.net/dist/39ea14452d3fd53830beecb22c81e3ed-styles.min.css" rel="stylesheet">
+    
+
+    
+    
+
+  
+
+	
+<style>
+      body {
+        background-color: #DADDDF;
+        overflow: visible;
+      }
+    </style>
+
+	
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/b0fc60e993813f746a69-manifest.bundle.min.js" data-attr="src"></script>
+
+	
+<script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/70d6b8acbdb354b2b185-b.bundle.min.js" data-attr="src"></script>
+
+	
+</head>
+<body data-lift-session-id="F9447193663681W42Q2" data-lift-gc="F944719366369PDI3G4">
+
+
+    <script>
+      if (typeof initialState !== 'undefined') {
+        dataLayer = [{
+          'usertype': initialState.userType
+        }];
+      }
+    </script>
+
+    <!-- Google Tag Manager -->
+    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-5LZB5K"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5LZB5K');</script>
+    <!-- End Google Tag Manager -->
+  
+
+<div class="container">
+    
+    <img class="ajaxspin" src="/static/images/ajax-loader.gif" style="visibility: hidden; margin-bottom: 0px; margin-left: 5px" id="ajax-loader" alt="">
+
+    <div class="column span-15">
+        <div id="main">
+  
+
+  <div class="login-page">
+
+  <div class="header p-text-center">
+    <h1><img height="80px" src="/static/images/logo-side-text.png"></h1>
+    <h2>Sketch together with your teammates in real-time.</h2>
+  </div>
+
+  <div class="content">
+    <div class="login-dialog" id="login-dialog">
+
+      <div onclick="lift.ajax(&quot;F944719366370I3C0U1=true&quot;, null, null, null)" class="p-font-large pure-g" name="forget">
+        <a style="color:#444;" class="pure-button pure-u-1-1">Forget this board and let me in!</a>
+      </div>
+
+      <div style="margin-top: 15px;" name="not-logged-in"></div>
+
+      <div name="logged-in">
+
+        <div id="sign-in-with-google" style="margin-bottom: 35px;" class="p-font-large pure-g">
+          <a onclick="lift.ajax(&quot;F944719366377XI412S=true&quot;, null, null, null)" style="background-color: #fff;border: 1px solid #ccc;border-radius: 3px;" class="pure-button pure-u-1-1" name="loginWithGoogleOnlineAccess">
+            <img src="https://d1sqtd1h3vkwkp.cloudfront.net/images/google-login.png" style="vertical-align: middle;" width="35px" data-attr="src">
+            Sign in with Google
+            </a>
+        </div>
+
+        <p id="password-hint" style="color: #777;">
+          or use your email address and password to sign in:
+        </p>
+
+        <form id="F9447193663780AYDSU" action="javascript://" onsubmit="lift.ajax(jQuery('#'+&quot;F9447193663780AYDSU&quot;).serialize(), null, null, &quot;javascript&quot;);return false;">
+          <div class="pure-form p-font-large">
+            <fieldset class="pure-group">
+              <span id="_userorpass"></span>
+              <input class="pure-u-1-1" id="email-field" placeholder="Email Address" name="F944719366371U031EY" type="email" value="">
+              <input class="pure-u-1-1" placeholder="Password" name="F9447193663721FAYPF" type="password" value="">
+              <button type="submit" class="pure-button pure-button-primary pure-u-1-1" name="F944719466373105NY5" onclick="lift.setUriSuffix('F944719466373105NY5=_'); return true;">Sign in</button>
+            </fieldset>
+          </div>
+        </form>
+
+        <div style="margin-top: 20px;text-align: center;" class="" id="single-sign-on">
+          <a style="color: #777;font-size: 16px;border-bottom: 1px solid #666;display: inline-block;" href="/pub/api/sso/login">
+            Sign in with SSO
+          </a>
+        </div>
+
+        <p tip="For smooth experience keep this checked. On shared devices uncheck this.">
+          </p><form id="F9447193663795OBDJS" action="javascript://" onsubmit="lift.ajax(jQuery('#'+&quot;F9447193663795OBDJS&quot;).serialize(), null, null, &quot;javascript&quot;);return false;">
+            <input name="stayIn" type="checkbox" checked="checked" onclick="lift.ajax('F944719366375CDDH5T=' + this.checked, null, null, null)"> Stay signed in
+          </form>
+        <p></p>
+
+        <div class="p-text-center" style="margin-top: 40px;">
+          <hr>
+          Don't have an account? <a href="/service/signup/NDabfIGVitO" name="signup">Sign Up</a>.
+        </div>
+        <div class="p-text-center">
+          <a title="Reset your password" class="" href="/service/resetpw" name="resetpasswd">Forgot password</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  
+      <style id="antiClickjack">
+        body{visibility: hidden !important;}
+      </style>
+    <script type="text/javascript">
+// <![CDATA[
+jQuery(document).ready(function() {lift.ajax("F944719366380HMDCJH=true", null, null, null);});
+// ]]>
+</script>
+
+  
+
+  
+  
+  <script src="https://d1sqtd1h3vkwkp.cloudfront.net/dist/e4e7d1c7f6f57449035e-signinutils.bundle.min.js" data-attr="src"></script>  
+
+</div>
+    </div>
+</div>
+
+
+<div class="noticebubble noticebubble-simple-page">
+  <div id="lift__noticesContainer__"><div class="" id="lift__noticesContainer___notice"><ul><li><div>
+      <div class="dropbubble"></div>
+      <div class="noticescontainer2">
+        <div class="row">
+          <div class="span4 noticescontainer-inner">
+            You are not allowed to access this board. Request team admin to add you to the team, and share the board for the team or ask to set password to the board.
+          </div>
+        </div>
+      </div>
+    </div></li></ul></div></div>
+</div>
+
+<script type="text/javascript">
+// <![CDATA[
+
+    var _gaq = _gaq || [];
+
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-29429423-1', 'auto');
+
+    ga('create', 'UA-26995893-4', 'auto', {'name': 'cdTracker', 'allowLinker': true});
+    ga('cdTracker.require', 'linker');
+    ga('cdTracker.linker:autoLink', ['sketchboard.io'] );
+
+    ga('send', 'pageview');
+    ga('cdTracker.send', 'pageview');
+  
+    var _track = function(event, data) {
+
+      try {
+
+        
+
+        if (typeof ga !== 'undefined') {
+          ga('send', 'event', event, data.category, data.label)
+          ga('cdTracker.send', 'event', event, data.category, data.label)
+        }
+
+        if (typeof mixpanel !== 'undefined') {
+          mixpanel.track(event, data);
+        }
+
+        if (typeof gtag !== 'undefined') {
+          gtag("event", event, {
+            "category": data.category,
+            "label": data.label
+          })
+        }
+      } catch (e) {
+        console.error("_track", e)
+      }
+    }
+
+    var _trackGA = function(category, action, label) {
+      try {
+        
+
+        if (typeof ga !== 'undefined') {
+          ga('send', 'event', category, action, label)
+          ga('cdTracker.send', 'event', category, action, label)
+        }
+
+        if (typeof mixpanel !== 'undefined') {
+          mixpanel.track(event, data);
+        }
+
+        if (typeof gtag !== 'undefined') {
+          gtag("event", category, {
+            "action": action,
+            "label": label
+          })
+        }
+      } catch(e) {
+        console.error("_trackGA", e)
+      }
+    }
+  ;
+// ]]>
+</script>
+
+
+
+<script src="/classpath/lift.js" type="text/javascript"></script>
+
+	<script type="text/javascript" src="/lift/page/F944719366369PDI3G4.js"></script>
+	
+</body>
+</html>  
+  

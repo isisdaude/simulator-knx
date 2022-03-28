@@ -8,11 +8,14 @@ import time, math, schedule
 import sys
 from numpy import mean
 
-from soupsieve import escape
-sys.path.append("..") # Adds higher directory to python modules path, for relative includes
-sys.path.append("core")
-
-from devices import *
+#from soupsieve import escape
+# sys.path.append("..") # Adds higher directory to python modules path, for relative includes
+# sys.path.append("core")
+#
+# from devices import *
+import system
+import devices as dev
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
 class Time:
@@ -31,6 +34,31 @@ class Time:
         # seconds of software simulation corresponding to a simulated 'real-world' hour
         self.virtual_interval = interval
 
+    # Scheduler management
+    def scheduler_init(self):
+        self.scheduler = AsyncIOScheduler()
+        return self.scheduler
+
+    def scheduler_add_job(self, job_function):
+        try:
+            self.update_job = self.scheduler.add_job(job_function, 'interval', seconds = self.virtual_interval)
+        except AttributeError:
+            print("[ERROR] The Scheduler cannot start as it is not initialized.")
+
+    def scheduler_start(self):
+        try:
+            self.scheduler.start()
+            self.start_time = time.time()
+        except AttributeError:
+            print("[ERROR] The Scheduler cannot start as it is not initialized. time")
+
+    # Simulation time management
+    def simulation_time(self):
+        try:
+            elapsed_time = time.time() - self.start_time
+            return elapsed_time
+        except AttributeError:
+            print("[ERROR] The Simulation has not started yet: sim_time=0")
 
 class AmbientTemperature:
     '''Class that implements temperature in a system'''
@@ -46,21 +74,21 @@ class AmbientTemperature:
         """List of temperature sensors in the room"""
 
     def add_source(self, source): # Heatsource is an object that heats the room
-        self.temp_sources.append(source)
+        self.temp_sources.append(source) #add check on source
 
     def add_sensor(self, tempsensor):
-        self.temp_sensors.append(tempsensor)
+        self.temp_sensors.append(tempsensor) #add check on sensor
 
     def update(self):
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
-        print("update Temperature")
-        if(not self.sources):
+        print("[INFO] -- Temperature Update")
+        if(not self.temp_sources):
             self.temperature = (self.temperature + self.outside_temperature)//2 # Decreases by the average of temp and outside_temp, is a softer slope
         else:
             max_temps = []
-            for source in self.sources: # sources of heat or cold
+            for source in self.temp_sources: # sources of heat or cold
                 if source.device.is_enabled():
-                    if isinstance(source.device, Heater):
+                    if isinstance(source.device, dev.Heater):
                         max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
                     self.temperature += source.device.update_rule
             max_temp = mean(max_temps)
@@ -84,41 +112,36 @@ class AmbientLight:
         """List of all devices that measure brightness"""
 
     def add_source(self, lightsource):
-        self.light_sources.append(lightsource) #lightsource is an object of type    
-        
+        self.light_sources.append(lightsource) #lightsource is an object of type
+
     def add_sensor(self, lightsensor):
         self.light_sensors.append(lightsensor)
 
-    def compute_distance(source, sensor) -> float:
-        """ Computes euclidian distance between a sensor and a actuator"""
-        delta_x = abs(source.location.x - sensor.location.x)
-        delta_y = abs(source.location.y - sensor.location.y)
-        dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
-        return dist
+    # def compute_distance(source, sensor) -> float:
+    """ c'est plus une fonction a mettre dans tools ou un autre fichier, mais pas ici je trouve """
+    #     """ Computes euclidian distance between a sensor and a actuator"""
+    #     delta_x = abs(source.location.x - sensor.location.x)
+    #     delta_y = abs(source.location.y - sensor.location.y)
+    #     dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
+    #     return dist
 
     def read_brightness(self, brightness_sensor): #Read brightness at a particular sensor
-        brightness = 0 # resulting lumen at the brightness sensor location
+        brightness = 0
         for source in self.light_sources:
-            if (source.device.state): # if the light is on
-                dist = self.compute_distance(brightness_sensor, source) # InrRoomDevice types
-                residual_lumen = (1/dist)*source.device.lumen # residual lumens from the source at the brightness location
-                brightness += residual_lumen # we basically add the lumen
+            # If the light is on and enabled on the bus
+            if source.device.is_enabled() and source.device.state:
+                # Compute distance between sensor and each source
+                dist = system.compute_distance(source, brightness_sensor)
+                # Compute the new brightness
+                residual_lumen = (1/dist)*source.device.lumen
+                brightness += residual_lumen
         return brightness
 
     def update(self): #Updates all brightness sensors of the world (the room)
-        print("update brightness")
+        print("[INFO] -- Brightness Update")
         for sensor in self.light_sensors:
-            brightness = 0
-            for source in self.light_sources:
-                # If the light is on and enabled on the bus
-                if source.device.is_enabled() and source.device.state:
-                    # Compute distance between sensor and each source
-                    dist = self.compute_distance(source, sensor)
-                    # Compute the new brightness
-                    residual_lumen = (1/dist)*source.device.lumen
-                    brightness += residual_lumen
             # Update the sensor's brightness
-            sensor.device.brightness = brightness # set the newly calculated sensor brightness
+            sensor.device.brightness = self.read_brightness(sensor) # set the newly calculated sensor brightness
 
 
 class World:
@@ -133,8 +156,8 @@ class World:
     def update(self):
         for ambient in self.ambient_world:
             ambient.update()
-            
-    def print_status(self): # one world per room, so status of the room
+
+    def get_world_state(self): # one world per room, so status of the room
         print("+---------- STATUS ----------+")
         print(f" Temperature: {self.ambient_temperature.temperature}")
         #TODO: add others when availaible
