@@ -8,6 +8,8 @@ class KNXBus:
         self.name = "KNX Bus"
         self.group_addresses = [] # list of group addresses
         self.ga_buses = [] # list of group address buses
+        self.temp_actuaors = []
+        self.temp_functional = []
 
     def attach(self, device, group_address : GroupAddress): #If not in list, add the observer to the list
         if isinstance(device, Sensor):
@@ -21,6 +23,7 @@ class KNXBus:
                 print("[INFO] The actuator is already connected to the KNX Bus through this group address")
                 return 0
             else:
+                #TODO: loop in temp_functional to sedn power values
                 device.group_addresses.append(group_address) # we add the group address in the local list of group addresses to which the device is connected to
         if isinstance(device, FunctionalModule):
             if group_address in device.group_addresses:

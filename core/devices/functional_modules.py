@@ -2,6 +2,7 @@
 Some class definitions for the simulated KNX functional modules (button, switch, Temp controller,...).
 """
 from .device_abstractions import FunctionalModule
+from .sensors import Thermometer
 #from abc import ABC, abstractclassmethod
 
 
@@ -26,6 +27,9 @@ class TemperatureController(FunctionalModule):
     def __init__(self, name, refid, individual_addr, default_status):
         super().__init__(name, refid, individual_addr, default_status, "thermostat")
         self.state = 0
+        #self.sensor = Thermometer() ##TODO: init sensor with default config
+
+##TODO:  when temp is set, send elegram to heat sources
 
 
     def user_input(self, wished_temp):

@@ -32,6 +32,10 @@ bright1 = dev.Brightness("bright1", "M-0_L3", IndividualAddress(0,0,5), "enabled
 
 
 
+
+
+
+
 # Declaration of the physical system
 room1 = system.Room("bedroom1", 20, 20, 3) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
 room1.add_device(led1, 5, 5, 1)
@@ -50,6 +54,10 @@ print(room1)
 ga1 = GroupAddress('3-levels', main = 1, middle = 1, sub = 1)
 room1.knxbus.attach(led1, ga1) # Actuator is linked to the group address ga1 through the KNXBus
 room1.knxbus.attach(button1, ga1)
+
+
+
+
 
 
 command_help="enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\n>'q' to exit the simulation, 'h' for help<\n"
@@ -80,53 +88,12 @@ async def user_input_loop():
         else:
             print("[ERROR] Unknown input, please " + command_help)
 
-class DigitalClock(tk.Tk):
-    def __init__(self, interval = 0.2):
-        super().__init__()
-        self.loop = loop
-        self.interval = interval
-        self.start_time = time.time()
-        # configure the root window
-        self.title('Digital Clock')
-        self.resizable(0, 0)
-        self.geometry('250x80')
-        self['bg'] = 'black'
-
-        # change the background color to black
-        self.style = tk.ttk.Style(self)
-        self.style.configure(
-            'TLabel',
-            background='black',
-            foreground='red')
-
-        # label
-        self.label = tk.ttk.Label(
-            self,
-            text=self.time_string(),
-            font=('Digital-7', 40))
-
-        self.label.pack(expand=True)
-
-        # schedule an update every 1 second
-        #self.label.after(1000, self.update)
-    def time_string(self):
-        sim_time = time.time() - self.start_time
-        str_sim_time = str(datetime.timedelta(seconds=sim_time))
-        return str_sim_time
-
-    async def update(self):
-        """ update the label every interval second """
-        while True:
-            self.label.configure(text=self.time_string())
-            await asyncio.sleep(self.interval)
-
-
 async def async_main(loop):
     ui_task = loop.create_task(user_input_loop())
-    clock = DigitalClock(interval = 0.2)
-    clock_task = loop.create_task(clock.update())
+    # clock = DigitalClock(interval = 0.2)
+    # clock_task = loop.create_task(clock.update())
     #gui_task = loop.create_task()
-    await asyncio.wait([ui_task, clock_task])
+    await asyncio.wait([ui_task])  #, clock_task
 
 
 if __name__ == "__main__":
@@ -157,6 +124,46 @@ if __name__ == "__main__":
 
 
 
+#### Tkinter clock #####
+# class DigitalClock(tk.Tk):
+#     def __init__(self, interval = 0.2):
+#         super().__init__()
+#         self.loop = loop
+#         self.interval = interval
+#         self.start_time = time.time()
+#         # configure the root window
+#         self.title('Digital Clock')
+#         self.resizable(0, 0)
+#         self.geometry('250x80')
+#         self['bg'] = 'black'
+#
+#         # change the background color to black
+#         self.style = tk.ttk.Style(self)
+#         self.style.configure(
+#             'TLabel',
+#             background='black',
+#             foreground='red')
+#
+#         # label
+#         self.label = tk.ttk.Label(
+#             self,
+#             text=self.time_string(),
+#             font=('Digital-7', 40))
+#
+#         self.label.pack(expand=True)
+#
+#         # schedule an update every 1 second
+#         #self.label.after(1000, self.update)
+#     def time_string(self):
+#         sim_time = time.time() - self.start_time
+#         str_sim_time = str(datetime.timedelta(seconds=sim_time))
+#         return str_sim_time
+#
+#     async def update(self):
+#         """ update the label every interval second """
+#         while True:
+#             self.label.configure(text=self.time_string())
+#             await asyncio.sleep(self.interval)
 
 
 # Declaration of functions/group addresses

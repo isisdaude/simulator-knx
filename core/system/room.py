@@ -75,6 +75,9 @@ class Room:
         elif isinstance(device, FunctionalModule):
             if isinstance(device, Button):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
+            if isinstance(device, TemperatureController):
+                device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
+                self.world.ambient_temperature.add_sensor(in_room_device)
                 #print(f"A button was added at {x} : {y}.")
 
     def update_world(self):

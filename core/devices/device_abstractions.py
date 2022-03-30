@@ -61,7 +61,7 @@ class FunctionalModule(Device, ABC):
         return 0
 
     def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams
-        self.knxbus = knxbus
+        self.knxbus = knxbus # can connect to only one 
         # if knxbus not in self.knx_buses: # if we later implement multiple buses
         #     self.knx_buses.append(knxbus)
 

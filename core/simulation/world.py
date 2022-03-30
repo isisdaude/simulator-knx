@@ -72,12 +72,16 @@ class AmbientTemperature:
         """List of temperature actuators sources in the room"""
         self.temp_sensors = []
         """List of temperature sensors in the room"""
+        self.temp_controllers = []
 
     def add_source(self, source): # Heatsource is an object that heats the room
         self.temp_sources.append(source) #add check on source
 
     def add_sensor(self, tempsensor):
         self.temp_sensors.append(tempsensor) #add check on sensor
+
+    def add_temp_controllers(self, temp_controllers):
+        self.temp_controllers.append(temp_controllers) #add check on sensor
 
     def update(self):
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
@@ -96,6 +100,8 @@ class AmbientTemperature:
                 self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
         for sensor in self.temp_sensors:
             sensor.temperature = self.temperature
+        for controller in self.temp_controllers:#
+            controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources
 
     def __repr__(self):
         return f"{self.temperature} °C"
