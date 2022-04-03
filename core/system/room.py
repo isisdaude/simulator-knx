@@ -81,12 +81,12 @@ class Room:
                 #print(f"A button was added at {x} : {y}.")
 
     def update_world(self):
-        self.world .update() #call the update function of all ambient modules in world
+        self.world.update() #call the update function of all ambient modules in world
 
     def __str__(self):
         str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"
         for room_device in self.devices:
-            str_repr += f"-> {room_device.name} at location ({room_device.get_x()}, {room_device.get_y()})"
+            str_repr += f"-> {room_device.name} at location ({room_device.get_x()}, {room_device.get_y()}, {room_device.get_z()})"
             if room_device.type == Actuator:
                 str_repr += "ON" if room_device.device.state else "OFF"
                 str_repr += f" is {room_device.device.state}"

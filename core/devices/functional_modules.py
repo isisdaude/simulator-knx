@@ -3,7 +3,7 @@ Some class definitions for the simulated KNX functional modules (button, switch,
 """
 from .device_abstractions import FunctionalModule
 from .sensors import Thermometer
-#from abc import ABC, abstractclassmethod
+from system.telegrams import ButtonPayload, Payload, TempControllerPayload
 
 
 class Button(FunctionalModule):
@@ -15,9 +15,10 @@ class Button(FunctionalModule):
     def user_input(self):
         print(f"[INFO] The {self.name} has been pressed")
         # self.state = not self.state
-        payload = 0  ##TODO redefine and prepare the payload here, payload = 0 means push-button
+        #payload = 0  ##TODO redefine and prepare the payload here, payload = 0 means push-button
+        payload = ButtonPayload(pushed=True)
         control_field = True
-        self.send_telegram(payload, control_field = True)
+        self.send_telegram(payload, control_field)
         # send to the knxbus giving itself as argument
 
 
@@ -35,7 +36,8 @@ class TemperatureController(FunctionalModule):
     def user_input(self, wished_temp):
         print(f"asked to reach {wished_temp} on controller {self.name}")
         self.state = wished_temp
-        payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
+        #payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
+        payload = TempControllerPayload(wished_temp, Payload.EMPTY_FIELD, Payload.EMPTY_FIELD)
         control_field = 0 # to differentiate between data (temperature read) and control (set heater ON) telegrams
         # depends on the user input/request
         self.send_telegram(payload, control_field = True)

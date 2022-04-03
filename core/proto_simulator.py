@@ -15,8 +15,7 @@ import system
 import devices as dev
 import simulation as sim
 import user_interface as ui
-from system import IndividualAddress, Telegram, GroupAddress
-
+from system import IndividualAddress, GroupAddress, Telegram
 
 
 # Declaration of sensors and actuators
@@ -30,7 +29,7 @@ button1 = dev.Button("button1", "M-0_B1", IndividualAddress(0,0,20), "enabled")
 button2 = dev.Button("button2", "M-0_B2", IndividualAddress(0,0,21), "enabled")
 bright1 = dev.Brightness("bright1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
 
-
+temp_controller = dev.TemperatureController("tempc", "M-0_TC1", IndividualAddress(0,0,3), "enabled") #TODO: should not we set it to True?
 
 
 
@@ -48,6 +47,8 @@ room1.add_device(bright1, 20, 20, 1)
 room1.add_device(heater1, 0, 5, 1)
 room1.add_device(cooler1, 20, 5, 1)
 
+room1.add_device(temp_controller, 0, 0, 2)
+
 print(room1)
 
 # Group addresses # '3-levels', '2-levels' or 'free'
@@ -55,38 +56,83 @@ ga1 = GroupAddress('3-levels', main = 1, middle = 1, sub = 1)
 room1.knxbus.attach(led1, ga1) # Actuator is linked to the group address ga1 through the KNXBus
 room1.knxbus.attach(button1, ga1)
 
+temperature_communication = GroupAddress('3-levels', main=2, middle=0, sub=0)
+room1.knxbus.attach(temp_controller, temperature_communication)
+room1.knxbus.attach(heater1, temperature_communication)
 
 
 
 
 
-command_help="enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\n>'q' to exit the simulation, 'h' for help<\n"
+command_help = "enter a command for:\n"
+command_help +=" - FunctionalModules: 'set [name]' to act on it\n"
+command_help +=" - Sensors: 'get [name]' to read sensor value\n"
+command_help +=" > 'q' to exit the simulation, 'h' for help <\n"
 print(command_help)
 
 
 async def user_input_loop():
     while True:
-        command = await aioconsole.ainput(">>> What do you want to do?\n")
-        if command[:3] == 'set': #FunctionalModule
-            name = command[4:]
-            for in_room_device in room1.devices:
-                if in_room_device.name == name:
-                    if not isinstance(in_room_device.device, dev.FunctionalModule):
-                        print("[ERROR] Users can only act on a Functional Module")
-                        break
-                    in_room_device.device.user_input()
-        elif command[:3] == 'get': #Sensor
-            name = command[4:]
-            if "bright" in name: # brightness sensor
-                for in_room_device in room1.devices:
-                    if in_room_device.name == name:
-                        print("\n=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room1.world.ambient_light.read_brightness(in_room_device)))
-        elif command in ('h', 'H'):
+        command: str = await aioconsole.ainput(">>> What do you want to do?\n")
+        command = command.split(' ')
+        query = command[0]
+
+        if query in ('h', 'H'):
             print(command_help)
-        elif command in ('q','Q'):
+        elif query in ('q','Q'):
             break
-        else:
-            print("[ERROR] Unknown input, please " + command_help)
+
+        if(len(command) < 2):
+            print(f"[ERROR] Usage is: set/get device_name [input_value]")
+            break
+    
+        name = command[1]
+        
+        for in_room_device in room1.devices:
+            if in_room_device.name == name:
+                if query == 'set': # We are interacting with a functional module
+                    
+                        if not isinstance(in_room_device.device, dev.FunctionalModule):
+                            print("[ERROR] Users can only act on a Functional Module")
+                            break
+                        if isinstance(in_room_device.device, dev.Button):
+                            in_room_device.device.user_input()
+                        elif isinstance(in_room_device.device, dev.TemperatureController):
+                            try:
+                                in_room_device.device.user_input(command[2])
+                            except IndexError:
+                                print(f"[ERROR] You did not specify the wished temperature for the controller.")
+
+                elif query == 'get': # We are getting a sensor value
+                    if 'bright' in name: # Brightness sensor
+                        print("\n=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room1.world.ambient_light.read_brightness(in_room_device)))
+                else:
+                    print("[ERROR] Unknown input, please " + command_help)
+                    break
+
+        # if command[:3] == 'set': #FunctionalModule
+        #     name = command[4:]
+        #     for in_room_device in room1.devices:
+        #         if in_room_device.name == name:
+        #             if not isinstance(in_room_device.device, dev.FunctionalModule):
+        #                 print("[ERROR] Users can only act on a Functional Module")
+        #                 break
+        #             if isinstance(in_room_device.device, dev.Button):
+        #                 in_room_device.device.user_input()
+        #             elif isinstance(in_room_device.device, dev.TemperatureController):
+        #                 in_room_device.device.user_input()
+        # elif command[:3] == 'get': #Sensor
+        #     name = command[4:]
+        #     if "bright" in name: # brightness sensor
+        #         for in_room_device in room1.devices:
+        #             if in_room_device.name == name:
+        #                 print("\n=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room1.world.ambient_light.read_brightness(in_room_device)))
+        # elif command in ('h', 'H'):
+        #     print(command_help)
+        # elif command in ('q','Q'):
+        #     break
+        # else:
+        #     print("[ERROR] Unknown input, please " + command_help)
 
 async def async_main(loop):
     ui_task = loop.create_task(user_input_loop())

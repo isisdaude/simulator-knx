@@ -1,9 +1,6 @@
 import math
 #from .room import InRoomDevice not useful, but if used, put it on the class / function directly # to avoid circular import room <-> tools
 
-
-
-
 class Location:
     """Class to represent location"""
     def __init__(self, room, x, y, z):
@@ -27,22 +24,6 @@ def compute_distance(source, sensor) -> float:
     delta_y = abs(source.location.y - sensor.location.y)
     dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
     return dist
-
-
-
-
-class Telegram:
-    """Class to represent KNX telegrams and store its fields"""
-    def __init__(self, control_field, source_individual_addr, destination_group_addr, payload):
-        self.control_field = control_field
-        self.source = source_individual_addr
-        self.destination = destination_group_addr
-        self.payload = payload
-
-    def __str__(self): # syntax when instance is called with print()
-        return f" --- -- Telegram -- ---\n-control_field: {self.control_field} \n-source: {self.source}  \n-destination: {self.destination}  \n-payload: {self.payload}\n --- -------------- --- "
-        #return f" --- -- Telegram -- ---\n {self.control} | {self.source} | {self.destination} | {self.payload}"
-
 
 
 class IndividualAddress:

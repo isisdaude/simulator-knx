@@ -1,5 +1,6 @@
-from .tools import GroupAddress, Telegram, IndividualAddress
+from .tools import GroupAddress, IndividualAddress
 from devices import Actuator, Sensor, FunctionalModule
+from .telegrams import Telegram
 
 
 class KNXBus:
