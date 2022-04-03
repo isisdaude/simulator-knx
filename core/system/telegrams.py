@@ -52,9 +52,9 @@ class TempControllerPayload(Payload):
     
     def __str__(self) -> str:
         if self.temperature_request is not self.EMPTY_FIELD:
-            return f"It is a user request for {self.temperature_request}."
+            return f"User request for {self.temperature_request}°C in the room."
         elif self.heater_power_request is not self.EMPTY_FIELD:
-            return f"It is a controller request for a heater's maximum power."
+            return f"Controller request for a heater's maximum power."
         else:
             return f"The temperature controller sets the power of the heater to {self.set_heater_power}."
 

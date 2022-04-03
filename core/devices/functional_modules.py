@@ -34,10 +34,11 @@ class TemperatureController(FunctionalModule):
 
 
     def user_input(self, wished_temp):
-        print(f"asked to reach {wished_temp} on controller {self.name}")
+        print(f"User request for {wished_temp}°C in the room, on controller {self.name}.")
         self.state = wished_temp
         #payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
         payload = TempControllerPayload(wished_temp, Payload.EMPTY_FIELD, Payload.EMPTY_FIELD)
         control_field = 0 # to differentiate between data (temperature read) and control (set heater ON) telegrams
         # depends on the user input/request
         self.send_telegram(payload, control_field = True)
+        #TODO: Do we need a telegram for this?

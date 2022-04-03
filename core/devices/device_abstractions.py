@@ -23,6 +23,8 @@ class Device(ABC):
         else:
             print("[ERROR] Device type unknown") # -> Cannot happen because we give th epossible types
 
+        # Store the different ga the device is linked to
+        self.group_addresses = []
 
     def is_enabled(self) -> bool:
         """True if the device is enabled (= active+connected) on the KNX bus"""
@@ -33,18 +35,6 @@ class Device(ABC):
 
     def __str__(self): # syntax when instance is called with print()
         return f"Device : {self.name}  {self.refid}  status:{self.is_enabled()}  {self.individual_addr} "
-
-
-class FunctionalModule(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status, input_type):
-        super().__init__(name, refid, individual_addr, default_status, "functional_module")
-        if input_type in ["button", "dimmer"]:
-            self.input_type = input_type
-        else:
-            print("[ERROR] Input type unknown") #TODO: write an error handling code
-
-        # Store the different ga the device is linked to
-        self.group_addresses = []
 
 
     def send_telegram(self, payload, control_field):
@@ -71,6 +61,43 @@ class FunctionalModule(Device, ABC):
         #     assert (), "This Functional Module is not connected to this KNX bus, and thus cannot deconnect from it"
         except AttributeError as msg:
             print(msg)
+
+class FunctionalModule(Device, ABC):
+    def __init__(self, name, refid, individual_addr, default_status, input_type):
+        super().__init__(name, refid, individual_addr, default_status, "functional_module")
+        if input_type in ["button", "dimmer"]:
+            self.input_type = input_type
+        else:
+            print("[ERROR] Input type unknown") #TODO: write an error handling code
+
+        # Store the different ga the device is linked to
+    #     self.group_addresses = []
+
+
+    # def send_telegram(self, payload, control_field):
+    #     from system import Telegram # Import here to avoid circular import between system ,-> device_abstractions
+    #     for group_address in self.group_addresses:
+    #         telegram = Telegram(control_field, self.individual_addr, group_address, payload)
+    #         #print("knxbus: ", self.knxbus.name)
+    #         try:
+    #             self.knxbus.transmit_telegram(telegram) # Simply send the telegram to all receiving devices connected to the group address
+    #         except AttributeError:
+    #             print(f"[ERROR] The device {self.name} is not connected to the bus, and thus cannot send telegrams")
+    #         except:
+    #             print(f"[ERROR] Transmission of the telegram from source ({telegram.source}) failed")
+    #     return 0
+
+    # def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams
+    #     self.knxbus = knxbus # can connect to only one 
+    #     # if knxbus not in self.knx_buses: # if we later implement multiple buses
+    #     #     self.knx_buses.append(knxbus)
+
+    # def deconnect_from(self): #, knxbus): # Remove the observer from the list
+    #     try:
+    #         del self.knxbus
+    #     #     assert (), "This Functional Module is not connected to this KNX bus, and thus cannot deconnect from it"
+    #     except AttributeError as msg:
+    #         print(msg)
 
 
 
