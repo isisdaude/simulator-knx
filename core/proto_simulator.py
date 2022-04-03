@@ -88,6 +88,7 @@ async def user_input_loop():
         else:
             print("[ERROR] Unknown input, please " + command_help)
 
+
 async def async_main(loop):
     ui_task = loop.create_task(user_input_loop())
     # clock = DigitalClock(interval = 0.2)
@@ -111,8 +112,7 @@ if __name__ == "__main__":
     sim_time.scheduler_init()
     sim_time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object
     sim_time.scheduler_start()
-    # updateJob = scheduler.add_job(room1.update_world, 'interval', seconds=20)
-    # sim_time.scheduler_start()
+
     try:
         loop = asyncio.get_event_loop()
         #app = ui.GraphicalUserInterface(loop)
