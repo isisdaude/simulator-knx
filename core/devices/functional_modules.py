@@ -1,9 +1,13 @@
 """
 Some class definitions for the simulated KNX functional modules (button, switch, Temp controller,...).
 """
+from typing import List, Tuple
+from core.devices.actuators import Heater
+from .tools import *
+from core.system.tools import IndividualAddress
 from .device_abstractions import FunctionalModule
 from .sensors import Thermometer
-from system.telegrams import ButtonPayload, Payload, TempControllerPayload
+from system.telegrams import ButtonPayload, HeaterPayload, Payload, Telegram, TempControllerPayload
 
 
 class Button(FunctionalModule):
@@ -27,11 +31,10 @@ class Button(FunctionalModule):
 class TemperatureController(FunctionalModule):
     def __init__(self, name, refid, individual_addr, default_status):
         super().__init__(name, refid, individual_addr, default_status, "thermostat")
-        self.state = 0
-        #self.sensor = Thermometer() ##TODO: init sensor with default config
-
-##TODO:  when temp is set, send elegram to heat sources
-
+        self.state = 10
+        self.heaters: List[Tuple[IndividualAddress, int]] = []
+        self.room_volume = 0
+        self.room_insulation = 'average'
 
     def user_input(self, wished_temp):
         print(f"User request for {wished_temp}°C in the room, on controller {self.name}.")
@@ -42,3 +45,18 @@ class TemperatureController(FunctionalModule):
         # depends on the user input/request
         self.send_telegram(payload, control_field = True)
         #TODO: Do we need a telegram for this?
+
+    def receive_telegram(self, telegram: Telegram):
+        """Function to react to a received telegram from another device"""
+        if isinstance(telegram.payload, HeaterPayload):
+            print(f"Got a new value for a heater's max power")
+            for idx, (addr, power) in enumerate(self.heaters):
+                if addr == telegram.source:
+                    self.heaters[idx] = (addr, telegram.payload.max_power)
+                    return
+            self.heaters.append((telegram.source, telegram.payload.max_power))
+
+    def update_heaters(self):
+        """Function to update the heaters' values to reach the desired temperature"""
+        for heater in self.heaters:
+            required_power(self.state, )

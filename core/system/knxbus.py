@@ -1,3 +1,4 @@
+from typing import List
 from .tools import GroupAddress, IndividualAddress
 from devices import Actuator, Sensor, FunctionalModule
 from .telegrams import Telegram
@@ -8,7 +9,7 @@ class KNXBus:
     def __init__(self):
         self.name = "KNX Bus"
         self.group_addresses = [] # list of group addresses
-        self.ga_buses = [] # list of group address buses
+        self.ga_buses: List[GroupAddressBus] = [] # list of group address buses
         self.temp_actuaors = []
         self.temp_functional = []
 
@@ -24,7 +25,6 @@ class KNXBus:
                 print("[INFO] The actuator is already connected to the KNX Bus through this group address")
                 return 0
             else:
-                #TODO: loop in temp_functional to sedn power values
                 device.group_addresses.append(group_address) # we add the group address in the local list of group addresses to which the device is connected to
         if isinstance(device, FunctionalModule):
             if group_address in device.group_addresses:
@@ -62,14 +62,17 @@ class KNXBus:
                     actuator.update_state(telegram)
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.update_state(telegram)
+                for functional in ga_bus.functional_modules:
+                    functional.receive_telegram(telegram)
+                    
 
 
 class GroupAddressBus:
     def __init__(self, group_address:GroupAddress):
         self.group_address = group_address
-        self.sensors = []
-        self.actuators = []
-        self.functional_modules = []
+        self.sensors: List[Sensor] = []
+        self.actuators: List[Actuator] = []
+        self.functional_modules: List[FunctionalModule] = []
 
 
     def add_device(self, device):

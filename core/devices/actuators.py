@@ -60,29 +60,29 @@ class Heater(TemperatureActuator):
         super().__init__(name, refid, individual_addr,
                          default_status, "heater", state, update_rule, max_power)
 
-    insulation_to_correction_factor = {
-        "average": 0, "good": -10/100, "bad": 15/100}
-    """Situation of the insulation of the room associated to the correction factor for the heating"""
+    # insulation_to_correction_factor = {
+    #     "average": 0, "good": -10/100, "bad": 15/100}
+    # """Situation of the insulation of the room associated to the correction factor for the heating"""
 
-    def temp_to_watts(self, temp):  # Useful watts required to heat 1m3 to temp
-        dist = 18 - temp
-        return 70 - (dist * 7)/2
+    # def temp_to_watts(self, temp):  # Useful watts required to heat 1m3 to temp
+    #     dist = 18 - temp
+    #     return 70 - (dist * 7)/2
 
-    def watts_to_temp(self, watts):
-        return ((watts - 70)*2)/7 + 18
+    # def watts_to_temp(self, watts):
+    #     return ((watts - 70)*2)/7 + 18
 
-    def required_power(self, desired_temperature=20, volume=1, insulation_state="good"):
-        assert desired_temperature >= 10 and desired_temperature <= 40
-        desired_wattage = volume*self.temp_to_watts(desired_temperature)
-        desired_wattage += desired_wattage * \
-            self.insulation_to_correction_factor[insulation_state]
-        return desired_wattage
+    # def required_power(self, desired_temperature=20, volume=1, insulation_state="good"):
+    #     assert desired_temperature >= 10 and desired_temperature <= 40
+    #     desired_wattage = volume*self.temp_to_watts(desired_temperature)
+    #     desired_wattage += desired_wattage * \
+    #         self.insulation_to_correction_factor[insulation_state]
+    #     return desired_wattage
 
-    def max_temperature_in_room(self, volume=1, insulation_state="good"):
-        """Maximum reachable temperature for this heater in the specified room"""
-        watts = self.power / \
-            ((1+self.insulation_to_correction_factor[insulation_state])*volume)
-        return self.watts_to_temp(watts)
+    # def max_temperature_in_room(self, volume=1, insulation_state="good"):
+    #     """Maximum reachable temperature for this heater in the specified room"""
+    #     watts = self.power / \
+    #         ((1+self.insulation_to_correction_factor[insulation_state])*volume)
+    #     return self.watts_to_temp(watts)
 
     def update_state(self, telegram: Telegram):
         if telegram.control_field == True:  # Control field bit

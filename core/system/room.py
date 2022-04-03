@@ -35,7 +35,7 @@ class Room:
 
     """List of devices in the room at certain positions"""
 
-    def __init__(self, name: str, width: int, length: int, height:int):
+    def __init__(self, name: str, width: int, length: int, height:int, insulation='average'):
         self.name = name
         """The room's given name"""
         self.width = width
@@ -50,6 +50,8 @@ class Room:
         """Representation of the KNX Bus"""
         self.devices: List[InRoomDevice] = []
         """List of all devices in the room"""
+        self.insulation = insulation
+        """The room's insulation capacity"""
 
     def add_device(self, device: Device, x: float, y: float, z:float):
         """Adds a device to the room at the given position"""
@@ -76,6 +78,8 @@ class Room:
             if isinstance(device, Button):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             if isinstance(device, TemperatureController):
+                device.room_volume = self.width*self.length*self.height
+                device.room_insulation = self.insulation
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
                 self.world.ambient_temperature.add_sensor(in_room_device)
                 #print(f"A button was added at {x} : {y}.")

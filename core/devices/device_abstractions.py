@@ -70,6 +70,10 @@ class FunctionalModule(Device, ABC):
         else:
             print("[ERROR] Input type unknown") #TODO: write an error handling code
 
+    @abstractmethod
+    def receive_telegram(self, telegram):
+        """Function to react to a received telegram from another device"""
+        
         # Store the different ga the device is linked to
     #     self.group_addresses = []
 

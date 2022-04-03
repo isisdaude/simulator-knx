@@ -1,10 +1,12 @@
 from abc import ABC, abstractclassmethod
 
+from core.system.tools import IndividualAddress
+
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""
     def __init__(self, control_field, source_individual_addr, destination_group_addr, payload):
         self.control_field = control_field
-        self.source = source_individual_addr
+        self.source: IndividualAddress = source_individual_addr
         self.destination = destination_group_addr
         self.payload = payload
 
