@@ -1,6 +1,6 @@
 from abc import ABC, abstractclassmethod
 
-from core.system.tools import IndividualAddress
+from system.tools import IndividualAddress
 
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""
@@ -46,19 +46,12 @@ class HeaterPayload(Payload):
 class TempControllerPayload(Payload):
     """Class to represent the payload of a temperature controller, fields are none if unused"""
 
-    def __init__(self, temperature_request, heater_power_request, set_heater_power):
+    def __init__(self, set_heater_power):
         super().__init__()
-        self.temperature_request = temperature_request
-        self.heater_power_request = heater_power_request
         self.set_heater_power = set_heater_power
     
     def __str__(self) -> str:
-        if self.temperature_request is not self.EMPTY_FIELD:
-            return f"User request for {self.temperature_request}°C in the room."
-        elif self.heater_power_request is not self.EMPTY_FIELD:
-            return f"Controller request for a heater's maximum power."
-        else:
-            return f"The temperature controller sets the power of the heater to {self.set_heater_power}."
+        return f"The temperature controller sets the power of the heater to {self.set_heater_power}."
 
 
     

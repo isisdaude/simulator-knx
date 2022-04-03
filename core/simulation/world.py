@@ -93,7 +93,7 @@ class AmbientTemperature:
             for source in self.temp_sources: # sources of heat or cold
                 if source.device.is_enabled():
                     if isinstance(source.device, dev.Heater):
-                        max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
+                        max_temps.append(dev.max_temperature_in_room(source.device.power,self.room_volume,"average"))
                     self.temperature += source.device.update_rule
             max_temp = mean(max_temps)
             if self.temperature >= max_temp:
@@ -122,14 +122,6 @@ class AmbientLight:
 
     def add_sensor(self, lightsensor):
         self.light_sensors.append(lightsensor)
-
-    # def compute_distance(source, sensor) -> float:
-    """ c'est plus une fonction a mettre dans tools ou un autre fichier, mais pas ici je trouve """
-    #     """ Computes euclidian distance between a sensor and a actuator"""
-    #     delta_x = abs(source.location.x - sensor.location.x)
-    #     delta_y = abs(source.location.y - sensor.location.y)
-    #     dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
-    #     return dist
 
     def read_brightness(self, brightness_sensor): #Read brightness at a particular sensor
         brightness = 0

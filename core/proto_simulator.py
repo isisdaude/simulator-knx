@@ -99,46 +99,22 @@ async def user_input_loop():
                             in_room_device.device.user_input()
                         elif isinstance(in_room_device.device, dev.TemperatureController):
                             try:
-                                in_room_device.device.user_input(command[2])
+                                in_room_device.device.user_input(int(command[2]))
                             except IndexError:
                                 print(f"[ERROR] You did not specify the wished temperature for the controller.")
 
                 elif query == 'get': # We are getting a sensor value
                     if 'bright' in name: # Brightness sensor
                         print("\n=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room1.world.ambient_light.read_brightness(in_room_device)))
+                    elif isinstance(in_room_device.device, dev.Heater):
+                        print(f"\n=> The heater {name} has power set to {in_room_device.device.power} and has maximum power {in_room_device.device.max_power}.\n")
                 else:
                     print("[ERROR] Unknown input, please " + command_help)
                     break
 
-        # if command[:3] == 'set': #FunctionalModule
-        #     name = command[4:]
-        #     for in_room_device in room1.devices:
-        #         if in_room_device.name == name:
-        #             if not isinstance(in_room_device.device, dev.FunctionalModule):
-        #                 print("[ERROR] Users can only act on a Functional Module")
-        #                 break
-        #             if isinstance(in_room_device.device, dev.Button):
-        #                 in_room_device.device.user_input()
-        #             elif isinstance(in_room_device.device, dev.TemperatureController):
-        #                 in_room_device.device.user_input()
-        # elif command[:3] == 'get': #Sensor
-        #     name = command[4:]
-        #     if "bright" in name: # brightness sensor
-        #         for in_room_device in room1.devices:
-        #             if in_room_device.name == name:
-        #                 print("\n=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room1.world.ambient_light.read_brightness(in_room_device)))
-        # elif command in ('h', 'H'):
-        #     print(command_help)
-        # elif command in ('q','Q'):
-        #     break
-        # else:
-        #     print("[ERROR] Unknown input, please " + command_help)
 
 async def async_main(loop):
     ui_task = loop.create_task(user_input_loop())
-    # clock = DigitalClock(interval = 0.2)
-    # clock_task = loop.create_task(clock.update())
-    #gui_task = loop.create_task()
     await asyncio.wait([ui_task])  #, clock_task
 
 

@@ -1,4 +1,4 @@
-
+"""Tools used by the devices to perform update calculations"""
 def required_power(desired_temperature=20, volume=1, insulation_state="good"):
     def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
         dist = 18 - temp
@@ -9,13 +9,13 @@ def required_power(desired_temperature=20, volume=1, insulation_state="good"):
     return desired_wattage
 
 
-def max_temperature_in_room(power, volume=1, insulation_state="good"):
+def max_temperature_in_room(power, volume=1.0, insulation_state="good"):
     """Maximum reachable temperature for this heater in the specified room"""
 
-    def watts_to_temp(self, watts):
+    def watts_to_temp(watts):
         return ((watts - 70)*2)/7 + 18
-    watts = power / \
-        ((1+insulation_to_correction_factor[insulation_state])*volume)
+        
+    watts = power / ((1+insulation_to_correction_factor[insulation_state])*volume)
     return watts_to_temp(watts)
 
 

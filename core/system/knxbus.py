@@ -60,8 +60,7 @@ class KNXBus:
             if telegram.destination == ga_bus.group_address:
                 for actuator in ga_bus.actuators: # loop on actuator linked to this group address
                     actuator.update_state(telegram)
-                # for functional_module in ga_bus.functional_modules:
-                #     functional_module.update_state(telegram)
+                    
                 for functional in ga_bus.functional_modules:
                     functional.receive_telegram(telegram)
                     
