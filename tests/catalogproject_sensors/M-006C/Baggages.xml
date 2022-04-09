@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-006C">
+      <Baggages>
+        <Baggage TargetPath="" Name="ruota-colori.png" Id="M-006C_BG--ruota.2Dcolori.2Epng" FileIntegrity="00000000">
+          <FileInfo TimeInfo="2020-11-13T07:27:00.4487412Z" />
+        </Baggage>
+        <Baggage TargetPath="" Name="9025_Blind_Panel.jpg" Id="M-006C_BG--9025.5FBlind.5FPanel.2Ejpg" FileIntegrity="00000000">
+          <FileInfo TimeInfo="2020-03-05T15:15:56.8566851Z" />
+        </Baggage>
+      </Baggages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

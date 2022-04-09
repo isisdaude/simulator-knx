@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0083">
+      <Hardware>
+        <Hardware Id="M-0083_H-76-1" Name="Helligkeitssensor" SerialNumber="76" VersionNumber="1" BusCurrent="10" HasIndividualAddress="true" HasApplicationProgram="true">
+          <Products>
+            <Product Id="M-0083_H-76-1_P-SCN.2DLSD01.2E01" Text="SCN-LSD01.01 Brightness Sensor/Controller" OrderNumber="SCN-LSD01.01" IsRailMounted="false" DefaultLanguage="en-US" Hash="vDU1/CShe62kOT8Z7XWgilLAFNA=">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationDate="2014-02-17" RegistrationSignature="PN7afK6O4bK4maNN0Swd2/iVgcHqudb0px4Kz4R6fdIceYY4T82u82Jo1OyeXIrDvVlzxx1iyczj5gAkUD5b76jTMFow9E67dirAF2ke8/qhPGlDHN1jvMfqTpeF/Y2zNtSRpEBJxImb08k7qQOvyL2883St/b7MlSGCCGxxl/o=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0083_H-76-1_HP-004C-11-9CF7" MediumTypes="MT-0" Hash="jJaJwT2HCO8Ogq8w4t+RI4j8b+k=">
+              <ApplicationProgramRef RefId="M-0083_A-004C-11-9CF7" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2014/11286" RegistrationDate="2014-02-13" RegistrationSignature="r3oS+wOwmeiL4UymVizIbbuWUpRXcGGhDwl/vNa65TwrV0BMZzeoUsAS3SlRGVZeUHJjglBDyNf/gH7HKXOG6hkAgI0fgLa0sOqde3WnjM6igqlYc3A3yyV3NfDqcZofgEDAypWEbnzdwp28A3u7iRf1ZSI3ukWt+F89tl+DLfw=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0083_H-76-1_P-SCN.2DLSD01.2E01">
+            <TranslationElement RefId="M-0083_H-76-1_P-SCN.2DLSD01.2E01">
+              <Translation AttributeName="Text" Text="SCN-LSD01.01 Brightness Sensor/Controller" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

@@ -61,7 +61,7 @@ class FunctionalModule(Device, ABC):
         return 0
 
     def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams
-        self.knxbus = knxbus # can connect to only one 
+        self.knxbus = knxbus # can connect to only one
         # if knxbus not in self.knx_buses: # if we later implement multiple buses
         #     self.knx_buses.append(knxbus)
 
@@ -79,7 +79,7 @@ class Sensor(Device, ABC):
         super().__init__(name, refid, individual_addr, default_status, "sensor")
         self.group_address = 0 # sensors can communicate with only one group address
         #TODO: necessary?
-        if sensor_type in ["button", "brightness", "temperature"]:
+        if sensor_type in ["button", "brightness", "temperature", "humidity", "co2"]:
             self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
         else:
             print("[ERROR] Sensor type unknown")#TODO: write an error handling code

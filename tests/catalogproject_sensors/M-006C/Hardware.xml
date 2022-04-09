@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-006C">
+      <Hardware>
+        <Hardware Id="M-006C_H-MC06A01KNX-0" Name="MC06A01KNX" SerialNumber="MC06A01KNX" VersionNumber="0" BusCurrent="30" HasIndividualAddress="true" HasApplicationProgram="true">
+          <Products>
+            <Product Id="M-006C_H-MC06A01KNX-0_P-MC06A01KNX" Text="CO2 / Humidity / Temperature Controller - A01" OrderNumber="MC06A01KNX" IsRailMounted="false" DefaultLanguage="en-US" Hash="1Y/P7B8Y2WAeGo3qieJ7PFYS8bo=">
+              <RegistrationInfo RegistrationStatus="Certified" RegistrationDate="2020-07-27" RegistrationSignature="e5wva/r5FRMgY96OH5V8/mcld/U9YJl8CFyTST1x83B1oDi1aJyuOnPSQwFmj7VvBLvZ5P0hycjRWUUZDDdanKk0XvdNhx2QeqRf2jzzJ7OSMI6KT4v3wqFA9T582yQpWRGmqVxG7CoVjs0StnMavkDuu7bKhdy27o2u47GKuN8=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-006C_H-MC06A01KNX-0_HP-0677-10-3537" MediumTypes="MT-0" Hash="K+NdgbgGGe3o5QvnB58FPQWnCBM=">
+              <ApplicationProgramRef RefId="M-006C_A-0677-10-3537" />
+              <RegistrationInfo RegistrationStatus="Certified" RegistrationNumber="2020/16839" RegistrationDate="2020-07-27" RegistrationSignature="vN8CPvqyq2e2irQ1kwKXvjSCLt9r6ioMGpeh4uiHvB40yzRagPeV8HX5E9LjGUiWmKYL/1wlNVOI/SiSTqtdaChwDo2ONjhC6vNbccjHmNU26NPBNos7RWoEchgn+2aFX/O21k6LsFBBzWOPW3IZaU2bsvo1En6ySRgiwT0UIQg=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-006C_H-MC06A01KNX-0_P-MC06A01KNX">
+            <TranslationElement RefId="M-006C_H-MC06A01KNX-0_P-MC06A01KNX">
+              <Translation AttributeName="Text" Text="CO2 / Humidity / Temperature Controller - A01" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>
