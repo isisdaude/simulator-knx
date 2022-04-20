@@ -24,8 +24,9 @@ class Time:
     def __init__(self, simulation_speed_factor:float):
         # Real world simulated time that passed between 2 clock ticks
         self.physical_interval = 3600
+        self.speed_factor = simulation_speed_factor
         # Amount of time (in seconds) between two software clock ticks
-        self.virtual_interval = self.physical_interval/simulation_speed_factor
+        self.virtual_interval = self.physical_interval/self.speed_factor
 
     def set_simulation_speed_factor(self, speed_factor):
         self.virtual_interval = self.physical_interval/speed_factor
@@ -34,7 +35,7 @@ class Time:
         # seconds of software simulation corresponding to a simulated 'real-world' hour
         self.virtual_interval = interval
 
-    # Scheduler management
+    # Scheduler management, if not in GUI mode
     def scheduler_init(self):
         self.scheduler = AsyncIOScheduler()
         return self.scheduler
@@ -153,8 +154,8 @@ class AmbientLight:
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
-    def __init__(self, room_width, room_length, room_height):
-        self.time = Time(simulation_speed_factor=240) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
+    def __init__(self, room_width, room_length, room_height, simulation_speed_factor):
+        self.time = Time(simulation_speed_factor) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, default_temp=(20.0))
         self.ambient_light = AmbientLight() #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
         self.ambient_world = [self.ambient_temperature, self.ambient_light]

@@ -26,6 +26,7 @@ class Thermometer(Sensor):
     """Concrete class to represent a thermometer"""
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "temperature")
+        # DTP
         self.temperature = 0
 
 class HumiditySensor(Sensor):

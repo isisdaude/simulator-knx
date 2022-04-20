@@ -5,6 +5,9 @@ Gather the abstract class definitions for the simulated KNX devices.
 from abc import ABC, abstractmethod
 # from system import Telegram  #IndividualAddress, GroupAddress,
 
+FUNCTIONAL_MODULE_TYPES = ["button", "switch", "dimmer"]
+SENSOR_TYPES = ["button", "brightness", "temperature", "humidity", "co2"]
+ACTUATOR_TYPES = ["light", "heater", "cooler"]
 
 class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)
@@ -38,14 +41,13 @@ class Device(ABC):
 class FunctionalModule(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status, input_type):
         super().__init__(name, refid, individual_addr, default_status, "functional_module")
-        if input_type in ["button", "dimmer"]:
+        if input_type in FUNCTIONAL_MODULE_TYPES:
             self.input_type = input_type
         else:
-            print("[ERROR] Input type unknown") #TODO: write an error handling code
+            print("[ERROR] Functional Module input type unknown") #TODO: write an error handling code
 
         # Store the different ga the device is linked to
         self.group_addresses = []
-
 
     def send_telegram(self, payload, control_field):
         from system import Telegram # Import here to avoid circular import between system ,-> device_abstractions
@@ -65,7 +67,7 @@ class FunctionalModule(Device, ABC):
         # if knxbus not in self.knx_buses: # if we later implement multiple buses
         #     self.knx_buses.append(knxbus)
 
-    def deconnect_from(self): #, knxbus): # Remove the observer from the list
+    def disconnect_from(self): #, knxbus): # Remove the observer from the list
         try:
             del self.knxbus
         #     assert (), "This Functional Module is not connected to this KNX bus, and thus cannot deconnect from it"
@@ -79,7 +81,7 @@ class Sensor(Device, ABC):
         super().__init__(name, refid, individual_addr, default_status, "sensor")
         self.group_address = 0 # sensors can communicate with only one group address
         #TODO: necessary?
-        if sensor_type in ["button", "brightness", "temperature", "humidity", "co2"]:
+        if sensor_type in SENSOR_TYPES:
             self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
         else:
             print("[ERROR] Sensor type unknown")#TODO: write an error handling code
@@ -92,7 +94,7 @@ class Actuator(Device, ABC):
         self.state = default_state #=False if not indicated, meaning OFF, some actuator can have a value in addition to their state (dimmed light)
         self.group_addresses = [] # Actuators can receive telegrams from multiple group addresses
         #TODO: necessary?
-        if actuator_type in ["light", "heater", "cooler"]:
+        if actuator_type in ACTUATOR_TYPES:
             self.actuator_type = actuator_type
         else:
             print("[ERROR] Actuator type unknown")

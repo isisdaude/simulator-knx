@@ -30,9 +30,12 @@ class KNXBus:
                 print("[INFO] The functional module is already connected to the KNX Bus through this group address")
                 return 0
             else:
+                print(f"{device.name} is added to the bus")
+                device.connect_to(self) # store KNX Bus object in functional module class
                 device.group_addresses.append(group_address) # we add the group address in the local list of group addresses to which the device is connected to
 
         if group_address not in self.group_addresses: # if ga not in group_addresses of KNXBus
+            print(f"creation of a ga_bus for {device.name} ")
             self.group_addresses.append(group_address)
             ga_bus = GroupAddressBus(group_address) # Creation of the instance that link all devices connected to this group address
             ga_bus.add_device(device)
@@ -40,6 +43,7 @@ class KNXBus:
         else: # if the group address already exists, we just add the device to the corresponding class GroupAddressBus
             for ga_bus in self.ga_buses:
                 if ga_bus.group_address == group_address:
+                    print(f"{device.name} is added to the ga_bus")
                     ga_bus.add_device(device)
 
 

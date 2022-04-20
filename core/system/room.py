@@ -5,6 +5,7 @@ Some class definitions for the rooms contained in the system
 from typing import List
 from devices import *
 import simulation as sim
+import gui
 
 from .tools import Location
 from .knxbus import KNXBus
@@ -35,21 +36,22 @@ class Room:
 
     """List of devices in the room at certain positions"""
 
-    def __init__(self, name: str, width: int, length: int, height:int):
-        self.name = name
+    def __init__(self, name: str, width: int, length: int, height:int, simulation_speed_factor:float):
         """The room's given name"""
-        self.width = width
+        self.name = name
         """Along x axis"""
-        self.length = length
+        self.width = width
         """Along y axis"""
-        self.height = height
+        self.length = length
         """Along z axis"""
-        self.world = sim.World(self.width, self.length, self.height)
+        self.height = height
         """Representation of the world"""
-        self.knxbus= KNXBus()
+        self.world = sim.World(self.width, self.length, self.height, simulation_speed_factor)
         """Representation of the KNX Bus"""
-        self.devices: List[InRoomDevice] = []
+        self.knxbus= KNXBus()
         """List of all devices in the room"""
+        self.devices: List[InRoomDevice] = []
+
 
     def add_device(self, device: Device, x: float, y: float, z:float):
         """Adds a device to the room at the given position"""
@@ -80,8 +82,13 @@ class Room:
                 self.world.ambient_temperature.add_sensor(in_room_device)
                 #print(f"A button was added at {x} : {y}.")
 
-    def update_world(self):
-        self.world .update() #call the update function of all ambient modules in world
+    def update_world(self, interval=1, gui_mode=False):
+        self.world.update() #call the update function of all ambient modules in world
+        if gui_mode:
+            try: # attributes are created in main (proto_simulator)
+                gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
+            except:
+                print("[ERROR] Cannot update simulation time of the GUI window.")
 
     def __str__(self):
         str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"

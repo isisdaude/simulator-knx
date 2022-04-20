@@ -11,7 +11,6 @@ class Button(FunctionalModule):
         super().__init__(name, refid, location, default_status, "button")
         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
 
-
     def user_input(self):
         print(f"[INFO] The {self.name} has been pressed")
         # self.state = not self.state
@@ -20,6 +19,19 @@ class Button(FunctionalModule):
         self.send_telegram(payload, control_field = True)
         # send to the knxbus giving itself as argument
 
+class Switch(FunctionalModule):
+    def __init__(self, name, refid, location, default_status):
+        super().__init__(name, refid, location, default_status, "switch")
+        # self.state = 0  ## button has no state, it can just be pressed and realeased directly
+        self.state = "OFF"
+
+    def user_input(self):
+        self.state = "ON" if self.state=="OFF" else "OFF" #switch the state of the switch
+        print(f"[INFO] The {self.name} has been switched {self.state}")
+        payload = 1  ##TODO redefine and prepare the payload here, payload = 1 means switch
+        control_field = True
+        self.send_telegram(payload, control_field = True)
+        # send to the knxbus giving itself as argument
 
 
 

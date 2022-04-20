@@ -27,7 +27,7 @@ class LED(LightActuator):
 
     def update_state(self, telegram):
         if telegram.control_field == True: # Control field bit
-            if telegram.payload == 0: # 0 is the encoding for push-button #TODO implement a class payload with different fields
+            if telegram.payload == 0 or telegram.payload == 1: # 0 is the encoding for push-button, 1 for switch #TODO implement a class payload with different fields
                 self.state = not self.state
         # if the control field is not True, the telegram does nto concern the LED
 
