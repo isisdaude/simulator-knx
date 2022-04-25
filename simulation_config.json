@@ -4,7 +4,7 @@
     "number_of_lines":1,
     "area0":{
       "line0":{
-        "number_of_devices":5,
+        "number_of_devices":6,
         "devices":{
           "led1":{
             "class":"LED",
@@ -30,6 +30,11 @@
             "class":"Brightness",
             "refid":"M-0_S1",
             "location":"0.0.5",
+            "status":"enabled"},
+          "bright2":{
+            "class":"Brightness",
+            "refid":"M-0_S2",
+            "location":"0.0.6",
             "status":"enabled"}
         }
       }
@@ -41,7 +46,6 @@
       "group_devices":["led1", "switch1"]},
       {"address":"1/1/2",
       "group_devices":["led2", "switch2"]}]
-
   },
 
   "world":{
@@ -51,13 +55,14 @@
       "name":"bedroom1",
       "dimensions":[20, 20, 3],
       "insulation":"good",
-      "number_of_devices":5,
+      "number_of_devices":6,
       "room_devices":{
         "led1":[5, 5, 1],
-        "led2":[10, 19, 1],
-        "switch1":[0, 0, 1],
-        "switch2":[0, 1, 1],
-        "bright1":[20, 20, 1]}
+        "led2":[10, 17, 1],
+        "switch1":[3, 3, 1],
+        "switch2":[7, 9, 1],
+        "bright1":[18, 18, 1],
+        "bright2":[18, 6, 1]}
     }
   }
 }

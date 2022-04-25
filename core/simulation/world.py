@@ -5,7 +5,7 @@ Some class definitions for the simulation of the physical world
 
 from typing import List
 import time, math, schedule
-import sys
+import sys, logging
 from numpy import mean
 
 #from soupsieve import escape
@@ -44,14 +44,14 @@ class Time:
         try:
             self.update_job = self.scheduler.add_job(job_function, 'interval', seconds = self.virtual_interval)
         except AttributeError:
-            print("[ERROR] The Scheduler cannot start as it is not initialized.")
+            logging.warning("The Scheduler is not initialized: job cannnot be added")
 
     def scheduler_start(self):
         try:
             self.scheduler.start()
             self.start_time = time.time()
         except AttributeError:
-            print("[ERROR] The Scheduler cannot start as it is not initialized. time")
+            logging.warning("The Scheduler is not initialized and cannot be started")
 
     # Simulation time management
     def simulation_time(self):
@@ -59,7 +59,7 @@ class Time:
             elapsed_time = time.time() - self.start_time
             return elapsed_time
         except AttributeError:
-            print("[ERROR] The Simulation has not started yet: sim_time=0")
+            logging.warning("The Simulation time is not initialized")
 
 class AmbientTemperature:
     '''Class that implements temperature in a system'''
@@ -86,7 +86,7 @@ class AmbientTemperature:
 
     def update(self):
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
-        print("[INFO] -- Temperature Update")
+        logging.info("Temperature update")
         if(not self.temp_sources):
             self.temperature = (self.temperature + self.outside_temperature)//2 # Decreases by the average of temp and outside_temp, is a softer slope
         else:
@@ -99,10 +99,13 @@ class AmbientTemperature:
             max_temp = mean(max_temps)
             if self.temperature >= max_temp:
                 self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
+        temperature_levels = []
         for sensor in self.temp_sensors:
             sensor.temperature = self.temperature
+            temperature_levels.append((sensor.name, sensor.temperature))
         for controller in self.temp_controllers:#
             controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources
+        return temperature_levels
 
     def __repr__(self):
         return f"{self.temperature} °C"
@@ -124,14 +127,6 @@ class AmbientLight:
     def add_sensor(self, lightsensor):
         self.light_sensors.append(lightsensor)
 
-    # def compute_distance(source, sensor) -> float:
-    """ c'est plus une fonction a mettre dans tools ou un autre fichier, mais pas ici je trouve """
-    #     """ Computes euclidian distance between a sensor and a actuator"""
-    #     delta_x = abs(source.location.x - sensor.location.x)
-    #     delta_y = abs(source.location.y - sensor.location.y)
-    #     dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
-    #     return dist
-
     def read_brightness(self, brightness_sensor): #Read brightness at a particular sensor
         brightness = 0
         for source in self.light_sources:
@@ -145,12 +140,13 @@ class AmbientLight:
         return brightness
 
     def update(self): #Updates all brightness sensors of the world (the room)
-        print("[INFO] -- Brightness Update")
+        logging.info("Brightness update")
+        brightness_levels = []
         for sensor in self.light_sensors:
             # Update the sensor's brightness
             sensor.device.brightness = self.read_brightness(sensor) # set the newly calculated sensor brightness
-
-
+            brightness_levels.append((sensor.device.name, sensor.device.brightness))
+        return brightness_levels
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
@@ -161,8 +157,9 @@ class World:
         self.ambient_world = [self.ambient_temperature, self.ambient_light]
 
     def update(self):
-        for ambient in self.ambient_world:
-            ambient.update()
+        brightness_levels = self.ambient_light.update()
+        temperature_levels = self.ambient_temperature.update()
+        return brightness_levels, temperature_levels
 
     def get_world_state(self): # one world per room, so status of the room
         print("+---------- STATUS ----------+")

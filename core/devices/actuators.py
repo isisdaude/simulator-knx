@@ -3,7 +3,7 @@ Some class definitions for the simulated KNX actuators.
 """
 from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
-import sys
+import sys, logging
 sys.path.append("core")
 
 class LightActuator(Actuator, ABC):
@@ -49,7 +49,11 @@ class Heater(TemperatureActuator):
     """Concrete class to represent a heating device"""
     def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=1):
         # Verification of update_rule sign
-        assert update_rule >= 0, "The Heater should have update_rule>=0."  #Syntax for an error message
+        try:
+            assert update_rule >= 0
+        except AssertionError:
+            logging.error("The Heater should have update_rule>=0")
+            sys.exit()
         super().__init__(name , refid, individual_addr, default_status, "heater", state, update_rule, max_power)
 
     insulation_to_correction_factor = {"average":0, "good": -10/100, "bad": 15/100}
@@ -87,7 +91,11 @@ class AC(TemperatureActuator):
     """Concrete class to represent a cooling device"""
     def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=-1):
         # Verification of update_rule sign
-        assert update_rule <= 0, "[ERROR] The Cooler should have update_rule<=0."  #Syntax for an error message
+        try:
+            assert update_rule <= 0
+        except AssertionError:
+            logging.error("The Cooler should have update_rule<=0")
+            sys.exit()
         super().__init__(name, refid, individual_addr, default_status, "cooler", state, update_rule, max_power)
 
     def update_state(self, telegram):

@@ -8,3 +8,4 @@ apscheduler
 bs4
 lxml
 json
+copy

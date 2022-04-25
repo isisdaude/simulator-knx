@@ -2,6 +2,7 @@
 Gather the abstract class definitions for the simulated KNX devices.
 """
 
+import logging
 from abc import ABC, abstractmethod
 # from system import Telegram  #IndividualAddress, GroupAddress,
 
@@ -24,7 +25,7 @@ class Device(ABC):
         if dev_type in ["actuator", "sensor", "sysdevice", "functional_module"]: #TODO: maybe create a config file, with the list of different types?
             self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
         else:
-            print("[ERROR] Device type unknown") # -> Cannot happen because we give th epossible types
+            logging.warning(f"Device type '{dev_type}' unknown")
 
 
     def is_enabled(self) -> bool:
@@ -44,7 +45,7 @@ class FunctionalModule(Device, ABC):
         if input_type in FUNCTIONAL_MODULE_TYPES:
             self.input_type = input_type
         else:
-            print("[ERROR] Functional Module input type unknown") #TODO: write an error handling code
+            logging.warning(f"Functional Module input type '{input_type}' unknown")
 
         # Store the different ga the device is linked to
         self.group_addresses = []
@@ -57,9 +58,9 @@ class FunctionalModule(Device, ABC):
             try:
                 self.knxbus.transmit_telegram(telegram) # Simply send the telegram to all receiving devices connected to the group address
             except AttributeError:
-                print(f"[ERROR] The device {self.name} is not connected to the bus, and thus cannot send telegrams")
+                logging.warning(f"The device '{self.name}' is not connected to the bus, and thus cannot send telegrams")
             except:
-                print(f"[ERROR] Transmission of the telegram from source ({telegram.source}) failed")
+                logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed")
         return 0
 
     def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams
@@ -67,14 +68,16 @@ class FunctionalModule(Device, ABC):
         # if knxbus not in self.knx_buses: # if we later implement multiple buses
         #     self.knx_buses.append(knxbus)
 
-    def disconnect_from(self): #, knxbus): # Remove the observer from the list
+    def disconnect_from_knxbus(self): #, knxbus): # Remove the observer from the list
         try:
             del self.knxbus
-        #     assert (), "This Functional Module is not connected to this KNX bus, and thus cannot deconnect from it"
-        except AttributeError as msg:
-            print(msg)
+        #     assert (),
+        except AttributeError:
+            logging.warning(f"The Functional Module '{self.name}' is not connected to this KNX bus, and thus cannot deconnect from it")
 
-
+    @abstractmethod # must be implemented independantly for each particular functional module device
+    def user_input(self):
+        """ Interpret the user input (set switch ON/OFF, set temperature,...)"""
 
 class Sensor(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status, sensor_type):
@@ -84,7 +87,7 @@ class Sensor(Device, ABC):
         if sensor_type in SENSOR_TYPES:
             self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
         else:
-            print("[ERROR] Sensor type unknown")#TODO: write an error handling code
+            logging.warning(f"Sensor type '{sensor_type}' unknown")
 
 
 class Actuator(Device, ABC):
@@ -97,7 +100,7 @@ class Actuator(Device, ABC):
         if actuator_type in ACTUATOR_TYPES:
             self.actuator_type = actuator_type
         else:
-            print("[ERROR] Actuator type unknown")
+            logging.warning(f"Actuator type '{actuator_type}' unknown")
 
 
     @abstractmethod # must be implemented independantly for each particular actuator state

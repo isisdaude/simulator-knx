@@ -2,6 +2,7 @@
 Some class definitions for the rooms contained in the system
 """
 
+import logging
 from typing import List
 from devices import *
 import simulation as sim
@@ -19,8 +20,11 @@ class InRoomDevice:
             self.location = Location(room, x, y, z)
             self.type = type(device)  ## whait is this ?
 
+        def __eq__(self, other_device):
+            return self.name == other_device.name
+
         def get_position(self):
-            return self.location.pos #(x,y)
+            return self.location.pos
 
         def get_x(self) -> float:
             return self.location.pos[0]
@@ -30,6 +34,7 @@ class InRoomDevice:
 
         def get_z(self) -> float:
             return self.location.pos[2]
+
 
 class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
@@ -56,8 +61,8 @@ class Room:
     def add_device(self, device: Device, x: float, y: float, z:float):
         """Adds a device to the room at the given position"""
         if(x < 0 or x > self.width or y < 0 or y > self.length):
-            print("[ERROR] Cannot add a device outside the room!")
-            return None
+            logging.warning("Cannot add a device outside the room")
+            return
 
         in_room_device = InRoomDevice(device, self, x, y, z) #self is for the room, important if we want to find the room of a certain device
         self.devices.append(in_room_device)
@@ -75,20 +80,33 @@ class Room:
                 self.world.ambient_light.add_sensor(in_room_device)
                 #print(f"A brightness sensor was added at {x} : {y}.")
         elif isinstance(device, FunctionalModule):
-            if isinstance(device, Button):
+            if isinstance(device, Switch):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             if isinstance(device, TemperatureController):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
                 self.world.ambient_temperature.add_sensor(in_room_device)
                 #print(f"A button was added at {x} : {y}.")
 
+    ### TODO: implement removal of devices
+    # def remove_device(self, in_room_device):
+    #     for device in self.devices:
+    #         if device == in_room_device:
+    #             if isinstance(device, FunctionalModule):
+    #                 device.disconnect_from_knxbus()
+
+
+                # remove from List
+                # detach from bus
+                # remove from world
+
     def update_world(self, interval=1, gui_mode=False):
-        self.world.update() #call the update function of all ambient modules in world
+        brightness_levels, temperature_levels = self.world.update() #call the update function of all ambient modules in world
         if gui_mode:
             try: # attributes are created in main (proto_simulator)
                 gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
+                self.window.update_sensors(brightness_levels)#only brightness for now #TODO implement for temperatures
             except:
-                print("[ERROR] Cannot update simulation time of the GUI window.")
+                logging.error("Cannot update simulation time of the GUI window")
 
     def __str__(self):
         str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"

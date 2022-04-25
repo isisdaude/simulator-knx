@@ -1,6 +1,7 @@
 """
 Some class definitions for the simulated KNX sensors.
 """
+import logging
 from .device_abstractions import Sensor
 from abc import ABC, abstractclassmethod
 

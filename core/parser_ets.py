@@ -1,6 +1,6 @@
 
 from bs4 import BeautifulSoup
-import os, sys
+import os, sys, logging
 
 """
 Devices types:
@@ -40,7 +40,7 @@ def build_manufacturers_list(master_parser, project_files_path):
                         man_language = manufacturer['DefaultLanguage']
                     except KeyError: # if no default language
                         man_language = ''
-                        print(f"[INFO] No Default Language for {man_name} ({man_refid}).")
+                        logging.info(f" <ETS files parser> No Default Language for {man_name} ({man_refid}).")
                         man_obj = Manufacturer(man_refid, man_name, man_language)
                     man_list.append(man_obj)
     return man_list
@@ -138,8 +138,8 @@ def main(): #TODO: consider device number in the case of multiple instances of t
     print("\n------ Devices(Items) in this project ------ ")
     for item in items_list:
         print(item)
-    print(f"\n[INFO] Size of manufacturers_list: {sys.getsizeof(manufacturers_list)} bytes")
-    print(f"[INFO] Size of items_list: {sys.getsizeof(items_list)} bytes\n")
+    logging.info(f"<ETS files parser> Size of manufacturers_list: {sys.getsizeof(manufacturers_list)} bytes")
+    logging.info(f"<ETS files parser> Size of items_list: {sys.getsizeof(items_list)} bytes\n")
     # (size of items list for 6 devices: 120B, for 60 devices: 664B, size of man_list:120B)
 
 if __name__ == '__main__':
