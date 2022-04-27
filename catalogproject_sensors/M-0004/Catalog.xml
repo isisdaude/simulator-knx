@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0004">
+      <Catalog>
+        <CatalogSection Id="M-0004_CS-PS" Name="Phys. Sensoren" Number="PS" DefaultLanguage="de-DE">
+          <CatalogSection Id="M-0004_CS-PS-R1" Name="Bewegungsmelder" Number="R1" DefaultLanguage="de-DE">
+            <CatalogItem Id="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_HP-A00F-01-09EC-O000A_CI-3360.2D1-1" Name="Präsenzmelder Universal" Number="1" VisibleDescription="Präsenz Universal A00F01" ProductRefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_P-3360.2D1" Hardware2ProgramRefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_HP-A00F-01-09EC-O000A" DefaultLanguage="de-DE" NonRegRelevantDataVersion="0" />
+          </CatalogSection>
+        </CatalogSection>
+        <CatalogSection Id="M-0004_CS-HE" Name="Heizung, Klima, Lüftung" Number="HE" DefaultLanguage="de-DE">
+          <CatalogSection Id="M-0004_CS-HE-RE" Name="Regler" Number="RE" DefaultLanguage="en-US">
+            <CatalogItem Id="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_HP-7062-11-7E30-O00F4_CI-CO2.2E.2E2178-1" Name="CO2-Sensor" Number="1" VisibleDescription="CO2-Sensor 706211" ProductRefId="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_P-CO2.2E.2E2178" Hardware2ProgramRefId="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_HP-7062-11-7E30-O00F4" DefaultLanguage="de-DE" NonRegRelevantDataVersion="0" />
+          </CatalogSection>
+        </CatalogSection>
+      </Catalog>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0004_CS-PS">
+            <TranslationElement RefId="M-0004_CS-PS">
+              <Translation AttributeName="Name" Text="Physical sensors" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0004_CS-PS-R1">
+            <TranslationElement RefId="M-0004_CS-PS-R1">
+              <Translation AttributeName="Name" Text="Movement" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_HP-A00F-01-09EC-O000A_CI-3360.2D1-1">
+            <TranslationElement RefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_HP-A00F-01-09EC-O000A_CI-3360.2D1-1">
+              <Translation AttributeName="Name" Text="Presence detector 'Universal'" />
+              <Translation AttributeName="VisibleDescription" Text="Presence Universal A00F01" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0004_CS-HE">
+            <TranslationElement RefId="M-0004_CS-HE">
+              <Translation AttributeName="Name" Text="Heating, A/C, Ventilation" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0004_CS-HE-RE">
+            <TranslationElement RefId="M-0004_CS-HE-RE">
+              <Translation AttributeName="Name" Text="Controller" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_HP-7062-11-7E30-O00F4_CI-CO2.2E.2E2178-1">
+            <TranslationElement RefId="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_HP-7062-11-7E30-O00F4_CI-CO2.2E.2E2178-1">
+              <Translation AttributeName="Name" Text="CO2 multi-sensor" />
+              <Translation AttributeName="VisibleDescription" Text="CO2 sensor 706211" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

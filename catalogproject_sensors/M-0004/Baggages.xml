@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0004">
+      <Baggages>
+        <Baggage Id="M-0004_BG--JungCTF.5FSensor.5F1v00x00r00.2Emsi" Name="JungCTF_Sensor_1v00x00r00.msi" TargetPath="" FileIntegrity="300F5ED4">
+          <FileInfo Version="1.0.0.0" TimeInfo="2011-06-16T07:48:53" />
+        </Baggage>
+      </Baggages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

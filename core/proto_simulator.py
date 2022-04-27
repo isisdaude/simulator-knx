@@ -44,7 +44,7 @@ if __name__ == "__main__":
     DEV_CONFIG = False
     CONFIG_PATH = "simulation_config.json"
     config_file_path = CONFIG_PATH
-    logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s |%(name)s| [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
+    logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
     # System configuration based on a JSON config file
     if FILE_CONFIG_MODE:

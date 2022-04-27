@@ -56,6 +56,8 @@ class Room:
         self.knxbus= KNXBus()
         """List of all devices in the room"""
         self.devices: List[InRoomDevice] = []
+        """Simulation status to pause/resume"""
+        self.simulation_status = True
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
@@ -100,13 +102,17 @@ class Room:
                 # remove from world
 
     def update_world(self, interval=1, gui_mode=False):
-        brightness_levels, temperature_levels = self.world.update() #call the update function of all ambient modules in world
-        if gui_mode:
-            try: # attributes are created in main (proto_simulator)
-                gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
-                self.window.update_sensors(brightness_levels)#only brightness for now #TODO implement for temperatures
-            except:
-                logging.error("Cannot update simulation time of the GUI window")
+        if self.simulation_status:
+            brightness_levels, temperature_levels = self.world.update() #call the update function of all ambient modules in world
+            if gui_mode:
+                try: # attributes are created in main (proto_simulator)
+                    gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
+                    self.window.update_sensors(brightness_levels)#only brightness for now #TODO implement for temperatures
+                except:
+                    logging.error("Cannot update simulation time of the GUI window")
+
+
+
 
     def __str__(self):
         str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"

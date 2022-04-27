@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <Project Id="P-05D2">
+    <Installations>
+      <Installation Name="" BCUKey="4294967295" DefaultLine="P-05D2-0_L-3" IPRoutingLatencyTolerance="2000">
+        <Topology>
+          <Area Id="P-05D2-0_A-1" Address="0" Puid="1">
+            <Line Id="P-05D2-0_L-1" Address="0" Puid="2">
+              <Segment Id="P-05D2-0_S-1" Number="0" MediumTypeRefId="MT-5" Puid="3" />
+            </Line>
+          </Area>
+          <Area Id="P-05D2-0_A-2" Address="1" Puid="4">
+            <Line Id="P-05D2-0_L-2" Address="0" Puid="5">
+              <Segment Id="P-05D2-0_S-2" Number="0" MediumTypeRefId="MT-5" Puid="6" />
+            </Line>
+            <Line Id="P-05D2-0_L-3" Address="1" Puid="7">
+              <Segment Id="P-05D2-0_S-3" Number="0" MediumTypeRefId="MT-0" Puid="8">
+                <DeviceInstance Id="P-05D2-0_DI-1" Address="1" Name="" ProductRefId="M-0002_H-2CDG.20110.20101.20R0011-1_P-2CDG.20110.20101.20R0011" Hardware2ProgramRefId="M-0002_H-2CDG.20110.20101.20R0011-1_HP-A058-14-E094" Comment="" Description="" IsActivityCalculated="true" LastModified="2022-04-07T19:05:56.7594498Z" Puid="96">
+                  <GroupObjectTree GroupObjectInstances="O-1_R-64 O-3_R-8302 O-6_R-285 O-7_R-284 O-9_R-261 O-8_R-8293 O-15_R-293 O-25_R-301 O-27_R-8309 O-28_R-8310 O-29_R-8311 O-11_R-6816 O-13_R-2186 O-23_R-255 O-34_R-7080 O-46_R-8356 O-58_R-8398 O-70_R-8439 O-82_R-8480 O-94_R-8521 O-106_R-8562 O-118_R-8603 O-130_R-8644 O-139_R-8675 O-148_R-8706 O-157_R-8737 O-166_R-8768 O-175_R-8799 O-184_R-8830 O-193_R-8861 O-212_R-91 O-30_R-7084 O-32_R-7104 O-42_R-8326 O-44_R-8329 O-54_R-8368 O-56_R-8371 O-66_R-8410 O-68_R-8413 O-78_R-8451 O-80_R-8454 O-90_R-8492 O-92_R-8495 O-102_R-8533 O-104_R-8536 O-114_R-8574 O-116_R-8577 O-126_R-8615 O-128_R-8618 O-135_R-8661 O-137_R-8664 O-144_R-8692 O-146_R-8695 O-153_R-8711 O-155_R-8714 O-162_R-8742 O-164_R-8745 O-171_R-8773 O-173_R-8776 O-180_R-8804 O-182_R-8807 O-189_R-8832 O-191_R-8835" />
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-05D2-0_DI-2" Address="2" Name="" ProductRefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_P-3360.2D1" Hardware2ProgramRefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_HP-A00F-01-09EC-O000A" Comment="" Description="" IsActivityCalculated="true" LastModified="2022-04-07T19:09:17.6828081Z" Puid="97">
+                  <GroupObjectTree GroupObjectInstances="O-10_R-1074 O-0_R-955" />
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-05D2-0_DI-3" Address="3" Name="" ProductRefId="M-0006_H-6.20.2F.2F.2080262xxx-0_P-80262xxx" Hardware2ProgramRefId="M-0006_H-6.20.2F.2F.2080262xxx-0_HP-E05A-10-D5AA" Comment="" Description="" IsActivityCalculated="true" LastModified="2022-04-07T19:10:25.0533652Z" Puid="98">
+                  <GroupObjectTree>
+                    <Nodes>
+                      <Node Type="Channel" RefId="CH-1830205830" Text="General-presence detection" GroupObjectInstances="O-5_R-1710047762 O-2_R-314367781 O-0_R-1034216858 O-1_R-1146376137" />
+                      <Node Type="Channel" RefId="CH-10856539" Text="Channel 1" />
+                      <Node Type="Channel" RefId="CH-10791003" Text="Channel 2" />
+                      <Node Type="Channel" RefId="CH-194106058" Text="Surveillance" GroupObjectInstances="O-21_R-1640694705" />
+                      <Node Type="Channel" RefId="CH-984349611" Text="Internal temperature sensor" />
+                      <Node Type="Channel" RefId="CH-1601429089" Text="Luminosity sensor" />
+                      <Node Type="Channel" RefId="CH-1297404556" Text="Information" />
+                    </Nodes>
+                  </GroupObjectTree>
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-05D2-0_DI-4" Address="4" Name="" ProductRefId="M-006C_H-MC06A01KNX-0_P-MC06A01KNX" Hardware2ProgramRefId="M-006C_H-MC06A01KNX-0_HP-0677-10-3537" Comment="" Description="" IsActivityCalculated="true" LastModified="2022-04-07T19:13:35.4109742Z" Puid="99">
+                  <GroupObjectTree>
+                    <Nodes>
+                      <Node Type="Channel" RefId="CH-1" Text="General Parameters" />
+                      <Node Type="Channel" RefId="CH-3" Text="Rear Input" />
+                      <Node Type="Channel" RefId="CH-5" Text="RGB Led" />
+                      <Node Type="Channel" RefId="CH-13" Text="CO2 Sensor" />
+                      <Node Type="Channel" RefId="CH-15" Text="Logic" />
+                    </Nodes>
+                  </GroupObjectTree>
+                  <Security />
+                </DeviceInstance>
+                <DeviceInstance Id="P-05D2-0_DI-6" Address="5" Name="" ProductRefId="M-0083_H-76-1_P-SCN.2DLSD01.2E01" Hardware2ProgramRefId="M-0083_H-76-1_HP-004C-11-9CF7" Comment="" Description="" IsActivityCalculated="true" LastModified="2022-04-07T19:17:27.3477184Z" Puid="101">
+                  <GroupObjectTree GroupObjectInstances="O-1_R-10014 O-2_R-10015 O-3_R-4 O-4_R-9 O-0_R-49" />
+                  <Security />
+                </DeviceInstance>
+              </Segment>
+            </Line>
+          </Area>
+        </Topology>
+        <Locations>
+          <Space Type="Building" Id="P-05D2-0_BP-1" Name="catalogproject" Puid="9" />
+          <Space Type="Building" Id="P-05D2-0_BP-2" Name="Office" Puid="10">
+            <Space Type="Floor" Id="P-05D2-0_BP-3" Name="Offices" Puid="11">
+              <Space Type="Room" Usage="SU-12" Id="P-05D2-0_BP-4" Name="Meeting room" Puid="12">
+                <DeviceInstanceRef RefId="P-05D2-0_DI-1" />
+                <DeviceInstanceRef RefId="P-05D2-0_DI-2" />
+                <DeviceInstanceRef RefId="P-05D2-0_DI-3" />
+                <DeviceInstanceRef RefId="P-05D2-0_DI-4" />
+                <DeviceInstanceRef RefId="P-05D2-0_DI-6" />
+                <Function Id="P-05D2-0_F-1" Name="switch_light" Type="FT-1" Puid="15">
+                  <GroupAddressRef Id="P-05D2-0_GF-1" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-1" Puid="19" />
+                  <GroupAddressRef Id="P-05D2-0_GF-2" Name="" Role="InfoOnOff" RefId="P-05D2-0_GA-2" Puid="22" />
+                </Function>
+                <Function Id="P-05D2-0_F-2" Name="dimm_light" Type="FT-2" Puid="23">
+                  <GroupAddressRef Id="P-05D2-0_GF-4" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-5" Puid="30" />
+                  <GroupAddressRef Id="P-05D2-0_GF-5" Name="" Role="InfoOnOff" RefId="P-05D2-0_GA-6" Puid="32" />
+                  <GroupAddressRef Id="P-05D2-0_GF-6" Name="" Role="RelativeSetvalueControl" RefId="P-05D2-0_GA-7" Puid="35" />
+                  <GroupAddressRef Id="P-05D2-0_GF-7" Name="" Role="ActualDimmingValue" RefId="P-05D2-0_GA-8" Puid="38" />
+                </Function>
+                <Function Id="P-05D2-0_F-4" Name="Light room switch" Type="FT-1" Puid="39">
+                  <GroupAddressRef Id="P-05D2-0_GF-8" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-9" Puid="41" />
+                </Function>
+                <Function Id="P-05D2-0_F-8" Name="Window 1" Type="FT-3" Puid="55">
+                  <GroupAddressRef Id="P-05D2-0_GF-14" Name="" Role="WindAlarm" RefId="P-05D2-0_GA-15" Puid="59" />
+                  <GroupAddressRef Id="P-05D2-0_GF-15" Name="" Role="RainAlarm" RefId="P-05D2-0_GA-16" Puid="61" />
+                  <GroupAddressRef Id="P-05D2-0_GF-16" Name="" Role="MoveUpDown" RefId="P-05D2-0_GA-17" Puid="64" />
+                  <GroupAddressRef Id="P-05D2-0_GF-17" Name="" Role="StopStepUpDown" RefId="P-05D2-0_GA-18" Puid="67" />
+                </Function>
+                <Function Id="P-05D2-0_F-9" Name="Radiator" Type="FT-4" Puid="68">
+                  <GroupAddressRef Id="P-05D2-0_GF-18" Name="" Role="ValvePosition" RefId="P-05D2-0_GA-19" Puid="72" />
+                  <GroupAddressRef Id="P-05D2-0_GF-19" Name="" Role="TempRoom" RefId="P-05D2-0_GA-20" Puid="75" />
+                  <GroupAddressRef Id="P-05D2-0_GF-20" Name="" Role="TempRoomSetpoint" RefId="P-05D2-0_GA-21" Puid="78" />
+                  <GroupAddressRef Id="P-05D2-0_GF-21" Name="" Role="HVACMode" RefId="P-05D2-0_GA-22" Puid="81" />
+                  <GroupAddressRef Id="P-05D2-0_GF-22" Name="" Role="WindowStatus" RefId="P-05D2-0_GA-23" Puid="84" />
+                </Function>
+                <Function Id="P-05D2-0_F-10" Name="Floor" Type="FT-5" Puid="85">
+                  <GroupAddressRef Id="P-05D2-0_GF-24" Name="" Role="ValvePosition" RefId="P-05D2-0_GA-25" Puid="91" />
+                  <GroupAddressRef Id="P-05D2-0_GF-25" Name="" Role="TempRoom" RefId="P-05D2-0_GA-20" Puid="92" />
+                  <GroupAddressRef Id="P-05D2-0_GF-26" Name="" Role="TempRoomSetpoint" RefId="P-05D2-0_GA-21" Puid="93" />
+                  <GroupAddressRef Id="P-05D2-0_GF-27" Name="" Role="HVACMode" RefId="P-05D2-0_GA-22" Puid="94" />
+                  <GroupAddressRef Id="P-05D2-0_GF-28" Name="" Role="WindowStatus" RefId="P-05D2-0_GA-23" Puid="95" />
+                </Function>
+              </Space>
+            </Space>
+            <Space Type="Floor" Id="P-05D2-0_BP-5" Name="Out door" Puid="13">
+              <Space Type="Room" Usage="SU-16" Id="P-05D2-0_BP-6" Name="Parking place" Puid="14">
+                <Function Id="P-05D2-0_F-5" Name="Pole" Type="FT-1" Puid="42">
+                  <GroupAddressRef Id="P-05D2-0_GF-9" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-10" Puid="44" />
+                  <GroupAddressRef Id="P-05D2-0_GF-10" Name="" Role="InfoOnOff" RefId="P-05D2-0_GA-11" Puid="46" />
+                </Function>
+                <Function Id="P-05D2-0_F-6" Name="Bollard" Type="FT-1" Puid="47">
+                  <GroupAddressRef Id="P-05D2-0_GF-11" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-12" Puid="49" />
+                  <GroupAddressRef Id="P-05D2-0_GF-12" Name="" Role="InfoOnOff" RefId="P-05D2-0_GA-13" Puid="51" />
+                </Function>
+                <Function Id="P-05D2-0_F-7" Name="Light room switch" Type="FT-1" Puid="52">
+                  <GroupAddressRef Id="P-05D2-0_GF-13" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-14" Puid="54" />
+                </Function>
+              </Space>
+            </Space>
+            <Function Id="P-05D2-0_F-3" Name="Central light" Type="FT-1" Puid="25">
+              <GroupAddressRef Id="P-05D2-0_GF-3" Name="" Role="SwitchOnOff" RefId="P-05D2-0_GA-3" Puid="27" />
+            </Function>
+            <Function Id="P-05D2-0_F-11" Name="Central operation mode switch" Type="FT-4" Puid="87">
+              <GroupAddressRef Id="P-05D2-0_GF-23" Name="" Role="HVACMode" RefId="P-05D2-0_GA-24" Puid="89" />
+            </Function>
+          </Space>
+        </Locations>
+        <GroupAddresses>
+          <GroupRanges>
+            <GroupRange Id="P-05D2-0_GR-1" RangeStart="2048" RangeEnd="4095" Name="Light" Puid="16">
+              <GroupRange Id="P-05D2-0_GR-2" RangeStart="2304" RangeEnd="2559" Name="Switching" Puid="17">
+                <GroupAddress Id="P-05D2-0_GA-1" Address="2304" Name="Meeting room switch_light switching" Description="Meeting room switch_light" DatapointType="DPST-1-1" Puid="18" />
+                <GroupAddress Id="P-05D2-0_GA-5" Address="2305" Name="Meeting room dimm_light switching" Description="Meeting room dimm_light" DatapointType="DPST-1-1" Puid="29" />
+                <GroupAddress Id="P-05D2-0_GA-10" Address="2311" Name="Parking place Pole switching" Description="Parking place Pole" DatapointType="DPST-1-1" Puid="43" />
+                <GroupAddress Id="P-05D2-0_GA-12" Address="2312" Name="Parking place Bollard switching" Description="Parking place Bollard" DatapointType="DPST-1-1" Puid="48" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-3" RangeStart="3072" RangeEnd="3327" Name="Status" Puid="20">
+                <GroupAddress Id="P-05D2-0_GA-2" Address="3072" Name="Meeting room switch_light status" Description="Meeting room switch_light" DatapointType="DPST-1-1" Puid="21" />
+                <GroupAddress Id="P-05D2-0_GA-6" Address="3073" Name="Meeting room dimm_light status" Description="Meeting room dimm_light" DatapointType="DPST-1-1" Puid="31" />
+                <GroupAddress Id="P-05D2-0_GA-11" Address="3079" Name="Parking place Pole status" Description="Parking place Pole" DatapointType="DPST-1-1" Puid="45" />
+                <GroupAddress Id="P-05D2-0_GA-13" Address="3080" Name="Parking place Bollard status" Description="Parking place Bollard" DatapointType="DPST-1-1" Puid="50" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-4" RangeStart="2048" RangeEnd="2303" Name="Environment/Room/Central" Puid="24">
+                <GroupAddress Id="P-05D2-0_GA-3" Address="2048" Name="Switch light central" Description="Office Central light" Central="true" DatapointType="DPST-1-1" Puid="26" />
+                <GroupAddress Id="P-05D2-0_GA-4" Address="2049" Name="Dawn switch" Puid="28" />
+                <GroupAddress Id="P-05D2-0_GA-9" Address="2058" Name="Meeting room Light room switch" Description="Meeting room Light room switch" Central="true" DatapointType="DPST-1-1" Puid="40" />
+                <GroupAddress Id="P-05D2-0_GA-14" Address="2059" Name="Parking place Light room switch" Description="Parking place Light room switch" Central="true" DatapointType="DPST-1-1" Puid="53" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-5" RangeStart="2560" RangeEnd="2815" Name="Dimming" Puid="33">
+                <GroupAddress Id="P-05D2-0_GA-7" Address="2560" Name="Meeting room dimm_light dimming" Description="Meeting room dimm_light" DatapointType="DPST-3-7" Puid="34" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-6" RangeStart="2816" RangeEnd="3071" Name="Value" Puid="36">
+                <GroupAddress Id="P-05D2-0_GA-8" Address="2816" Name="Meeting room dimm_light value" Description="Meeting room dimm_light" DatapointType="DPST-5-1" Puid="37" />
+              </GroupRange>
+            </GroupRange>
+            <GroupRange Id="P-05D2-0_GR-7" RangeStart="4096" RangeEnd="6143" Name="Sun protection" Puid="56">
+              <GroupRange Id="P-05D2-0_GR-8" RangeStart="4096" RangeEnd="4351" Name="Security/Room/Central" Puid="57">
+                <GroupAddress Id="P-05D2-0_GA-15" Address="4097" Name="Wind alert" Description="Meeting room Window 1" DatapointType="DPST-1-5" Puid="58" />
+                <GroupAddress Id="P-05D2-0_GA-16" Address="4098" Name="Rain alert" Description="Meeting room Window 1" DatapointType="DPST-1-5" Puid="60" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-9" RangeStart="4352" RangeEnd="4607" Name="Movement" Puid="62">
+                <GroupAddress Id="P-05D2-0_GA-17" Address="4352" Name="Meeting room Window 1 movement" Description="Meeting room Window 1" DatapointType="DPST-1-8" Puid="63" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-10" RangeStart="4608" RangeEnd="4863" Name="Step/Stop" Puid="65">
+                <GroupAddress Id="P-05D2-0_GA-18" Address="4608" Name="Meeting room Window 1 step/stop" Description="Meeting room Window 1" DatapointType="DPST-1-7" Puid="66" />
+              </GroupRange>
+            </GroupRange>
+            <GroupRange Id="P-05D2-0_GR-11" RangeStart="6144" RangeEnd="8191" Name="Heating/Cooling" Puid="69">
+              <GroupRange Id="P-05D2-0_GR-12" RangeStart="6912" RangeEnd="7167" Name="Variable" Puid="70">
+                <GroupAddress Id="P-05D2-0_GA-19" Address="6912" Name="Meeting room Radiator variable" Description="Meeting room Radiator" Puid="71" />
+                <GroupAddress Id="P-05D2-0_GA-25" Address="6913" Name="Meeting room Floor variable" Description="Meeting room Floor" Puid="90" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-13" RangeStart="6400" RangeEnd="6655" Name="Actual" Puid="73">
+                <GroupAddress Id="P-05D2-0_GA-20" Address="6400" Name="Meeting room heating current temperature" Description="Meeting room Floor" DatapointType="DPST-9-1" Puid="74" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-14" RangeStart="6656" RangeEnd="6911" Name="Setpoint" Puid="76">
+                <GroupAddress Id="P-05D2-0_GA-21" Address="6656" Name="Meeting room heating setpoint temperature" Description="Meeting room Floor" DatapointType="DPST-9-1" Puid="77" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-15" RangeStart="7168" RangeEnd="7423" Name="Operation mode" Puid="79">
+                <GroupAddress Id="P-05D2-0_GA-22" Address="7168" Name="Meeting room heating operation mode" Description="Meeting room Floor" DatapointType="DPST-20-102" Puid="80" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-16" RangeStart="7424" RangeEnd="7679" Name="Window contact" Puid="82">
+                <GroupAddress Id="P-05D2-0_GA-23" Address="7424" Name="Meeting room heating window contact" Description="Meeting room Floor" DatapointType="DPST-1-19" Puid="83" />
+              </GroupRange>
+              <GroupRange Id="P-05D2-0_GR-17" RangeStart="6144" RangeEnd="6399" Name="Room/Central" Puid="86">
+                <GroupAddress Id="P-05D2-0_GA-24" Address="6144" Name="Central operation mode switch" Description="Office Central operation mode switch" Central="true" DatapointType="DPST-20-102" Puid="88" />
+              </GroupRange>
+            </GroupRange>
+          </GroupRanges>
+        </GroupAddresses>
+      </Installation>
+    </Installations>
+  </Project>
+</KNX>

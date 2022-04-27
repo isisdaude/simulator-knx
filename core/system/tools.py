@@ -24,18 +24,18 @@ class Location:
         self.y = y
         self.z = z
 
+    def update_location(self, new_x=None, new_y=None, new_z=None):
+        self.x = (new_x or self.x)
+        self.y = (new_y or self.y)
+        self.z = (new_z or self.z)
+        self.pos = (self.x, self.y, self.z)
+
     def __str__(self):
         str_repr =  f"Location: {self.room}: {self.pos}\n"
         return str_repr
 
     def __repr__(self):
         return f"Location in {self.room} is {self.pos}\n"
-
-    def update_positon(self, new_x=None, new_y=None, new_z=None):
-        self.x = (new_x or self.x)
-        self.y = (new_y or self.y)
-        self.z = (new_z or self.z)
-        self.pos = (self.x, self.y, self.z)
 
 
 
@@ -255,6 +255,7 @@ def configure_system_from_file(config_file_path):
                         # print(room_builder[1].keys())
 
         # Parsing of group addresses to connect devices together
+        #TODO: link GA to iterface IP SVSHI 
         ga_style =  knx_config["group_address_style"]
         number_of_ga = knx_config["number_of_group_addresses"]
         ga_builders = knx_config["group_addresses"]

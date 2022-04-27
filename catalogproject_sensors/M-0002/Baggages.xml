@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0002">
+      <Baggages>
+        <Baggage TargetPath="" Name="DeviceConfigurationConverter0407.loc" Id="M-0002_BG--DeviceConfigurationConverter0407.2Eloc" FileIntegrity="00000000">
+          <FileInfo Version="1.0.578.0" TimeInfo="2016-02-25T08:21:12Z" />
+        </Baggage>
+        <Baggage Id="M-0002_BG--DeviceConfigurationConverter.2Edll" Name="DeviceConfigurationConverter.dll" TargetPath="" FileIntegrity="1D58BB44">
+          <FileInfo Version="1.0.578.0" TimeInfo="2013-11-06T06:24:42" />
+        </Baggage>
+        <Baggage Id="M-0002_BG-ABB.5FDNLD-ABB.5FDownload.2Edll" Name="ABB_Download.dll" TargetPath="ABB_DNLD" FileIntegrity="85DB0310">
+          <FileInfo Version="1.0.599.0" TimeInfo="2016-06-20T06:47:07.133" />
+        </Baggage>
+        <Baggage Id="M-0002_BG-ABB.5FDNLD-ABB.5FDownload0407.2Eloc" Name="ABB_Download0407.loc" TargetPath="ABB_DNLD" FileIntegrity="00000000">
+          <FileInfo Version="1.0.598.0" TimeInfo="2016-06-20T06:47:07.180" />
+        </Baggage>
+        <Baggage Id="M-0002_BG--ABB.5FMC10.2Edll" Name="ABB_MC10.dll" TargetPath="" FileIntegrity="FCA6E458">
+          <FileInfo Version="1.0.601.0" TimeInfo="2012-10-25T11:00:08" />
+        </Baggage>
+        <Baggage Id="M-0002_BG--ABB.5FMC100407.2Eloc" Name="ABB_MC100407.loc" TargetPath="" FileIntegrity="00000000">
+          <FileInfo Version="1.0.601.0" TimeInfo="2012-10-25T11:00:10" />
+        </Baggage>
+      </Baggages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

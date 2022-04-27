@@ -7,12 +7,27 @@ from datetime import timedelta
 from devices import Switch, LED, Brightness
 
 
+
+
 WIN_WIDTH = 1500
 WIN_LENGTH = 1000
+WIN_BORDER = 10  # Space between the window border and the Room wodget borders
+ROOM_BORDER = 40 # margin to place devices at room boundaries
 ROOM_WIDTH = 1000
 ROOM_LENGTH = 800
-BORDER = 10  # Space between the window border and the Room wodget borders
+
 OFFSET_BRIGHTNESS = 230
+OFFSET_SPRITE_LABEL = 10
+
+BLUENAVY_RGB = (1, 1, 122)
+BLUEAIRFORCE_RGB = (75, 119, 190)
+BLUEMARINER_RGB = (44, 130, 217)
+BLUEMOODY_RGB = (132, 141, 223)
+BLUESUMMERSKY_RGB = (30, 140, 211)
+BLUEMINSK_RGB = (50, 50, 120)
+BLUEJORDY_RGB = (137, 212, 244)
+BLUEIRIS_RGB = (0, 176, 221)
+
 
 
 class DeviceWidget(object):
@@ -35,7 +50,7 @@ class DeviceWidget(object):
         self.sprite = pyglet.sprite.Sprite(self.img_OFF, x=self.x, y=self.y, batch=self.batch, group=group) #x,y is bottom left of image
         self.label = pyglet.text.Label(self.label_name,
                                     font_name='Times New Roman', font_size=10,
-                                    x=(self.x+self.width//2), y=(self.y-20),
+                                    x=(self.x+self.width//2), y=(self.y-OFFSET_SPRITE_LABEL),
                                     anchor_x='center', anchor_y='center',
                                     batch=self.batch, group=group)
 
@@ -47,13 +62,13 @@ class DeviceWidget(object):
         return (self.x < x < self.x+self.width and
                 self.y < y < self.y+self.length)
 
-    def update_position(self,x, y, update_loc = False):
-        self.x = x
-        self.y = y
-        self.sprite.update(x=x, y=y)
-        self.label.update(x=(self.x+self.width//2), y=(self.y-20))
-        if update_loc:
-            self.in_room_device.location.update_position(x=x, y=y)
+    def update_position(self, new_x, new_y, update_loc=False):
+        self.x = new_x
+        self.y = new_y
+        self.sprite.update(x=self.x, y=self.y)
+        self.label.update(x=(self.x+self.width//2), y=(self.y-OFFSET_SPRITE_LABEL))
+        # if update_loc:
+        #     self.in_room_device.location.update_position(new_x=x, new_y=y)
 
     def delete(self):
         self.sprite.delete()
@@ -62,15 +77,20 @@ class DeviceWidget(object):
 
 class RoomWidget(object):
     def __init__(self, width, length, batch, group):
-        self.x = WIN_WIDTH - width - BORDER
-        self.y = BORDER
+        # Coordinates to draw room rectangle shape
+        self.x_shape = WIN_WIDTH - width - WIN_BORDER - 2*ROOM_BORDER
+        self.y_shape = WIN_BORDER
+        # Cordinates to represent the actual room dimensions (border is a margin for devices on boundaries)
+        self.x = WIN_WIDTH - width - WIN_BORDER - ROOM_BORDER
+        self.y = WIN_BORDER + ROOM_BORDER
+        # Actual dimensions of the room, not the rectangle shape
         self.width = width
         self.length = length
         self.batch = batch
-        self.shape = pyglet.shapes.BorderedRectangle(self.x, self.y, width, length, border=3,
-                                            color=(50, 180, 140), border_color=(200, 180, 140),
+        self.shape = pyglet.shapes.BorderedRectangle(self.x_shape, self.y_shape, width+2*ROOM_BORDER, length+2*ROOM_BORDER, border=ROOM_BORDER,
+                                            color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=self.batch, group=group)#, group = group
-        self.shape.opacity = 100
+        self.shape.opacity = 180
 
         self.devices = []
 
@@ -281,7 +301,6 @@ class GUIWindow(pyglet.window.Window):
                         room_device.sprite = pyglet.sprite.Sprite(room_device.img_ON, x=room_device.x, y=room_device.y, batch=self.batch, group=self.foreground)
                     else: # device turned OFF
                         room_device.sprite = pyglet.sprite.Sprite(room_device.img_OFF, x=room_device.x, y=room_device.y, batch=self.batch, group=self.foreground)
-
             except AttributeError: #if no state attribute (e.g. sensor)
                 pass
 
@@ -312,16 +331,28 @@ class GUIWindow(pyglet.window.Window):
             self.input_label.text = self.input_label.text[:-1] # Remove last character
         #TODO: Save the command input by the user and erase it from the text box
         elif symbol == pyglet.window.key.ENTER:
+            #
             from system import user_command_parser
             user_command_parser(self.input_label.text, self.room)
             self.switch_sprite()
-            print("Command is saved\n")
             self.input_label.text = ''
         # CTRL-ESCAPE to end the simulation
         elif symbol == pyglet.window.key.ESCAPE:
             if modifiers and pyglet.window.key.MOD_CTRL:
-                # print("The simulation has been ended.")
                 pyglet.app.exit()
+        # CTRL-P to Pause/Play simulation
+        elif symbol == pyglet.window.key.P:
+            if modifiers and pyglet.window.key.MOD_CTRL:
+                self.room.simulation_status = not self.room.simulation_status
+                if not self.room.simulation_status:
+                    logging.info("The simulation is paused")
+                    self.room.world.time.pause_time = time() # save current time to update start_time when
+                else:
+                    logging.info("The simulation is resumed")
+                    paused_time = time() - self.room.world.time.pause_time
+                    self.room.world.time.start_time += paused_time
+
+
 
     # def on_mouse_motion(self, x, y, dx, dy): # NOTE: for now, just a POC but ,ay be interestng to use it to highlight widgets
     #     ''' Called when the mouse is moving over the window (whithout button clicked):
@@ -436,24 +467,24 @@ class GUIWindow(pyglet.window.Window):
             else:
                 # Test if there is no moving devices
                 if not hasattr(self, 'moving_device'):
-                    for device in self.available_devices.devices:
-                        # Test if the user clicked on a available device on the side of the GUI (kind of 'library' of available devices)
-                        if device.hit_test(x, y):
-                            device_type = device.device_type
-                            # Add a "moving" instance of the selected device
-                            similar_dev_counter = 0
-                            for room_device in self.room_devices:
-                                if room_device.device_type == device_type:
-                                    similar_dev_counter += 1
-                            # Create a moving_device attribute
-                            self.moving_device = DeviceWidget(x, y, self.batch, device.file_ON, device.file_OFF, group=self.foreground, device_type=device_type, device_class=device.name, device_number=str(similar_dev_counter))
-                            return
+                    # for device in self.available_devices.devices:
+                    #     # Test if the user clicked on a available device on the side of the GUI (kind of 'library' of available devices)
+                    #     if device.hit_test(x, y):
+                    #         device_type = device.device_type
+                    #         # Add a "moving" instance of the selected device
+                    #         similar_dev_counter = 0
+                    #         for room_device in self.room_devices:
+                    #             if room_device.device_type == device_type:
+                    #                 similar_dev_counter += 1
+                    #         # Create a moving_device attribute
+                    #         self.moving_device = DeviceWidget(x, y, self.batch, device.file_ON, device.file_OFF, group=self.foreground, device_type=device_type, device_class=device.name, device_number=str(similar_dev_counter))
+                    #         return
                     for room_device in self.room_devices:
                         # Test if user clicked on a instanciated Room device to ajust its position in the Room
                         if room_device.hit_test(x, y):
                             # Repositioning of the room device object by a moving device object
                             self.moving_device = room_device
-                            self.moving_device.update_position(x = x - (self.moving_device.width//2), y = y - (self.moving_device.length//2))
+                            self.moving_device.update_position(new_x = x - (self.moving_device.width//2), new_y = y - (self.moving_device.length//2))
 
     # def remove_device(self, device):
     #     if hasattr(self, 'moving_device'):
@@ -471,6 +502,7 @@ class GUIWindow(pyglet.window.Window):
 
 
     def on_mouse_release(self, x, y, button, modifiers):
+        from system import Location
         ''' Called when a mouse button is released (LEFT, RIGHT or MIDDLE):
             Define multiple action to do when one of the mouse button is released'''
         # The LEFT button is used to select and manage devices  (position, group addresses, activation,...)
@@ -479,25 +511,40 @@ class GUIWindow(pyglet.window.Window):
             if hasattr(self, 'moving_device'):
                 # Place the device in the Room if user drop it in the room widget
                 if self.room_widget.hit_test(x, y):
-                    self.moving_device.update_position(x = x - (self.moving_device.width//2), y = y - (self.moving_device.length//2), update_loc=True)
-                    print(f"location of {self.moving_device.label_name} is {self.moving_device.in_room_device.location.position}")
+                    self.moving_device.update_position(new_x = x - (self.moving_device.width//2), new_y = y - (self.moving_device.length//2), update_loc=True)
+                    # print(f"location of {self.moving_device.label_name} is {self.moving_device.in_room_device.location.position}")
                     # Test if the moving device is not already in the room (if user is not simply changing the position of a room device)
                     if self.moving_device not in self.room_devices:
                         self.room_devices.append(self.moving_device)
                     self.display_devices_list()
                     delattr(self, 'moving_device')
+                else:
+                    self.replace_moving_device_in_room(x, y)
+
                 # Remove the device from the window annd from the list if user drop it outside teh room widget
                 # else:
                 #     self.remove_device(self.moving_device)
                 #     self.display_devices_list()
-
+    def replace_moving_device_in_room(self, x, y):
+        from system import Location
+        x_min = self.room_widget.x + self.moving_device.width//2
+        x_max = self.room_widget.x + self.room_widget.width - self.moving_device.width//2
+        y_min = self.room_widget.y + self.moving_device.length//2
+        y_max = self.room_widget.y + self.room_widget.length - self.moving_device.length//2
+        new_x = (x_min if x<x_min else x)
+        new_x = (x_max if x_max<x else x)
+        new_y = (y_min if y<y_min else y)
+        new_y = (y_max if y_max<y else y)
+        print(f"xmin:{x_min}, xmax:{x_max}")
+        print(f"__---___ newx:{new_x}, newy:{new_y}, x,y=({x},{y})")
+        self.moving_device.update_position(new_x, new_y)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         ''' Called when the mouse is dragged:
             Drag device accross the GUI if there is a moving device defined'''
         if buttons & pyglet.window.mouse.LEFT:
             if hasattr(self, 'moving_device'):
-                self.moving_device.update_position(x = x - (self.moving_device.width//2), y = y - (self.moving_device.length//2))
+                self.moving_device.update_position(new_x = x - (self.moving_device.width//2), new_y = y - (self.moving_device.length//2))
 
 
     def on_key_release(self, symbol, modifiers): # release the ga connecting flag
