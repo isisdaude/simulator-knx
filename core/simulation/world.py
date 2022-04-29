@@ -14,7 +14,7 @@ from numpy import mean
 #
 # from devices import *
 import system
-import devices as dev
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
@@ -85,6 +85,7 @@ class AmbientTemperature:
         self.temp_controllers.append(temp_controllers) #add check on sensor
 
     def update(self):
+        from devices import Heater
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         logging.info("Temperature update")
         if(not self.temp_sources):
@@ -93,7 +94,7 @@ class AmbientTemperature:
             max_temps = []
             for source in self.temp_sources: # sources of heat or cold
                 if source.device.is_enabled():
-                    if isinstance(source.device, dev.Heater):
+                    if isinstance(source.device, Heater):
                         max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
                     self.temperature += source.device.update_rule
             max_temp = mean(max_temps)

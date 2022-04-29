@@ -59,17 +59,19 @@ class KNXBus:
 
     # def remove_device(self, device):
 
-
-
     def transmit_telegram(self, telegram): # notifier is a functional module (e.g. button)
         #print("telegram in transmission")
         print(telegram)
         for ga_bus in self.ga_buses:
             if telegram.destination == ga_bus.group_address:
+                ## TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators: # loop on actuator linked to this group address
                     actuator.update_state(telegram)
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.update_state(telegram)
+                # for functional in ga_bus.functional_modules:
+                #     functional.receive_telegram(telegram)
+
 
 
 class GroupAddressBus:

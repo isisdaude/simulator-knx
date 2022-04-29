@@ -4,9 +4,9 @@ Some class definitions for the rooms contained in the system
 
 import logging
 from typing import List
-from devices import *
-import simulation as sim
 import gui
+import simulation as sim
+from devices import Device
 
 from .tools import Location
 from .knxbus import KNXBus
@@ -40,7 +40,6 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-
     def __init__(self, name: str, width: int, length: int, height:int, simulation_speed_factor:float):
         """The room's given name"""
         self.name = name
@@ -61,6 +60,7 @@ class Room:
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
+        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Switch, TemperatureController
         """Adds a device to the room at the given position"""
         if(x < 0 or x > self.width or y < 0 or y > self.length):
             logging.warning("Cannot add a device outside the room")
@@ -109,20 +109,20 @@ class Room:
                     gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
                     self.window.update_sensors(brightness_levels)#only brightness for now #TODO implement for temperatures
                 except:
-                    logging.error("Cannot update simulation time of the GUI window")
+                    logging.error("Room/World attributes missing to call update_world() method")
 
 
 
 
-    def __str__(self):
-        str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"
-        for room_device in self.devices:
-            str_repr += f"-> {room_device.name} at location ({room_device.get_x()}, {room_device.get_y()})"
-            if room_device.type == Actuator:
-                str_repr += "ON" if room_device.device.state else "OFF"
-                str_repr += f" is {room_device.device.state}"
-            str_repr += "\n"
-        return str_repr
+    # def __str__(self): # TODO: write str representation of room
+        # str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"
+        # for room_device in self.devices:
+        #     str_repr += f"-> {room_device.name} at location ({room_device.get_x()}, {room_device.get_y()})"
+        #     if room_device.type == Actuator:
+        #         str_repr += "ON" if room_device.device.state else "OFF"
+        #         str_repr += f" is {room_device.device.state}"
+        #     str_repr += "\n"
+        # return str_repr
 
     def __repr__(self):
         return f"Room {self.name}"

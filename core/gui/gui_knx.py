@@ -4,7 +4,6 @@ import logging
 from time import time
 from datetime import timedelta
 
-from devices import Switch, LED, Brightness
 
 
 
@@ -187,6 +186,7 @@ class GUIWindow(pyglet.window.Window):
 
 
     def initialize_system(self):
+        from devices import Switch, LED, Brightness
         # ratio to translate room size in pixels to place correctly devices
         self.room_width_ratio = ROOM_WIDTH / self.room.width
         self.room_length_ratio = ROOM_LENGTH / self.room.length

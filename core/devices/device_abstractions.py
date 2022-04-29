@@ -20,6 +20,8 @@ class Device(ABC):
 
         # Init addresses
         self.individual_addr = individual_addr
+        # Store the different ga the device is linked to
+        self.group_addresses = []
 
         #TODO: not necessary because already included in device types:
         if dev_type in ["actuator", "sensor", "sysdevice", "functional_module"]: #TODO: maybe create a config file, with the list of different types?
@@ -39,16 +41,6 @@ class Device(ABC):
         return f"Device : {self.name}  {self.refid}  status:{self.is_enabled()}  {self.individual_addr} "
 
 
-class FunctionalModule(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status, input_type):
-        super().__init__(name, refid, individual_addr, default_status, "functional_module")
-        if input_type in FUNCTIONAL_MODULE_TYPES:
-            self.input_type = input_type
-        else:
-            logging.warning(f"Functional Module input type '{input_type}' unknown")
-
-        # Store the different ga the device is linked to
-        self.group_addresses = []
 
     def send_telegram(self, payload, control_field):
         from system import Telegram # Import here to avoid circular import between system ,-> device_abstractions
@@ -75,9 +67,26 @@ class FunctionalModule(Device, ABC):
         except AttributeError:
             logging.warning(f"The Functional Module '{self.name}' is not connected to this KNX bus, and thus cannot deconnect from it")
 
+
+
+
+class FunctionalModule(Device, ABC):
+    def __init__(self, name, refid, individual_addr, default_status, input_type):
+        super().__init__(name, refid, individual_addr, default_status, "functional_module")
+        if input_type in FUNCTIONAL_MODULE_TYPES:
+            self.input_type = input_type
+        else:
+            logging.warning(f"Functional Module input type '{input_type}' unknown")
+
+
     @abstractmethod # must be implemented independantly for each particular functional module device
     def user_input(self):
         """ Interpret the user input (set switch ON/OFF, set temperature,...)"""
+
+    # should be an abstract method
+    def receive_telegram(self, telegram):
+        """Function to react to a received telegram from another device"""
+        pass
 
 class Sensor(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status, sensor_type):

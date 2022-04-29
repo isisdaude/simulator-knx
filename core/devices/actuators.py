@@ -1,6 +1,7 @@
 """
 Some class definitions for the simulated KNX actuators.
 """
+from system.telegrams import HeaterPayload, Payload, Telegram, TempControllerPayload, ButtonPayload, SwitchPayload
 from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 import sys, logging
@@ -27,9 +28,15 @@ class LED(LightActuator):
 
     def update_state(self, telegram):
         if telegram.control_field == True: # Control field bit
-            if telegram.payload == 0 or telegram.payload == 1: # 0 is the encoding for push-button, 1 for switch #TODO implement a class payload with different fields
-                self.state = not self.state
-        # if the control field is not True, the telegram does nto concern the LED
+
+            if isinstance(telegram.payload, ButtonPayload):
+                if telegram.payload.pushed:
+                    # telegram.payload == 0 or telegram.payload == 1: # 0 is the encoding for push-button, 1 for switch #TODO implement a class payload with different fields
+                    self.state = not self.state
+            if isinstance(telegram.payload, SwitchPayload):
+                if telegram.payload.switched:
+                    self.state = not self.state
+        # if the control field is not True, the telegram does nto concern the LED, except for a read state
 
 
 
@@ -79,12 +86,15 @@ class Heater(TemperatureActuator):
 
 
     def update_state(self, telegram):
-        if telegram.control_field == True: # Control field bit
-            if telegram.payload == 0: # Encoding of Push-Button
-                self.state = not self.state
-            #TODO:
-            # if telegram.payload == 10: #Encoding of temperature TemperatureController
-            #     self.power = payload.power
+         if telegram.control_field == True:  # Control field bit
+
+            if isinstance(telegram.payload, TempControllerPayload):
+
+                if telegram.payload.set_heater_power is not Payload.EMPTY_FIELD:
+                    wished_power = telegram.payload.set_heater_power
+                    if wished_power < 0:
+                        wished_power = 0
+                    self.power = wished_power if wished_power <= self.max_power else self.max_power
 
 
 class AC(TemperatureActuator):

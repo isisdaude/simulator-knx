@@ -11,9 +11,10 @@ DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC,
                 "Button": dev.Button, "Switch": dev.Switch, "TemperatureController": dev.TemperatureController,
                 "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySensor":dev.HumiditySensor,
                 "CO2Sensor": dev.CO2Sensor, "PresenceDetector": dev.PresenceDetector, "MovementDetector": dev.MovementDetector}
+# Situation of the insulation of the room associated to the correction factor for the heating
+INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
 
 """ Class tools """
-
 
 class Location:
     """Class to represent location"""
@@ -43,7 +44,7 @@ class Telegram:
     """Class to represent KNX telegrams and store its fields"""
     def __init__(self, control_field, source_individual_addr, destination_group_addr, payload):
         self.control_field = control_field
-        self.source = source_individual_addr
+        self.source: IndividualAddress = source_individual_addr
         self.destination = destination_group_addr
         self.payload = payload
 
@@ -255,7 +256,7 @@ def configure_system_from_file(config_file_path):
                         # print(room_builder[1].keys())
 
         # Parsing of group addresses to connect devices together
-        #TODO: link GA to iterface IP SVSHI 
+        #TODO: link GA to iterface IP SVSHI
         ga_style =  knx_config["group_address_style"]
         number_of_ga = knx_config["number_of_group_addresses"]
         ga_builders = knx_config["group_addresses"]
@@ -310,3 +311,26 @@ def user_command_parser(command, room):
         logging.warning("Unknown input")
         print(COMMAND_HELP)
     return True
+
+
+
+
+"""Tools used by the devices to perform update calculations"""
+def required_power(desired_temperature=20, volume=1, insulation_state="good"):
+    def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
+        dist = 18 - temp
+        return 70 - (dist * 7)/2
+    desired_wattage = volume*temp_to_watts(desired_temperature)
+    desired_wattage += desired_wattage * \
+        INSULATION_TO_CORRECTION_FACTOR[insulation_state]
+    return desired_wattage
+
+
+def max_temperature_in_room(power, volume=1.0, insulation_state="good"):
+    """Maximum reachable temperature for this heater in the specified room"""
+
+    def watts_to_temp(watts):
+        return ((watts - 70)*2)/7 + 18
+
+    watts = power / ((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
+    return watts_to_temp(watts)
