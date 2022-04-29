@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0006">
+      <Baggages>
+        <Baggage TargetPath="" Name="BerkerCTFSensor_Plugin_1_0_0_0.msi" Id="M-0006_BG--BerkerCTFSensor.5FPlugin.5F1.5F0.5F0.5F0.2Emsi" FileIntegrity="DD17248D">
+          <FileInfo Version="1.0.0.0" TimeInfo="2015-10-26T08:14:33Z" />
+        </Baggage>
+      </Baggages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

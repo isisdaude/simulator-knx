@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0083">
+      <Catalog>
+        <CatalogSection Id="M-0083_CS-R.2001" Name="Temperature Controller" Number="R 01" DefaultLanguage="en-US">
+          <CatalogSection Id="M-0083_CS-R.2001-HS.2001" Name="Brightness Sensor" Number="HS 01" VisibleDescription="" DefaultLanguage="en-US">
+            <CatalogItem Id="M-0083_H-76-1_HP-004C-11-9CF7_CI-SCN.2DLSD01.2E01-3" Name="SCN-LSD01.01 Brightness Sensor/Controller" Number="3" VisibleDescription="Brightnes Sensor with constant light control" ProductRefId="M-0083_H-76-1_P-SCN.2DLSD01.2E01" Hardware2ProgramRefId="M-0083_H-76-1_HP-004C-11-9CF7" DefaultLanguage="en-US" />
+          </CatalogSection>
+        </CatalogSection>
+      </Catalog>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0083_CS-R.2001">
+            <TranslationElement RefId="M-0083_CS-R.2001">
+              <Translation AttributeName="Name" Text="Temperature Controller" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0083_CS-R.2001-HS.2001">
+            <TranslationElement RefId="M-0083_CS-R.2001-HS.2001">
+              <Translation AttributeName="Name" Text="Brightness Sensor" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0083_H-76-1_HP-004C-11-9CF7_CI-SCN.2DLSD01.2E01-3">
+            <TranslationElement RefId="M-0083_H-76-1_HP-004C-11-9CF7_CI-SCN.2DLSD01.2E01-3">
+              <Translation AttributeName="Name" Text="SCN-LSD01.01 Brightness Sensor/Controller" />
+              <Translation AttributeName="VisibleDescription" Text="Brightnes Sensor with constant light control" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

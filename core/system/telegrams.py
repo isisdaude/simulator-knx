@@ -1,10 +1,11 @@
 from abc import ABC, abstractclassmethod
 
-from system.tools import IndividualAddress
+
 
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""
     def __init__(self, control_field, source_individual_addr, destination_group_addr, payload):
+        from system.tools import IndividualAddress
         self.control_field = control_field
         self.source: IndividualAddress = source_individual_addr
         self.destination = destination_group_addr
@@ -16,20 +17,31 @@ class Telegram:
 
 class Payload(ABC):
     """Abstract class to represent the payload given as attribute to the Telegrams sent"""
-    
+
     def __init__(self):
         super().__init__()
-    
+
     EMPTY_FIELD = None
     """Static constant to represent an empty payload field, that is not used."""
 
+class SwitchPayload(Payload):
+    """Class to represent the payload of a switch (button with state)"""
+    def __init__(self, switched: bool):
+        super().__init__()
+        self.switched = switched
+
+    def __str__(self) -> str:
+        return "The switch is switched." if self.switched else "The switch is not switched."
+
+
+
 class ButtonPayload(Payload):
-    """Class to represent the payload of a normal button"""
+    """Class to represent the payload of a normal push-button"""
 
     def __init__(self, pushed: bool):
         super().__init__()
         self.pushed = pushed
-    
+
     def __str__(self) -> str:
         return "The button is pushed." if self.pushed else "The button is not pushed."
 
@@ -49,9 +61,6 @@ class TempControllerPayload(Payload):
     def __init__(self, set_heater_power):
         super().__init__()
         self.set_heater_power = set_heater_power
-    
+
     def __str__(self) -> str:
         return f"The temperature controller sets the power of the heater to {self.set_heater_power}."
-
-
-    

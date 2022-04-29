@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <Project Id="P-05D2">
+    <ProjectInformation Name="catalogproject" GroupAddressStyle="ThreeLevel" LastModified="2022-04-07T19:17:27.4546411Z" ProjectStart="2022-04-07T19:03:37.645965Z" Comment="" LastUsedPuid="101" Guid="19ea54b4-ffa5-4ebb-a3c2-f57ee3cf06f8" />
+  </Project>
+</KNX>

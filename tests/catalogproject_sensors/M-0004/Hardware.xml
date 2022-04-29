@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0004">
+      <Hardware>
+        <Hardware Id="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A" Name="Präsenzmelder Komfort" SerialNumber="4 // 3360-1" VersionNumber="1" BusCurrent="6.0000000e+000" IsAccessory="0" HasIndividualAddress="1" HasApplicationProgram="1" HasApplicationProgram2="0" IsPowerSupply="0" IsChoke="0" IsCoupler="0" IsPowerLineRepeater="0" IsPowerLineSignalFilter="0" IsCable="0" OriginalManufacturer="M-000A" NonRegRelevantDataVersion="0" IsIPEnabled="0">
+          <Products>
+            <Product Id="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_P-3360.2D1" Text="Präsenzmelder Universal" OrderNumber="3360-1" IsRailMounted="0" DefaultLanguage="de-DE" Hash="gCdgUCLjh5PXbDQtMIV1NalGd/M=" NonRegRelevantDataVersion="0">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationSignature="RVvIUi/5jbqe1PfeNOmw/kOoW1Yk9TxMbfXSndqwH45krOSMFM9BLT121vvu6SxuEBSPz6vHiBPe/RzBL5GSsDO9hetWn5wVngevyjNFpr7nsHtoGU5D/JmRoVzmMdOxcofWx+PDxGnSosYAzyKz77qMaBHONVZGaEXktcdlZFQ=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_HP-A00F-01-09EC-O000A" MediumTypes="MT-0" Hash="mbGCWi2OZMtZfkSfm+R6O2ZgHuw=">
+              <ApplicationProgramRef RefId="M-0004_A-A00F-01-09EC-O000A" />
+              <RegistrationInfo RegistrationSignature="QiY1Xf8MZAWnd6uIX8zRdOLXFdH2qnt+6mpqxCrsqEQe/UvCu0waE7ELYyLK5DKlX2RtJZmWsDNNGC9CarM2tB4vhObulxD5WoEjvGI0Xr9UxaaC7bcrmA/yMLS1e1BFJAHZbqr1E2VzAISF4Jac/pyPmuKkz1dwJ7aNQpO2ujE=" OriginalRegistrationNumber="2003/5988" RegistrationNumber="2003/5991" RegistrationStatus="Registered" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+        <Hardware Id="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4" Name="CO2-Sensor" SerialNumber="4 // CO2..2178" VersionNumber="1" BusCurrent="2.5000000e+001" IsAccessory="0" HasIndividualAddress="1" HasApplicationProgram="1" HasApplicationProgram2="0" IsPowerSupply="0" IsChoke="0" IsCoupler="0" IsPowerLineRepeater="0" IsPowerLineSignalFilter="0" IsCable="0" OriginalManufacturer="M-00F4" NonRegRelevantDataVersion="0" IsIPEnabled="0">
+          <Products>
+            <Product Id="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_P-CO2.2E.2E2178" Text="CO2-Sensor" OrderNumber="CO2..2178" IsRailMounted="0" DefaultLanguage="de-DE" Hash="9EP4AWC2+NVXZI30XSgtnk0vlmE=" NonRegRelevantDataVersion="0">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationSignature="ypmvXiehp/sbQcgvUc5dXcwfJtHjfoQXodhBZk5u0awDw4Xd+xrz9DhZwT1igDA+sbnjMYs03hKy1/rPiW1Ws2FvEQgeqd/Wb+506eazpTbgOGDupPXR9s/pSpf2aD3LDMShUDFWZ3KRxIlxKE8OIGENDpdmIV9+ME4BgyXsGA4=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_HP-7062-11-7E30-O00F4" MediumTypes="MT-0" Hash="6j5u4oyFQ6mDK2gzfCfarY6pHZU=">
+              <ApplicationProgramRef RefId="M-0004_A-7062-11-7E30-O00F4" />
+              <RegistrationInfo RegistrationSignature="GRHkT+rWDDVBaSH3PJI98uG2AN2eteQ4vGqspfjKCzFxtuk+92P5DYXcgDIBRDI56x583NZ1wYFy4E/TN3MRhT9w8EMqxl+stX3DkgkXYfu+GDfSl0d7GXQqwPwEJE6pskeT/FiQniqyDdSpaZ+JF2tWO97BNjfB503AUlvIz50=" OriginalRegistrationNumber="2011/9673" RegistrationNumber="2011/9674" RegistrationStatus="Registered" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_P-3360.2D1">
+            <TranslationElement RefId="M-0004_H-4.20.2F.2F.203360.2D1-1-O000A_P-3360.2D1">
+              <Translation AttributeName="Text" Text="Presence detector G491'Komfort'" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_P-CO2.2E.2E2178">
+            <TranslationElement RefId="M-0004_H-4.20.2F.2F.20CO2.2E.2E2178-1-O00F4_P-CO2.2E.2E2178">
+              <Translation AttributeName="Text" Text="CO2 multi-sensor" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

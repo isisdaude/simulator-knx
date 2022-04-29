@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0002">
+      <Hardware>
+        <Hardware Id="M-0002_H-2CDG.20110.20101.20R0011-1" Name="DLR/S8.16.1M DALI-Light Controller,8f,MDRC" SerialNumber="2CDG 110 101 R0011" VersionNumber="1" BusCurrent="10" HasIndividualAddress="true" HasApplicationProgram="true">
+          <Products>
+            <Product Id="M-0002_H-2CDG.20110.20101.20R0011-1_P-2CDG.20110.20101.20R0011" Text="DLR/S8.16.1M DALI Light Controller,8f,MDRC" OrderNumber="2CDG 110 101 R0011" IsRailMounted="true" WidthInMillimeter="105" DefaultLanguage="en-US" Hash="7BEXM4JVpwtHFMlwN6jTfiW2P/s=">
+              <Attributes>
+                <Attribute Id="M-0002_H-2CDG.20110.20101.20R0011-1_P-2CDG.20110.20101.20R0011_AT-Series" Name="Series" Value="proM" />
+              </Attributes>
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationSignature="wDPfEtZqp38kX/iflq6rcylPz4Nl9i0I+x0F7COUfZkJJCnUy/iz1ZXgzNG0g86Gc2NrTQxZTd4Mojd51/dRG/aQDygdls9pf4/ZJgaIEcxYNWBKPzwC+tdUjQ1UWW8V/kK8thwGFGr1GNi7C4A6rnmsMhZ6CZ9t8sCg0lPmTX0=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0002_H-2CDG.20110.20101.20R0011-1_HP-A058-14-E094" MediumTypes="MT-0" Hash="y582R1z5xKTazROSZQm7iuBDVcM=">
+              <ApplicationProgramRef RefId="M-0002_A-A058-14-E094" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2013/10618" RegistrationSignature="SCMf+jRgj5ypm4vypTu2pq6wgH5QR77Y8VXJODPIyNamH2XwIRFFuwW3D7uaR6T5SKONvS6PbTDry2lJ372ehDWMCRDYg17Byw2PyS26hewvT6RrzBPxBQKP/+B3TH/WBwvHtfcEnYVvvzAPT8eOUusngu/t90eDtCAjH9lGjVg=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0002_H-2CDG.20110.20101.20R0011-1_P-2CDG.20110.20101.20R0011">
+            <TranslationElement RefId="M-0002_H-2CDG.20110.20101.20R0011-1_P-2CDG.20110.20101.20R0011">
+              <Translation AttributeName="Text" Text="DLR/S8.16.1M DALI Light Controller,8f,MDRC" />
+            </TranslationElement>
+            <TranslationElement RefId="M-0002_H-2CDG.20110.20101.20R0011-1_P-2CDG.20110.20101.20R0011_AT-Series">
+              <Translation AttributeName="Value" Text="proM" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

@@ -1,24 +1,43 @@
 """
 Some class definitions for the simulated KNX functional modules (button, switch, Temp controller,...).
 """
-from typing import List, Tuple
-from devices.actuators import Heater
-from .tools import *
-from system.tools import IndividualAddress
+import logging
 from .device_abstractions import FunctionalModule
-from .sensors import Thermometer
-from system.telegrams import ButtonPayload, HeaterPayload, Payload, Telegram, TempControllerPayload
+# from .actuators import
+# from .sensors import Thermometer
+# from system.tools import IndividualAddress
+from system.telegrams import ButtonPayload, SwitchPayload, HeaterPayload, Payload, Telegram, TempControllerPayload
+
+#from abc import ABC, abstractclassmethod
 
 
 class Button(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
         super().__init__(name, refid, location, default_status, "button")
+        # self.state = 0  ## button has no state, it can just be pressed and realeased directly
 
     def user_input(self):
-        print(f"[INFO] The {self.name} has been pressed")
+        logging.info(f"The {self.name} has been pressed")
+        # self.state = not self.state
         payload = ButtonPayload(pushed=True)
-        control_field = True
-        self.send_telegram(payload, control_field)
+        self.send_telegram(payload, control_field = True)
+        # send to the knxbus giving itself as argument
+
+class Switch(FunctionalModule):
+    def __init__(self, name, refid, location, default_status):
+        super().__init__(name, refid, location, default_status, "switch")
+        # self.state = 0  ## button has no state, it can just be pressed and realeased directly
+        self.state = False
+        self.str_state = "OFF"
+
+    def user_input(self):
+        self.state = not self.state
+        self.str_state = "ON" if self.str_state=="OFF" else "OFF" #switch the state of the switch
+        logging.info(f"The {self.name} has been switched {self.str_state}")
+        payload = SwitchPayload(switched=True)
+        # Send Telegram to the knxbus giving itself as argument
+        self.send_telegram(payload, control_field = True)
+
 
 class TemperatureController(FunctionalModule):
     def __init__(self, name, refid, individual_addr, default_status):
@@ -26,20 +45,23 @@ class TemperatureController(FunctionalModule):
         self.state = 10
         self.room_volume = 0
         self.room_insulation = 'average'
+        #self.sensor = Thermometer() ##TODO: init sensor with default config
+
+##TODO:  when temp is set, send telegram to heat sources
 
     def user_input(self, wished_temp):
-        print(
-            f"User request for {wished_temp}°C in the room, on controller {self.name}.")
+        logging.info(f"User asked to reach {wished_temp} on controller {self.name}")
         self.state = wished_temp
-        self.update_heaters()
+        self.update_heaters() ## TODO update sources
 
-    def receive_telegram(self, telegram: Telegram):
-        """Function to react to a received telegram from another device"""
-        pass
+        # payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
+        # control_field = 0 # to differentiate between data (temperature read) and control (set heater ON) telegrams
+        # # depends on the user input/request
+        # self.send_telegram(payload, control_field = True)
 
     def update_heaters(self):
+        from system.tools import required_power
         """Function to update the heaters' values to reach the desired temperature"""
-        required = required_power(
-            self.state, self.room_volume, self.room_insulation)
-        print(f"Sent required wattage to each heater linked to this controller.")
+        required = required_power(self.state, self.room_volume, self.room_insulation)
+        logging.info(f"Sent required wattage to each heater linked to this controller.")
         self.send_telegram(TempControllerPayload(required), True)

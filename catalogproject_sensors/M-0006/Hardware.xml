@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-0006">
+      <Hardware>
+        <Hardware Id="M-0006_H-6.20.2F.2F.2080262xxx-0" Name="80262xxx" SerialNumber="6 // 80262xxx" VersionNumber="0" BusCurrent="20" HasIndividualAddress="true" HasApplicationProgram="true">
+          <Products>
+            <Product Id="M-0006_H-6.20.2F.2F.2080262xxx-0_P-80262xxx" Text="Movement detector, 180°" OrderNumber="80262xxx" IsRailMounted="false" DefaultLanguage="en-US" Hash="MNC0Bw61GYa7fcdjFanXlu47jbM=">
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationDate="2016-01-15" RegistrationSignature="LplU/YZcET6cZylTE+jmBdezZ8JXtaY14eOW6LcrjWQ4UwoU0pO5IFVKewXfFL5iSYxFf+fU7zDrWjUIaubyOnb0iwgc6ZuY6b+NjDbZK7uP4TE+FUlE6ei1t8gDK/4enFecUcOH3Ydj+fhow18c1tbpEWwrunB0QzdO1nypLQo=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0006_H-6.20.2F.2F.2080262xxx-0_HP-E05A-10-D5AA" MediumTypes="MT-0" Hash="ENAXcgCAKJylLn7/x1Qwu1ezfAA=">
+              <ApplicationProgramRef RefId="M-0006_A-E05A-10-D5AA" />
+              <RegistrationInfo RegistrationStatus="Registered" RegistrationNumber="2016/12792" RegistrationDate="2016-01-15" RegistrationSignature="f30bRF4sqsD/hkVKr5I6Lmy539y3QLn3Y2X4CzyrqbsZVOnfzQVzwHh+N+ZrUmeHTEnMeqEiu7dVNaXOHFYUN0Hsrhxer/dE4xpzWnKmw6v1l5J/dE52edyzRytPcA+kialqDMXZKn3Qj/4vJl9EQHACfw1bGzvqLaeY9KhQOps=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+        <Hardware Id="M-0006_H-6.20.2F.2F.20754413xx-1-O00F4" Name="KNX CTF Sensor" SerialNumber="6 // 754413xx" VersionNumber="1" BusCurrent="25" HasIndividualAddress="true" HasApplicationProgram="true" OriginalManufacturer="M-00F4">
+          <Products>
+            <Product Id="M-0006_H-6.20.2F.2F.20754413xx-1-O00F4_P-754413xx" Text="KNX CO2 Sensor" OrderNumber="754413xx" IsRailMounted="false" DefaultLanguage="de-DE" Hash="gDEf/svnB4yEOMoflwu4GbXXKTE=">
+              <RegistrationInfo RegistrationStatus="Certified" RegistrationSignature="hWr+NgbZ1hDP7K99M96wbsJ4iOfXkDCWk/v5FjvR6euLni75WbmYeRWBtww3snxvmBkCZFBcVbIeQjsRXJuIRNVufWJAfiEyHh4Wv1mBcTZX3ZLNj5sAT0xjSmKdQfeqiAKh20ttEheBD2lHaFYo98xNcWtVd5vbcmPEJaUQGvE=" />
+            </Product>
+          </Products>
+          <Hardware2Programs>
+            <Hardware2Program Id="M-0006_H-6.20.2F.2F.20754413xx-1-O00F4_HP-7062-10-731C-O00F4" MediumTypes="MT-0" Hash="YCpspUXerwnJh5OZ791eHJfedM8=">
+              <ApplicationProgramRef RefId="M-0006_A-7062-10-731C-O00F4" />
+              <RegistrationInfo RegistrationStatus="Certified" RegistrationNumber="2015/12650" RegistrationDate="2015-10-29" RegistrationSignature="gYQmfhPxdMnpjIr+A0NShk+MGOASo3SE1cOuexC4+KIPLEG4eYUXuZvPzOqLHVRSwo4BpxVGSilt9nc+Ac608Jz59KKUtU1jsHNUQJXfKdqxJkA1phGXgpBsRAvfF5VGQkWHE0fT8nADk6+2DL46/6xjxZyPg+NgzMIAhVGwYiQ=" />
+            </Hardware2Program>
+          </Hardware2Programs>
+        </Hardware>
+      </Hardware>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-0006_H-6.20.2F.2F.20754413xx-1-O00F4_P-754413xx">
+            <TranslationElement RefId="M-0006_H-6.20.2F.2F.20754413xx-1-O00F4_P-754413xx">
+              <Translation AttributeName="Text" Text="KNX CO2 sensor" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

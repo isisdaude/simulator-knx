@@ -7,3 +7,6 @@ when modifying classes:
 
 When adding new devices types ("light",...):
 -> modify the list in devices.abstractions
+
+Config file json:
+-> keys are names (area0, line0, led1, switch1,...)

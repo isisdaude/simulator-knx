@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" CreatedBy="ETS6" ToolVersion="6.0.4351.0" xmlns="http://knx.org/xml/project/21">
+  <ManufacturerData>
+    <Manufacturer RefId="M-006C">
+      <Catalog>
+        <CatalogSection Id="M-006C_CS-9025" Name="9025" Number="9025" DefaultLanguage="en-US">
+          <CatalogSection Id="M-006C_CS-9025-SNS" Name="Sensors" Number="SNS" DefaultLanguage="en-US">
+            <CatalogItem Id="M-006C_H-MC06A01KNX-0_HP-0677-10-3537_CI-MC06A01KNX-1" Name="MC06A01KNX CO2 / Humidity / Temperature Controller - A01" Number="1" ProductRefId="M-006C_H-MC06A01KNX-0_P-MC06A01KNX" Hardware2ProgramRefId="M-006C_H-MC06A01KNX-0_HP-0677-10-3537" DefaultLanguage="en-US" />
+          </CatalogSection>
+        </CatalogSection>
+      </Catalog>
+      <Languages>
+        <Language Identifier="en-US">
+          <TranslationUnit RefId="M-006C_CS-9025">
+            <TranslationElement RefId="M-006C_CS-9025">
+              <Translation AttributeName="Name" Text="9025" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-006C_CS-9025-SNS">
+            <TranslationElement RefId="M-006C_CS-9025-SNS">
+              <Translation AttributeName="Name" Text="Sensors" />
+            </TranslationElement>
+          </TranslationUnit>
+          <TranslationUnit RefId="M-006C_H-MC06A01KNX-0_HP-0677-10-3537_CI-MC06A01KNX-1">
+            <TranslationElement RefId="M-006C_H-MC06A01KNX-0_HP-0677-10-3537_CI-MC06A01KNX-1">
+              <Translation AttributeName="Name" Text="MC06A01KNX CO2 / Humidity / Temperature Controller - A01" />
+            </TranslationElement>
+          </TranslationUnit>
+        </Language>
+      </Languages>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>

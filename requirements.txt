@@ -5,3 +5,7 @@ aioconsole
 pynput
 datetime
 apscheduler
+bs4
+lxml
+json
+copy
