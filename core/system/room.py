@@ -57,6 +57,8 @@ class Room:
         self.devices: List[InRoomDevice] = []
         """Simulation status to pause/resume"""
         self.simulation_status = True
+        """Group addresses style by default"""
+        self.group_address_style = '3-levels'
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
@@ -90,7 +92,7 @@ class Room:
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
                 self.world.ambient_temperature.add_sensor(in_room_device)
                 #print(f"A button was added at {x} : {y}.")
-
+        return in_room_device
     ### TODO: implement removal of devices
     # def remove_device(self, in_room_device):
     #     for device in self.devices:
@@ -106,12 +108,18 @@ class Room:
     def update_world(self, interval=1, gui_mode=False):
         if self.simulation_status:
             brightness_levels, temperature_levels = self.world.update() #call the update function of all ambient modules in world
+            #brightness_levels = brightness_sensor_name, brightness
             if gui_mode:
                 try: # attributes are created in main (proto_simulator)
                     gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
-                    self.window.update_sensors(brightness_levels)#only brightness for now #TODO implement for temperatures
-                except:
-                    logging.error("Room/World attributes missing to call update_world() method")
+                except AttributeError:
+                    logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
+                except Exception as msg:
+                    logging.error(f"Cannot update GUI window: '{msg}'")
+                try:
+                    self.window.update_sensors(brightness_levels, temperature_levels) #only brightness for now #TODO implement for temperatures
+                except Exception as msg:
+                    logging.error(f"Cannot update sensors value on GUI window: '{msg}'")
 
 
 

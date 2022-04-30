@@ -16,11 +16,11 @@ class KNXBus:
 
     def attach(self, device, group_address : GroupAddress): #If not in list, add the observer to the list
         if isinstance(device, Sensor):
-            if device.group_address == group_address:
+            if group_address in device.group_addresses:
                 logging.info(f"The sensor {device.name} is already connected to the KNX Bus through this group address")
                 return
             else:
-                device.group_address == group_address
+                device.group_addresses.append(group_address)
         if isinstance(device, Actuator):
             if group_address in device.group_addresses:
                 logging.info(f"The actuator {device.name} is already connected to the KNX Bus through this group address")

@@ -42,13 +42,15 @@ if __name__ == "__main__":
     GUI_MODE = True
     FILE_CONFIG_MODE = True
     DEV_CONFIG = False
+    default_mode = False
+    DEFAULT_CONFIG = True
     CONFIG_PATH = "simulation_config.json"
-    config_file_path = CONFIG_PATH
+    DEFAULT_CONFIG_PATH = "default_config.json"
     logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
     # System configuration based on a JSON config file
     if FILE_CONFIG_MODE:
-        rooms = configure_system_from_file(config_file_path)
+        rooms = configure_system_from_file(CONFIG_PATH)
 
     # System configuration from function configure_system
     elif DEV_CONFIG:
@@ -61,6 +63,10 @@ if __name__ == "__main__":
                 continue
         rooms = configure_system(simulation_speed_factor)
 
+    elif DEFAULT_CONFIG:
+        default_mode = True
+        rooms = configure_system_from_file(DEFAULT_CONFIG_PATH)
+
     else:
         while(True): # Waits for the input to be a correct speed factor, before starting the simulation
             try:
@@ -71,19 +77,19 @@ if __name__ == "__main__":
                 continue
         rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor)]
 
+
     room1 = rooms[0] # for now only one room
 
     # GUI interface with the user
     if GUI_MODE: #########TODO: setup devices on the GUI ##########
                 ##########TODO: and parser of command through gui ######
-        window = gui.GUIWindow(room1)###
+        config_path = DEFAULT_CONFIG_PATH if default_mode else CONFIG_PATH
+        window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, rooms)###
         window.initialize_system()
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time
         # TODO: implement for multiple rooms
-        room1.window = window # same for the GUi window object, but to room1 object
-        pyglet.clock.schedule_interval(room1.update_world, interval=1, gui_mode=True) # update every 1seconds, corresponding to 1 * speed_factor real seconds
         try:
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):

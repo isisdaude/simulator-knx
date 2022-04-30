@@ -91,7 +91,6 @@ class FunctionalModule(Device, ABC):
 class Sensor(Device, ABC):
     def __init__(self, name, refid, individual_addr, default_status, sensor_type):
         super().__init__(name, refid, individual_addr, default_status, "sensor")
-        self.group_address = 0 # sensors can communicate with only one group address
         #TODO: necessary?
         if sensor_type in SENSOR_TYPES:
             self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
@@ -104,7 +103,6 @@ class Actuator(Device, ABC):
         super().__init__(name, refid, individual_addr, default_status, "actuator")
 
         self.state = default_state #=False if not indicated, meaning OFF, some actuator can have a value in addition to their state (dimmed light)
-        self.group_addresses = [] # Actuators can receive telegrams from multiple group addresses
         #TODO: necessary?
         if actuator_type in ACTUATOR_TYPES:
             self.actuator_type = actuator_type

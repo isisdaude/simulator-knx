@@ -1,10 +1,10 @@
 {
   "knx":{
     "number_of_areas":1,
-    "number_of_lines":1,
     "area0":{
+      "number_of_lines":1,
       "line0":{
-        "number_of_devices":6,
+        "number_of_devices":7,
         "devices":{
           "led1":{
             "class":"LED",
@@ -15,6 +15,11 @@
             "class":"LED",
             "refid":"M-0_L2",
             "location":"0.0.2",
+            "status":"enabled"},
+          "led3":{
+            "class":"LED",
+            "refid":"M-0_L3",
+            "location":"0.0.3",
             "status":"enabled"},
           "switch1":{
             "class":"Switch",
@@ -45,7 +50,7 @@
       {"address":"1/1/1",
       "group_devices":["led1", "switch1"]},
       {"address":"1/1/2",
-      "group_devices":["led2", "switch2"]}]
+      "group_devices":["led2", "led3", "switch2"]}]
   },
 
   "world":{
@@ -55,10 +60,11 @@
       "name":"bedroom1",
       "dimensions":[20, 20, 3],
       "insulation":"good",
-      "number_of_devices":6,
+      "number_of_devices":7,
       "room_devices":{
         "led1":[5, 5, 1],
         "led2":[10, 17, 1],
+        "led3":[7, 19, 1],
         "switch1":[0, 0, 1],
         "switch2":[7, 9, 1],
         "bright1":[18, 18, 1],

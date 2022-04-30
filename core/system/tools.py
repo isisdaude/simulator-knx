@@ -101,11 +101,26 @@ class GroupAddress:
 
     def __str__(self): # syntax when instance is called with print()
         if self.encoding_style == '3-levels':
-            return f" Group Address(main:{self.main}, middle:{self.middle}, sub:{self.sub})"
+            return f"({self.main}/{self.middle}/{self.sub})"
         elif self.encoding_style == '2-levels':
-            return f" Group Address(main:{self.main}, sub:{self.sub})"
+            return f"({self.main}/{self.sub})"
         elif self.encoding_style == 'free':
-            return f" Group Address(main:{self.main}) "
+            return f"({self.main})"
+
+        # if self.encoding_style == '3-levels':
+        #     return f" Group Address(main:{self.main}, middle:{self.middle}, sub:{self.sub})"
+        # elif self.encoding_style == '2-levels':
+        #     return f" Group Address(main:{self.main}, sub:{self.sub})"
+        # elif self.encoding_style == 'free':
+        #     return f" Group Address(main:{self.main}) "
+
+    def __repr__(self): # syntax when instance is called with print()
+        if self.encoding_style == '3-levels':
+            return f"({self.main}/{self.middle}/{self.sub})"
+        elif self.encoding_style == '2-levels':
+            return f"({self.main}/{self.sub})"
+        elif self.encoding_style == 'free':
+            return f"({self.main})"
 
 # __eq__() or __lt__(), "is" operator to check if an instances are of the same type
     def __lt__(self, ga_to_compare): # self is the group addr ref, we want to check if self is smaller than the other ga
@@ -141,7 +156,8 @@ def compute_distance(source, sensor) -> float:
     """ Computes euclidian distance between a sensor and a actuator"""
     delta_x = abs(source.location.x - sensor.location.x)
     delta_y = abs(source.location.y - sensor.location.y)
-    dist = math.sqrt(delta_x**2 + delta_y**2) # distance between light sources and brightness sensor
+    delta_z = abs(source.location.z - sensor.location.z)
+    dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
     return dist
 
 
@@ -160,6 +176,7 @@ def configure_system(simulation_speed_factor):
 
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+    room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
     room1.add_device(switch1, 0, 0, 1)
@@ -187,8 +204,7 @@ def configure_system_from_file(config_file_path):
         world_config = config_dict["world"]
         # Store number of elements to check that the config file is correct
         number_of_rooms = world_config["number_of_rooms"]
-        number_of_areas, number_of_lines = knx_config["number_of_areas"], knx_config["number_of_lines"]
-
+        number_of_areas = knx_config["number_of_areas"]
         # Parsing of the World config to create the room(s), and store corresponding devices
         simulation_speed_factor = world_config["simulation_speed_factor"]
         rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'switch': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
@@ -204,6 +220,7 @@ def configure_system_from_file(config_file_path):
             x, y, z = room_config["dimensions"]
             # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
             room = Room(room_config["name"], x, y, z, simulation_speed_factor)
+            room.group_address_style = '3-levels'
             # Store room object to return to main
             rooms.append(room)
             room_devices_config = room_config["room_devices"]
@@ -214,6 +231,7 @@ def configure_system_from_file(config_file_path):
         # Parsing of devices to add in the room
         for a in range(number_of_areas):
             area_key = "area"+str(a) #area0, area1,...
+            number_of_lines = knx_config[area_key]["number_of_lines"]
             for l in range(number_of_lines):
                 line_key = "line"+str(l) #line0, line1,...
                 try:

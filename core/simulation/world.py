@@ -147,6 +147,7 @@ class AmbientLight:
             # Update the sensor's brightness
             sensor.device.brightness = self.read_brightness(sensor) # set the newly calculated sensor brightness
             brightness_levels.append((sensor.device.name, sensor.device.brightness))
+
         return brightness_levels
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''

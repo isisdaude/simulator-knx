@@ -1,0 +1,48 @@
+{
+  "knx":{
+    "number_of_areas":1,
+    "area0":{
+      "number_of_lines":1,
+      "line0":{
+        "number_of_devices":3,
+        "devices":{
+          "led1":{
+            "class":"LED",
+            "refid":"M-0_L1",
+            "location":"0.0.1",
+            "status":"enabled"},
+          "switch1":{
+            "class":"Switch",
+            "refid":"M-0_B1",
+            "location":"0.0.20",
+            "status":"enabled"},
+          "bright1":{
+            "class":"Brightness",
+            "refid":"M-0_S1",
+            "location":"0.0.5",
+            "status":"enabled"}
+        }
+      }
+    },
+    "group_address_style":"3-levels",
+    "number_of_group_addresses":1,
+    "group_addresses":[
+      {"address":"1/1/1",
+      "group_devices":["led1", "switch1"]}]
+  },
+  "world":{
+    "simulation_speed_factor":180,
+    "number_of_rooms":1,
+    "room1":{
+      "name":"bedroom1",
+      "dimensions":[20, 20, 3],
+      "insulation":"average",
+      "number_of_devices":3,
+      "room_devices":{
+        "led1":[7, 12, 1],
+        "switch1":[0, 0, 1],
+        "bright1":[18, 3, 1]
+      }
+    }
+  }
+}
