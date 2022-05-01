@@ -1,0 +1,12 @@
+
+PNG images for KNX Simulator using piglet library
+
+lightbulb (40x60)
+switch (60x31)
+Brightness sensor (61x42)
+Thermometer 26x80
+
+Button 51x50 or 50x51
+
+
+CTRL-leftclick to set up group addresses
