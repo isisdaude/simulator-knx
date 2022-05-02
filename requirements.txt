@@ -10,3 +10,4 @@ lxml
 json
 copy
 pytest
+xknx
