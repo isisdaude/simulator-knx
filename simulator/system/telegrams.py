@@ -31,6 +31,7 @@ class SwitchPayload(Payload):
         self.switched = switched
 
     def __str__(self) -> str:
+        ## TODO: display a more truthful payload
         return "The switch is switched." if self.switched else "The switch is not switched."
 
 
@@ -43,6 +44,7 @@ class ButtonPayload(Payload):
         self.pushed = pushed
 
     def __str__(self) -> str:
+        ## TODO: display a more truthful payload
         return "The button is pushed." if self.pushed else "The button is not pushed."
 
 class HeaterPayload(Payload):
@@ -53,6 +55,7 @@ class HeaterPayload(Payload):
         self.max_power = max_power
 
     def __str__(self) -> str:
+        ## TODO: display a more truthful payload
         return f"The maximum power of this heater is {self.max_power}."
 
 class TempControllerPayload(Payload):
@@ -63,4 +66,5 @@ class TempControllerPayload(Payload):
         self.set_heater_power = set_heater_power
 
     def __str__(self) -> str:
+        ## TODO: display a more truthful payload
         return f"The temperature controller sets the power of the heater to {self.set_heater_power}."

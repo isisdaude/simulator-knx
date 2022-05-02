@@ -8,7 +8,7 @@ import gui
 import simulation as sim
 from devices import Device
 
-from .tools import Location
+from .tools import Location, group_address_format_check
 from .knxbus import KNXBus
 from abc import ABC, abstractclassmethod
 
@@ -44,6 +44,7 @@ class Room:
         """The room's given name"""
         self.name = name
         """Along x axis"""
+
         self.width = width
         """Along y axis"""
         self.length = length
@@ -92,7 +93,8 @@ class Room:
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
                 self.world.ambient_temperature.add_sensor(in_room_device)
                 #print(f"A button was added at {x} : {y}.")
-        return in_room_device
+        return in_room_device # return for gui
+
     ### TODO: implement removal of devices
     # def remove_device(self, in_room_device):
     #     for device in self.devices:
@@ -100,6 +102,15 @@ class Room:
     #             if isinstance(device, FunctionalModule):
     #                 device.disconnect_from_knxbus()
 
+    def attach(self, device, group_address:str):
+        ga = group_address_format_check(self.group_address_style, group_address)
+        if ga:
+            self.knxbus.attach(device, ga)
+    
+    def detach(self, device, group_address:str):
+        ga = group_address_format_check(self.group_address_style, group_address)
+        if ga in self.knxbus.group_addresses:
+            self.knxbus.detach(device, ga)
 
                 # remove from List
                 # detach from bus

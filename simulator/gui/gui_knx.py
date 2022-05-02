@@ -15,6 +15,7 @@ ROOM_BORDER = 40 # margin to place devices at room boundaries
 ROOM_WIDTH = 1000
 ROOM_LENGTH = 800
 
+OFFSET_ROOM_LABEL = 40
 OFFSET_TITLE = 30 # [y axis] Between Titles and Information (e.g. devices list, brightness/temperature values)
 OFFSET_LIST_ELEMENT = 20 # [y axis] Between element in list (e.g. devices list in the room)
 OFFSET_LABEL_DEVICE = 10 # [y axis] Between Device PNG and label
@@ -40,6 +41,7 @@ FONT_USER_INPUT = 'Roboto'
 OPACITY_DEFAULT = 255
 OPACITY_CLICKED = 150
 OPACITY_ROOM = 180
+OPACITY_ROOM_LABEL = 60
 
 BUTTON_RELOAD_PATH = 'png_simulator/reload.png'
 BUTTON_PAUSE_PATH = 'png_simulator/pause.png'
@@ -175,22 +177,31 @@ class ButtonWidget(object):
 
 
 class RoomWidget(object):
-    def __init__(self, width, length, batch, group):
+    def __init__(self, width, length, batch, group, label_group, label):
         # Coordinates to draw room rectangle shape
         self.origin_x_shape = WIN_WIDTH - width - WIN_BORDER - 2*ROOM_BORDER
         self.origin_y_shape = WIN_BORDER
-        # Cordinates to represent the actual room dimensions (border is a margin for devices on boundaries)
-        self.origin_x = WIN_WIDTH - width - WIN_BORDER - ROOM_BORDER
+        # Cordinates to represent the actual room dimensions (border is a margin to accept devices on boundaries)
+        self.origin_x = WIN_WIDTH - WIN_BORDER - ROOM_BORDER - width
         self.origin_y = WIN_BORDER + ROOM_BORDER
+        # Label coordinates
+        # self.label_x = self.origin_x + width/2
+        # self.label_y = self.origin_y + OFFSET_ROOM_LABEL
         # Actual dimensions of the room, not the rectangle shape
         self.width = width
         self.length = length
+        self.name = label
         self.batch = batch
         self.shape = pyglet.shapes.BorderedRectangle(self.origin_x_shape, self.origin_y_shape, width+2*ROOM_BORDER, length+2*ROOM_BORDER, border=ROOM_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=self.batch, group=group)#, group = group
         self.shape.opacity = OPACITY_ROOM
-
+        self.label = pyglet.text.Label(self.name,
+                                    font_name=FONT_SYSTEM_INFO, font_size=75,
+                                    x=(self.origin_x + self.width/2), y=(self.origin_y + self.length/2),
+                                    anchor_x='center', anchor_y='center',
+                                    batch=self.batch, group=label_group)
+        self.label.opacity = OPACITY_ROOM_LABEL
         self.devices = []
 
     def hit_test(self, x, y): # to check if mouse click is on the Room widget
@@ -250,7 +261,8 @@ class GUIWindow(pyglet.window.Window):
         self.batch = pyglet.graphics.Batch()
         # Create multiple layers to superpose the graphical elements
         self.background = pyglet.graphics.OrderedGroup(0)
-        self.foreground = pyglet.graphics.OrderedGroup(1)
+        self.middleground = pyglet.graphics.OrderedGroup(0)
+        self.foreground = pyglet.graphics.OrderedGroup(2)
         #document = pyglet.text.document.UnformattedDocument()
         # STore the initial configuration file path if the user wants to reload the simulation
         self.CONFIG_PATH = config_path
@@ -269,7 +281,7 @@ class GUIWindow(pyglet.window.Window):
         # Flag to set up group addresses
         self.linking_group_address = True
         # Initialize the room widget to draw in the window
-        self.room_widget = RoomWidget(ROOM_WIDTH, ROOM_LENGTH, self.batch, group=self.background)
+        self.room_widget = RoomWidget(ROOM_WIDTH, ROOM_LENGTH, self.batch, group=self.background, label=self.room.name, label_group=self.middleground)
         # Array to store labels to display in room devices list
         self.room_devices_labels = []
         # Array to store brightnesses & temperature in the room
@@ -360,6 +372,8 @@ class GUIWindow(pyglet.window.Window):
             device = in_room_device.device
             if isinstance(device, Brightness):
                 brightness_sensor = self.available_devices.brightness
+                print(type(device))
+                print(type(device) == str)
                 # x, y = in_room_device.location.x, in_room_device.location.y
                 # x = int(self.room_widget.x + self.room_width_ratio * x)
                 # y = int(self.room_widget.y + self.room_length_ratio * y)
@@ -529,43 +543,7 @@ class GUIWindow(pyglet.window.Window):
         self.initialize_system()
 
 
-    def group_address_format_check(self, text): ## TODO: verify if the group address entered in text box is correct
-        from system.tools import GroupAddress
-        ''' Verify that the group address entered by the user is correct (2, 3-levels or free) '''
-        text_split = text.split('/')
-        if self.room.group_address_style == '3-levels':
-            if len(text_split) == 3:
-                main, middle, sub = int(text_split[0]), int(text_split[1]), int(text_split[2])
-                try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 31 and middle >= 0 and middle <= 7 and sub >= 0 and sub <= 255)
-                    return GroupAddress('3-levels', main = main, middle = middle, sub = sub)
-                except AssertionError:
-                    logging.warning("'3-levels' group address is out of bounds, should be in 0/0/0 -> 31/7/255")
-                    return None
-            else:
-                logging.warning("'3-levels' style is not respected, possible addresses: 0/0/0 -> 31/7/255")
-                return None
-        elif self.room.group_address_style == '2-levels':
-            if len(text_split) == 2:
-                main, sub = int(text_split[0]), int(text_split[1])
-                try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 31 and sub >= 0 and sub <= 2047)
-                    return GroupAddress('2-levels', main = main, sub = sub)
-                except AssertionError:
-                    logging.warning("'2-levels' group address is out of bounds, should be in 0/0 -> 31/2047")
-                    return None
-            else:
-                logging.warning("'2-levels' style is not respected, possible addresses: 0/0 -> 31/2047")
-                return None
-        elif self.room.group_address_style == 'free':
-            if len(text_split) == 1:
-                main = int(text_split[0]),
-                try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 65535)
-                    return GroupAddress('free', main = main)
-                except AssertionError:
-                    logging.warning("'free' group address is out of bounds, should be in 0 -> 65535")
-                    return None
+    
 
 
     def on_draw(self):
@@ -598,7 +576,7 @@ class GUIWindow(pyglet.window.Window):
         # Erase a character from the user input textbox
         if symbol == pyglet.window.key.BACKSPACE:
             self.input_label.text = self.input_label.text[:-1] # Remove last character
-        #TODO: Save the command input by the user and erase it from the text box
+        # Save the command input by the user and erase it from the text box
         elif symbol == pyglet.window.key.ENTER:
             from system import user_command_parser
             user_command_parser(self.input_label.text, self.room)
@@ -639,11 +617,11 @@ class GUIWindow(pyglet.window.Window):
                 for room_device in self.room_devices:
                     # Test if the user clicked on a room device instanciated
                     if room_device.hit_test(x, y):
-                        ga = self.group_address_format_check(self.input_label.text)
-                        if ga:
-                            print(room_device.in_room_device.device)
-                            self.room.knxbus.attach(room_device.in_room_device.device, ga)
-                            self.display_devices_list()
+                        # ga = self.group_address_format_check(self.input_label.text)
+                        # if ga:
+                            # print(room_device.in_room_device.device)
+                        self.room.attach(room_device.in_room_device.device, self.input_label.text)
+                        self.display_devices_list()
 
             # LEFT click on device w/o modifiers : add devices in simulator by dragging them in the Room area, or move room devices
             else:
@@ -679,12 +657,8 @@ class GUIWindow(pyglet.window.Window):
                 for room_device in self.room_devices:
                     # Test if the user clicked on a room device instanciated
                     if room_device.hit_test(x, y):
-                        ga = self.group_address_format_check(self.input_label.text)
-                        if ga:
-                            if ga in room_device.in_room_device.device.group_addresses:
-                                room_device.in_room_device.device.group_addresses.remove(ga)
-                                self.room.knxbus.detach(room_device.in_room_device.device, ga)
-                            self.display_devices_list()
+                        self.room.detach(room_device.in_room_device.device, self.input_label.text)
+                        self.display_devices_list()
 
 
     def add_device(self):
@@ -701,10 +675,10 @@ class GUIWindow(pyglet.window.Window):
         similar_devices_counter = 1
         for device in self.room_devices:
             if device_class.lower() in device.device_class.lower():
-                print(f"---+++--- device similar: {device.label_name}, {device_class}")
+                # print(f"---+++--- device similar: {device.label_name}, {device_class}")
                 similar_devices_counter +=1
         device_name = device_class.lower()+str(similar_devices_counter)
-        print(f"device_name: {device_name}")
+        # print(f"device_name: {device_name}")
         # Creation of the device object
         device = DEV_CLASSES[device_class](device_name, refid, individual_address, "enabled")
         loc_x, loc_y = gui_pos_to_system_loc(self.moving_device.pos_x, self.moving_device.pos_y,
@@ -782,7 +756,6 @@ class GUIWindow(pyglet.window.Window):
             Define actions to take when specific keys are released'''
         # Cancel the Group Adddress linking if CRTL key is released before the connection is established between two devices
         if symbol == pyglet.window.key.LCTRL or symbol == pyglet.window.key.RCTRL:
-            print("ctrl is released")
             for room_device in self.room_devices:
                 room_device.linking_group_address = False
                 room_device.sprite.opacity = OPACITY_DEFAULT

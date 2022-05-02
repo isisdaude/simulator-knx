@@ -41,6 +41,8 @@ class LED(LightActuator):
             if isinstance(telegram.payload, SwitchPayload):
                 if telegram.payload.switched:
                     self.state = not self.state
+            str_state = 'ON' if self.state else 'OFF'
+            logging.info(f"{self.name} has been turned {str_state}.")
         # if the control field is not True, the telegram does nto concern the LED, except for a read state
 
 
