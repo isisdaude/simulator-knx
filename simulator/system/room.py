@@ -40,7 +40,7 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: int, length: int, height:int, simulation_speed_factor:float):
+    def __init__(self, name: str, width: int, length: int, height:int, simulation_speed_factor:float, group_address_style:str):
         """The room's given name"""
         self.name = name
         """Along x axis"""
@@ -59,7 +59,7 @@ class Room:
         """Simulation status to pause/resume"""
         self.simulation_status = True
         """Group addresses style by default"""
-        self.group_address_style = '3-levels'
+        self.group_address_style = group_address_style 
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
@@ -106,11 +106,17 @@ class Room:
         ga = group_address_format_check(self.group_address_style, group_address)
         if ga:
             self.knxbus.attach(device, ga)
+            return 1
+        else:
+            return 0
     
     def detach(self, device, group_address:str):
         ga = group_address_format_check(self.group_address_style, group_address)
         if ga in self.knxbus.group_addresses:
             self.knxbus.detach(device, ga)
+            return 1
+        else:
+            return 0
 
                 # remove from List
                 # detach from bus

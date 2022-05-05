@@ -1,5 +1,5 @@
 
-import logging
+import logging, sys
 import math
 import json
 import devices as dev
@@ -140,33 +140,41 @@ class GroupAddress:
                         else:
                             return False
 
-
 """ Functions tools """
+def check_simulation_speed_factor(simulation_speed_factor:str):
+    try:
+        speed_factor = float(simulation_speed_factor)
+    except ValueError:
+        logging.error("The simulation speed should be a decimal number")
+        return 0
+    except SyntaxError as msg:
+        logging.error(f"Wrong Syntax: {msg}")
+        return 0
+    try:
+        assert speed_factor >= 1
+    except AssertionError:
+        logging.error("The simulation speed should be a positive number >=1")
+        return 0
+    return speed_factor
 
-def compute_distance(source, sensor) -> float:
-    """ Computes euclidian distance between a sensor and a actuator"""
-    delta_x = abs(source.location.x - sensor.location.x)
-    delta_y = abs(source.location.y - sensor.location.y)
-    delta_z = abs(source.location.z - sensor.location.z)
-    dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
-    return dist
 
 
-def group_address_format_check(group_address_style, text): ## TODO: verify if the group address entered in text box is correct
-        from system.tools import GroupAddress
+def group_address_format_check(group_address_style, text='', style_check=False): ## TODO: verify if the group address entered in text box is correct
+        # from system.tools import GroupAddress
         ''' Verify that the group address entered by the user is correct (2, 3-levels or free) '''
-        text_split = text.split('/')
-        for split in text_split:
-            if not split.lstrip('-').isdecimal():
-                logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only")
-                return None
-            if int(split) == 0: # special case for -0
-                if not split.isdecimal():
+        if not style_check:
+            text_split = text.split('/')
+            for split in text_split:
+                if not split.lstrip('-').isdecimal():
                     logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only")
                     return None
-            
-                
+                if int(split) == 0: # special case for -0
+                    if not split.isdecimal():
+                        logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only")
+                        return None
         if group_address_style == '3-levels':
+            if style_check: # We just want to check if style exists
+                return group_address_style
             if len(text_split) == 3:
                 try:
                     main, middle, sub = int(text_split[0]), int(text_split[1]), int(text_split[2])
@@ -183,6 +191,8 @@ def group_address_format_check(group_address_style, text): ## TODO: verify if th
                 logging.warning("'3-levels' style is not respected, possible addresses: 0/0/0 -> 31/7/255")
                 return None
         elif group_address_style == '2-levels':
+            if style_check: # We just want to check if style exists
+                return group_address_style
             if len(text_split) == 2:
                 try:
                     main, sub = int(text_split[0]), int(text_split[1])
@@ -199,6 +209,8 @@ def group_address_format_check(group_address_style, text): ## TODO: verify if th
                 logging.warning("'2-levels' style is not respected, possible addresses: 0/0 -> 31/2047")
                 return None
         elif group_address_style == 'free':
+            if style_check: # We just want to check if style exists
+                return group_address_style
             if len(text_split) == 1:
                 try:
                     main = int(text_split[0])
@@ -215,10 +227,8 @@ def group_address_format_check(group_address_style, text): ## TODO: verify if th
                 logging.warning("'free' style is not respected, possible addresses: 0 -> 65535")
                 return None
         else: # not a correct group address style
-            logging.warning(f"Group address style '{group_address_style}' unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255)")
+            logging.error(f"Group address style '{group_address_style}' unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255)")
             return None
-
-
 
 def configure_system(simulation_speed_factor):
     from .room import Room
@@ -228,14 +238,13 @@ def configure_system(simulation_speed_factor):
 
     # heater1 = dev.Heater("heater1", "M-0_T1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
     # cooler1 = dev.AC("cooler1", "M-0_T2", IndividualAddress(0,0,12), "enabled", 400)
-
-    switch1 = dev.Switch("switch1", "M-0_B1", IndividualAddress(0,0,20), "enabled")
-    switch2 = dev.Switch("switch2", "M-0_B2", IndividualAddress(0,0,21), "enabled")
+    switch1 = dev.Switch("switch1", "M-0_S1", IndividualAddress(0,0,20), "enabled")
+    switch2 = dev.Switch("switch2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
     bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
 
     # Declaration of the physical system
-    room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
-    room1.group_address_style = '3-levels'
+    room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels') #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+    # room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
     room1.add_device(switch1, 0, 0, 1)
@@ -254,123 +263,109 @@ def configure_system(simulation_speed_factor):
     # return the room object to access all elements of the room (world included)
     return [room1]
 
-
 def configure_system_from_file(config_file_path):
     from .room import Room
     with open(config_file_path, "r") as file:
-        #s = [int(x) for x in a.split(".")]
         config_dict = json.load(file) ###
-        knx_config = config_dict["knx"]
-        world_config = config_dict["world"]
-        # Store number of elements to check that the config file is correct
-        number_of_rooms = world_config["number_of_rooms"]
-        number_of_areas = knx_config["number_of_areas"]
-        # Parsing of the World config to create the room(s), and store corresponding devices
-        simulation_speed_factor = world_config["simulation_speed_factor"]
-        rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'switch': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
-        rooms = []
-        ga_builders = []
-        for r in range(1,number_of_rooms+1):
-            room_key = "room"+str(r) #room1, room2,...
+    knx_config = config_dict["knx"]
+    group_address_encoding_style = group_address_format_check(knx_config["group_address_style"], style=True)
+    if not group_address_encoding_style:
+        logging.error("Incorrect group address, check the config file before launching the simulator")
+        sys.exit()
+    world_config = config_dict["world"]
+    # Store number of elements to check that the config file is correct
+    number_of_rooms = world_config["number_of_rooms"]
+    number_of_areas = knx_config["number_of_areas"]
+    # Parsing of the World config to create the room(s), and store corresponding devices
+    simulation_speed_factor = check_simulation_speed_factor(world_config["simulation_speed_factor"])
+    try:
+        assert simulation_speed_factor
+    except AssertionError:
+        logging.error("Incorrect simulation speed factor, review the config file before launching the simulator")
+        sys.exit()
+
+    rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'switch': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
+    rooms = []
+    ga_builders = []
+    rooms_config = world_config["rooms"]
+    for r in range(1,number_of_rooms+1):
+        room_key = "room"+str(r) #room1, room2,...
+        try:
+            room_config = rooms_config[room_key]
+        except (KeyError):
+            logging.warning(f"'{room_key}' not defined in config file, or wrong number of rooms")
+            continue # get out of the for loop iteratiom
+        x, y, z = room_config["dimensions"]
+        # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
+        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style)
+        # room.group_address_style = group_address_encoding_style
+        # Store room object to return to main
+        rooms.append(room)
+        room_devices_config = room_config["room_devices"]
+        print(room_devices_config)
+        # Store temporarily the room object with devices and their physical position
+        rooms_builders.append([room, room_devices_config])
+    # Parsing of devices to add in the room
+    for a in range(number_of_areas):
+        area_key = "area"+str(a) #area0, area1,...
+        number_of_lines = knx_config[area_key]["number_of_lines"]
+        for l in range(number_of_lines):
+            line_key = "line"+str(l) #line0, line1,...
             try:
-                room_config = world_config[room_key]
+                line_config = knx_config[area_key][line_key]
             except (KeyError):
-                logging.warning(f"'{room_key}' not defined in config file, or wrong number of rooms")
-                continue # get out of the for loop iteratiom
-
-            x, y, z = room_config["dimensions"]
-            # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
-            room = Room(room_config["name"], x, y, z, simulation_speed_factor)
-            room.group_address_style = '3-levels'
-            # Store room object to return to main
-            rooms.append(room)
-            room_devices_config = room_config["room_devices"]
-            print(room_devices_config)
-            # Store temporarily the room object with devices and their physical position
-            rooms_builders.append([room, room_devices_config])
-
-        # Parsing of devices to add in the room
-        for a in range(number_of_areas):
-            area_key = "area"+str(a) #area0, area1,...
-            number_of_lines = knx_config[area_key]["number_of_lines"]
-            for l in range(number_of_lines):
-                line_key = "line"+str(l) #line0, line1,...
+                logging.warning(f"'{area_key}' and/or '{line_key}' not defined in config file. Check number of areas/lines and their names.")
+                break # get out of the for loop
+            line_device_keys = list(line_config["devices"].keys())
+            line_devices_config = line_config["devices"]
+            for dev_key in line_device_keys:
                 try:
-                    line_config = knx_config[area_key][line_key]
-                except (KeyError):
-                    logging.warning(f"'{area_key}' and/or '{line_key}' not defined in config file. Check number of areas/lines and their names.")
-                    break # get out of the for loop
-                # number_of_devices = len(line_config["devices"]) #line_config["number_of_devices"]
-                # dc = 0 # counter to check number of devices in the room
-                line_device_keys = list(line_config["devices"].keys())
-                line_devices_config = line_config["devices"]
-                for dev_key in line_device_keys:
-                    # dc += 1
-                    # if dc > number_of_devices:
-                    #     logging.warning(f"Wrong number of devices, {number_of_devices} announced on {area_key}/{line_key} but {dev_key} is the {dc}")
-                    #     continue
-                    try:
-                        device_config = line_devices_config[dev_key]
-                        dev_class = device_config["class"]
-                        dev_refid = device_config["refid"]
-                        dev_status = device_config["status"]
-                    except (KeyError):
-                        logging.warning(f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}")
-                        continue # get out of the for loop iteration
-                    
-                    # print(f"{dev_key}, {dev_class}, {dev_refid}, loc = {device_config['location']}")
-                    _a, _l, _d = [int(loc) for loc in device_config["location"].split(".")] # parse individual addresses 'area/line/device' in 3 variables
-                    if (_a != a or _l != l):
-                        logging.warning(f"{dev_key} on {area_key}.{line_key} is wrongly configured with area{_a}.line{_l} ==> device is rejected")
-                        continue # get out of the for loop iteration
-                    if (_a < 0 or _a > 15 or _l < 0 or _l > 15 or _d < 0 or _d > 255):
-                        logging.warning(f"Individual address out of bounds, should be in 0.0.0 -> 15.15.255 ==> device is rejected")
-                        continue # get out of the for loop iteration
+                    device_config = line_devices_config[dev_key]
+                    dev_class = device_config["class"]
+                    dev_refid = device_config["refid"]
                     dev_status = device_config["status"]
-                    print(dev_key)
-                    
-                    for room_builder in rooms_builders: # list of [room_object, room_devices_config] for all rooms of the system
-                        if dev_key in room_builder[1].keys():
-                            dev_pos = room_builder[1][dev_key]
-                            # Create the device object before adding it to the room
-                            dev_object = DEV_CLASSES[dev_class](dev_key, dev_refid, IndividualAddress(_a, _l, _d), dev_status) # we don't set up the state, False(OFF) by default
-                            room_builder[0].add_device(dev_object, dev_pos[0], dev_pos[1], dev_pos[2])
-                        else:
-                            logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected")
-                            continue # get out of the for loop iteration
-                        # print("room_builder")
-                        # print(room_builder[1].keys())
-
-        # Parsing of group addresses to connect devices together
-        #TODO: link GA to iterface IP SVSHI
-        ga_style =  knx_config["group_address_style"]
-        # number_of_ga = knx_config["number_of_group_addresses"]
-        ga_builders = knx_config["group_addresses"]
-        # if len(ga_builders) != number_of_ga:
-        #     logging.warning(f"Wrong number of group addresses, {number_of_ga} announced but {len(ga_builders)} defined")
-        # else:
-        #     for ga_index in range(number_of_ga):
-        #          ga_builder = ga_builders[ga_index] #dict with address and devices to connect together
-        if len(ga_builders):
-            for ga_builder in ga_builders:
-                group_address = ga_builder["address"]
-                # main, middle, sub = [int(loc) for loc in ga_builder["address"].split("/")]
-                # ga_object = GroupAddress(ga_style, main=main, middle=middle, sub=sub)
-                group_devices = ga_builder["group_devices"]
-                # Loop on devices connected to this ga
-                for dev_name in group_devices:
-                    for room in rooms:
-                        for in_room_device in room.devices:
-                            # Find the device object
-                            if in_room_device.name == dev_name:
-                                dev_object = in_room_device.device
-                                # Link the device to the ga (internal test to check Group Address format)
-                                room.attach(dev_object, group_address)
-        else:
-            logging.info("No group address is defined in config file.")
-
-        return rooms
-
+                except (KeyError):
+                    logging.warning(f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}")
+                    continue # get out of the for loop iteration
+                # print(f"{dev_key}, {dev_class}, {dev_refid}, loc = {device_config['location']}")
+                _a, _l, _d = [int(loc) for loc in device_config["knx_location"].split(".")] # parse individual addresses 'area/line/device' in 3 variables
+                if (_a != a or _l != l):
+                    logging.warning(f"{dev_key} on {area_key}.{line_key} is wrongly configured with area{_a}.line{_l} ==> device is rejected")
+                    continue # get out of the for loop iteration
+                if (_a < 0 or _a > 15 or _l < 0 or _l > 15 or _d < 0 or _d > 255):
+                    logging.warning(f"Individual address out of bounds, should be in 0.0.0 -> 15.15.255 ==> device is rejected")
+                    continue # get out of the for loop iteration
+                dev_status = device_config["status"]
+                print(dev_key)
+                for room_builder in rooms_builders: # list of [room_object, room_devices_config] for all rooms of the system
+                    if dev_key in room_builder[1].keys():
+                        dev_pos = room_builder[1][dev_key]
+                        # Create the device object before adding it to the room
+                        dev_object = DEV_CLASSES[dev_class](dev_key, dev_refid, IndividualAddress(_a, _l, _d), dev_status) # we don't set up the state, False(OFF) by default
+                        room_builder[0].add_device(dev_object, dev_pos[0], dev_pos[1], dev_pos[2])
+                    else:
+                        logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected")
+                        continue # get out of the for loop iteration
+    # Parsing of group addresses to connect devices together
+    #TODO: link GAs to iterface IP SVSHI
+    ga_style =  knx_config["group_address_style"]
+    ga_builders = knx_config["group_addresses"]
+    if len(ga_builders):
+        for ga_builder in ga_builders:
+            group_address = ga_builder["address"]
+            group_devices = ga_builder["group_devices"]
+            # Loop on devices connected to this ga
+            for dev_name in group_devices:
+                for room in rooms:
+                    for in_room_device in room.devices:
+                        # Find the device object
+                        if in_room_device.name == dev_name:
+                            dev_object = in_room_device.device
+                            # Link the device to the ga (internal test to check Group Address format)
+                            room.attach(dev_object, group_address)
+    else:
+        logging.info("No group address is defined in config file.")
+    return rooms
 
 def user_command_parser(command, room):
     if command[:3] == 'set': #FunctionalModule
@@ -399,8 +394,17 @@ def user_command_parser(command, room):
 
 
 
+"""Tools for physical world updates"""
+def compute_distance(source, sensor) -> float:
+    """ Computes euclidian distance between a sensor and a actuator"""
+    delta_x = abs(source.location.x - sensor.location.x)
+    delta_y = abs(source.location.y - sensor.location.y)
+    delta_z = abs(source.location.z - sensor.location.z)
+    dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
+    return dist
 
 """Tools used by the devices to perform update calculations"""
+
 def required_power(desired_temperature=20, volume=1, insulation_state="good"):
     def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
         dist = 18 - temp

@@ -30,7 +30,7 @@ class LED(LightActuator):
     # state is ON/OFF=True/False
     def __init__(self, name, refid, individual_addr, default_status, state=False):
         super().__init__(name, refid, individual_addr, default_status, state, lumen=800)
-        self.class_name = 'LED'
+
     def update_state(self, telegram):
         if telegram.control_field == True: # Control field bit
 
@@ -41,8 +41,6 @@ class LED(LightActuator):
             if isinstance(telegram.payload, SwitchPayload):
                 if telegram.payload.switched:
                     self.state = not self.state
-            str_state = 'ON' if self.state else 'OFF'
-            logging.info(f"{self.name} has been turned {str_state}.")
         # if the control field is not True, the telegram does nto concern the LED, except for a read state
 
 
@@ -63,7 +61,6 @@ class Heater(TemperatureActuator):
     """Concrete class to represent a heating device"""
 
     def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=1):
-        self.class_name = 'Heater'
         # Verification of update_rule sign
         try:
             assert update_rule >= 0
@@ -104,7 +101,6 @@ class AC(TemperatureActuator):
     """Concrete class to represent a cooling device"""
 
     def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=-1):
-        self.class_name = 'AC'
         # Verification of update_rule sign
         try:
             assert update_rule <= 0

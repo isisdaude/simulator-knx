@@ -5,13 +5,14 @@ Simple simulator prototype.
 # Standard library imports
 import functools
 import asyncio, aioconsole
-import time, datetime, sys
+import time, datetime, sys, os
 import pyglet
 import json
 import logging
 import aioreactive as rx
 
 # Third party imports
+from pathlib import Path
 from pynput import keyboard
 from contextlib import suppress
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -22,6 +23,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import gui
 import system
 
+# SCRIPT_DIR = os.path.dirname(__file__)
+# SAVED_CONFIG_PATH = os.path.join(SCRIPT_DIR,"/docs/config/")
+
+SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
+print(SAVED_CONFIG_PATH)
 CONFIG_PATH = "./docs/config/simulation_config.json"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 # Configure logging messages format
@@ -32,7 +38,7 @@ LOGGING_LEVEL = logging.INFO
 async def user_input_loop(room):
     while True:
         command = await aioconsole.ainput(">>> What do you want to do?\n")
-        if not (user_command_parser(command, room)):
+        if not (system.user_command_parser(command, room)):
             break
 
 async def async_main(loop, room):
@@ -55,12 +61,9 @@ def launch_simulation():
     # System configuration from function configure_system
     elif DEV_CONFIG:
         while(True): # Waits for the input to be a correct speed factor, before starting the simulation
-            try:
-                simulation_speed_factor = float(input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n"))
+            simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
+            if system.check_simulation_speed_factor(simulation_speed_factor):
                 break
-            except ValueError:
-                logging.warning("The simulation speed should be a number")
-                continue
         rooms = system.configure_system(simulation_speed_factor)
 
     elif DEFAULT_CONFIG:
@@ -75,17 +78,17 @@ def launch_simulation():
             except ValueError:
                 logging.warning("The simulation speed should be a number")
                 continue
-        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor)]
+        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')]
 
-
+    for room in rooms:
+        room.SAVED_CONFIG_PATH = SAVED_CONFIG_PATH
     room1 = rooms[0] # for now only one room
 
     # GUI interface with the user
-    if GUI_MODE: #########TODO: setup devices on the GUI ##########
-                ##########TODO: and parser of command through gui ######
+    if GUI_MODE:
         config_path = DEFAULT_CONFIG_PATH if default_mode else CONFIG_PATH
         window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, rooms)###
-        window.initialize_system()
+        window.initialize_system(SAVED_CONFIG_PATH)
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time

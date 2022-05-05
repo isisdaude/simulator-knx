@@ -6,7 +6,7 @@ switch (60x31)
 Brightness sensor (61x42)
 Thermometer 26x80
 
-Button 51x50 or 50x51
+Button 51x50 or 50x51 or 50x50
 
 
 CTRL-leftclick to set up group addresses
