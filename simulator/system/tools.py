@@ -55,6 +55,10 @@ class IndividualAddress:
     def __str__(self): # syntax when instance is called with print()
         return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
 
+    def __repr__(self) -> str:
+        '''Following XKNX handling of individual addresses'''
+        return f"{self.area}.{self.device}.{self.line}"
+
 
 
 class GroupAddress:
