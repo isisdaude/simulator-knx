@@ -2,13 +2,13 @@
 Some class definitions for the rooms contained in the system
 """
 
-import logging
+import logging, sys
 from typing import List
 import gui
 import simulation as sim
 from devices import Device
 
-from .tools import Location, group_address_format_check
+from .tools import Location, check_group_address, check_simulation_speed_factor
 from .knxbus import KNXBus
 from abc import ABC, abstractclassmethod
 
@@ -42,15 +42,25 @@ class Room:
     """List of devices in the room at certain positions"""
     def __init__(self, name: str, width: int, length: int, height:int, simulation_speed_factor:float, group_address_style:str):
         """The room's given name"""
+        try:
+            assert len(name) > 0
+            assert name.isalnum() # check alphanumericness
+        except AssertionError:
+            logging.error("A non-empty alphanumeric name is required to create the room, check your config before launching the simulator")
+            sys.exit(1)
         self.name = name
         """Along x axis"""
-
         self.width = width
         """Along y axis"""
         self.length = length
         """Along z axis"""
         self.height = height
         """Representation of the world"""
+        try:
+            assert simulation_speed_factor == check_simulation_speed_factor(simulation_speed_factor)
+        except AssertionError:
+            logging.error(f"The simulation speed factor {simulation_speed_factor} is incorrect, check your config before launching the simulator")
+            sys.exit()
         self.world = sim.World(self.width, self.length, self.height, simulation_speed_factor)
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
@@ -103,7 +113,7 @@ class Room:
     #                 device.disconnect_from_knxbus()
 
     def attach(self, device, group_address:str):
-        ga = group_address_format_check(self.group_address_style, group_address)
+        ga = check_group_address(self.group_address_style, group_address)
         if ga:
             self.knxbus.attach(device, ga)
             return 1
@@ -111,7 +121,7 @@ class Room:
             return 0
     
     def detach(self, device, group_address:str):
-        ga = group_address_format_check(self.group_address_style, group_address)
+        ga = check_group_address(self.group_address_style, group_address)
         if ga in self.knxbus.group_addresses:
             self.knxbus.detach(device, ga)
             return 1

@@ -66,10 +66,12 @@ def launch_simulation():
                 break
         rooms = system.configure_system(simulation_speed_factor)
 
+    # System configuration based on a default JSON config file
     elif DEFAULT_CONFIG:
         default_mode = True
         rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH)
 
+    # System configuration based on a simple Room with no devices
     else:
         while(True): # Waits for the input to be a correct speed factor, before starting the simulation
             try:
@@ -80,6 +82,7 @@ def launch_simulation():
                 continue
         rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')]
 
+    # We save the config path to further reload the simulation
     for room in rooms:
         room.SAVED_CONFIG_PATH = SAVED_CONFIG_PATH
     room1 = rooms[0] # for now only one room

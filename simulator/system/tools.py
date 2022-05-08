@@ -146,20 +146,20 @@ def check_simulation_speed_factor(simulation_speed_factor:str):
         speed_factor = float(simulation_speed_factor)
     except ValueError:
         logging.error("The simulation speed should be a decimal number")
-        return 0
+        return None
     except SyntaxError as msg:
         logging.error(f"Wrong Syntax: {msg}")
-        return 0
+        return None
     try:
         assert speed_factor >= 1
     except AssertionError:
         logging.error("The simulation speed should be a positive number >=1")
-        return 0
+        return None
     return speed_factor
 
 
 
-def group_address_format_check(group_address_style, text='', style_check=False): ## TODO: verify if the group address entered in text box is correct
+def check_group_address(group_address_style, text='', style_check=False): ## TODO: verify if the group address entered in text box is correct
         # from system.tools import GroupAddress
         ''' Verify that the group address entered by the user is correct (2, 3-levels or free) '''
         if not style_check:
@@ -268,7 +268,7 @@ def configure_system_from_file(config_file_path):
     with open(config_file_path, "r") as file:
         config_dict = json.load(file) ###
     knx_config = config_dict["knx"]
-    group_address_encoding_style = group_address_format_check(knx_config["group_address_style"], style=True)
+    group_address_encoding_style = check_group_address(knx_config["group_address_style"], style=True)
     if not group_address_encoding_style:
         logging.error("Incorrect group address, check the config file before launching the simulator")
         sys.exit()

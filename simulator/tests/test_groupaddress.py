@@ -31,13 +31,13 @@ encoding_style_wrong = ['0-levels', '1-levels', '2-level', '2levels', '3level', 
 def test_correct_style_name(): #,encoding_styles_gas_split
     for s in range(len(encoding_styles)):
         encoding_style = encoding_styles[s]
-        ga_style = system.group_address_format_check(encoding_style, style_check=True)
+        ga_style = system.check_group_address(encoding_style, style_check=True)
         assert ga_style == encoding_style
 
 def test_wrong_style_name(caplog: LogCaptureFixture):
     for encoding_style in encoding_style_wrong:
         caplog.clear
-        ga =system.group_address_format_check(encoding_style, '1/1/1')
+        ga =system.check_group_address(encoding_style, '1/1/1')
         assert ga is None
         # for record in caplog.records:
         #     assert record.levelname != "CRITICAL"
@@ -50,7 +50,7 @@ def test_correct_group_address():
         group_addresses = gas[encoding_style]['gas']
         group_addresses_split = gas[encoding_style]['gas_split']
         for group_address in group_addresses:
-            ga = system.group_address_format_check(encoding_style, group_address)
+            ga = system.check_group_address(encoding_style, group_address)
             assert ga is not None
             if encoding_style == '3-levels':
                 assert ga.main == group_addresses_split[gc][0]
@@ -69,7 +69,7 @@ def test_wrong_group_address(caplog: LogCaptureFixture):
         # Out-of-bounds address
         for group_address in group_addresses:
             caplog.clear
-            ga = system.group_address_format_check(encoding_style, group_address)
+            ga = system.check_group_address(encoding_style, group_address)
             assert ga is None
             # assert ("group address is out of bounds" in caplog.text or "has wrong value type," in caplog.text)
 
@@ -80,7 +80,7 @@ def test_false_group_address(caplog: LogCaptureFixture):
         # Totally false group addresses
         for group_address in group_addresses:
             caplog.clear
-            ga = system.group_address_format_check(encoding_style, group_address)
+            ga = system.check_group_address(encoding_style, group_address)
             assert ga is None
             # assert ("style is not respected," in caplog.text or "group address has wrong value type," in caplog.text)
   

@@ -1,0 +1,45 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+      #- 'releases/**'
+
+jobs:
+  test-simulator:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      # - name: "Set environmental variables"
+      #   run: |
+      #       echo "SVSHI_HOME=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      # - name: Set up Python 3.10 for end to end tests
+      #   uses: actions/setup-python@v3
+      #   with:
+      #     python-version: '3.10'
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        working-directory: simulator-knx  ### from where does the CI is run? 'simulator-knx' is needed or nothing?
+      - name: Test with pytest
+        run: |
+          pytest --cov-config=.coveragerc --cov=. --cov-report=xml
+        working-directory: simulator-knx/simulator  ### from where does the CI is run? 'simulator-knx' is needed or simply simulator?
+      - name: Upload code coverage to Codecov 
+        uses: codecov/codecov-action@v3 ### what is this command?
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+  
+
+  fail_if_pull_request_is_draft:
+    if: github.event.pull_request.draft == true
+    runs-on: ubuntu-18.04 ### why?
+    steps:
+    - name: Fails in order to indicate that pull request needs to be marked as ready to review and unit tests workflow needs to pass.
+      run: exit 1

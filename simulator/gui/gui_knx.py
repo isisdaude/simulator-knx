@@ -585,7 +585,7 @@ class GUIWindow(pyglet.window.Window):
                     self.moving_device.update_position(new_x = x, new_y = y) # - (self.moving_device.width//2)   - (self.moving_device.length//2)
 
 
-def update_window(dt, window, speed_factor, start_time):
+def update_window(dt, window, speed_factor, start_time): # cannot be a class method because first argument must be dt, and thus cannot be self.
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
     sim_time = str(timedelta(seconds=round(speed_factor*(time() - start_time), 2))) # 2 decimals
