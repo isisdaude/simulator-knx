@@ -1,3 +1,4 @@
+
 import dataclasses
 import asyncio
 import datetime
@@ -16,12 +17,12 @@ from xknx.core.value_reader import ValueReader
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
-from xknx.telegram.address import GroupAddress, IndividualAddress
+from xknx.telegram.address import GroupAddress, IndividualAddress, GroupAddressType
 from xknx.xknx import XKNX
 import system.telegrams as sim_t
 
 
-
+#TODO: we do not handle floats for the moment, but useful when describing temperature!!!
 class TelegramParser:
     '''Class that implements a parser for telegrams, from simulated telegrams to real telegrams and the other way around'''
 
@@ -40,9 +41,9 @@ class TelegramParser:
         self.__TRUE: Final = 1
         self.__FALSE: Final = 0
         
-        self.__FREE: Final = 0
-        self.__SHORT: Final = 2
-        self.__LONG: Final = 3
+        self.__FREE: Final = GroupAddressType.FREE
+        self.__SHORT: Final = GroupAddressType.SHORT
+        self.__LONG: Final = GroupAddressType.LONG
 
         self.__sim_encoding_to_xknx = {
             'free': self.__FREE,
@@ -60,11 +61,13 @@ class TelegramParser:
         '''Creates a simulator telegram from a knx telegram'''
         from system.tools import GroupAddress, IndividualAddress
         payload = telegram.payload
-        ga_split = telegram.destination_address.to_knx()
+        
+        ga_split = str(telegram.destination_address).split('/')
+
         if telegram.destination_address.address_format == self.__sim_encoding_to_xknx.get('free'):
             address = GroupAddress('free', ga_split[0])
         elif telegram.destination_address.address_format == self.__sim_encoding_to_xknx.get('2-levels'):
-            address = GroupAddress('2-levels', ga_split[0], ga_split[1])
+            address = GroupAddress('2-levels', ga_split[0], 0, ga_split[1])
         else:
             address = GroupAddress('3-levels', ga_split[0], ga_split[1], ga_split[2])
 
@@ -75,10 +78,9 @@ class TelegramParser:
         if isinstance(payload, GroupValueWrite):
             # For the moment, similarly to SVSHI, we only support GroupValueWrtie as there is no reading involved
             v = payload.value
-
             if v:
                 dpt = self.payload_to_dpt.get(self.group_address_to_payload.get(str(address),None),None)
-
+                
                 if dpt == None:
                     return None
                 
@@ -88,6 +90,7 @@ class TelegramParser:
                     output = sim_t.Telegram(0, source, address,payload)
                     
                 else:
+                    
                     conv_v = v.value[0]
                     payload = self.group_address_to_payload.get(str(address))(conv_v)
                     output = sim_t.Telegram(0, source, address,payload)
@@ -102,6 +105,7 @@ class TelegramParser:
 
         dpt = None
         value = None
+
         if isinstance(payload, sim_t.SwitchPayload):
             dpt = self.payload_to_dpt.get(sim_t.SwitchPayload)
             value = payload.switched
@@ -123,8 +127,10 @@ class TelegramParser:
                 write_content = DPTBinary(value=binary_value)
             else:
                 write_content = DPTArray(value)
+     
             ga = GroupAddress(address)
             ga.address_format = self.__sim_encoding_to_xknx.get(encoding)
+ 
             telegram = Telegram(source_address=IndividualAddress(telegram.source.__repr__()),
                 destination_address=ga,
                 payload=GroupValueWrite(write_content)
@@ -153,7 +159,7 @@ def main():
     back = parser.from_knx_telegram(knx_t)
     print(str(back) == str(test_sim))
 
-if __name__=="__main__":
-    main()
+# if __name__=="__main__":
+#     main()
 
 

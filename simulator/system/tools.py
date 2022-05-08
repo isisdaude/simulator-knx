@@ -14,6 +14,12 @@ DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC,
 # Situation of the insulation of the room associated to the correction factor for the heating
 INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
 
+MAX_MAIN = 31
+MAX_MIDDLE = 7
+MAX_SUB_LONG = 255
+MAX_SUB_SHORT = 2047
+MAX_FREE = 65535
+
 """ Class tools """
 
 class Location:
