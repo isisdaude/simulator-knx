@@ -9,7 +9,7 @@ class CommunicationInterface:
 
     def __init__(self, knx_address: str,
                  knx_port: int, group_address_to_payload: Dict[str, sim_t.Payload]):
-        self.to_forward_to_network: List[knx_t.Telegram] = []
+        self.to_forward_to_network: List[sim_t.Telegram] = []
         self.to_forward_to_simulator: List[sim_t.Telegram] = []
 
         self.knx_address = knx_address
@@ -17,6 +17,15 @@ class CommunicationInterface:
 
         self.group_address_to_payload = group_address_to_payload
     
+    def add_telegram_to_send(self, telegram: sim_t.Telegram):
+        '''Adds a telegram to send to the network'''
+        self.to_forward_to_network.append(telegram)
+
+        self.communication.add_to_send(self.to_forward_to_network)
+
+        self.communication.send_all()
+        
+
     async def __initialize_communication(self):
         '''Initializes all necessary processes for the external communication'''
         from xknx.xknx import XKNX
@@ -71,10 +80,11 @@ class __ExternalCommunication:
         """
         await self.__xknx_for_listening.stop()
 
-    async def add_to_send(self, list_to_send: List[knx_t.Telegram]):
-        '''Adds elements to the buffer of telegrams to send'''
+    async def add_to_send(self, list_to_send: List[sim_t.Telegram]):
+        '''Adds elements to the buffer of telegrams to send and parses them to knx telegrams'''
         async with self.exec_lock:
             for telegram in list_to_send:
+                self.telegram_parser.from_simulator_telegram(telegram)
                 self.sending_buffer.append(telegram)
 
     async def send_all(self):
