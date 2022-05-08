@@ -23,6 +23,7 @@ import system.telegrams as sim_t
 
 
 #TODO: we do not handle floats for the moment, but useful when describing temperature!!!
+
 class TelegramParser:
     '''Class that implements a parser for telegrams, from simulated telegrams to real telegrams and the other way around'''
 
