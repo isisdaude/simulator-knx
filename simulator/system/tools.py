@@ -181,7 +181,7 @@ def configure_system_from_file(config_file_path):
     with open(config_file_path, "r") as file:
         config_dict = json.load(file) ###
     knx_config = config_dict["knx"]
-    group_address_encoding_style = check_group_address(knx_config["group_address_style"], style=True)
+    group_address_encoding_style = check_group_address(knx_config["group_address_style"], style_check=True)
     if not group_address_encoding_style:
         logging.error("Incorrect group address, check the config file before launching the simulator")
         sys.exit()

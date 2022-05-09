@@ -41,6 +41,7 @@ def test_correct_devices_creation():
     assert bright1.individual_addr.line == bright1_config["indiv_addr"][1]
     assert bright1.individual_addr.device == bright1_config["indiv_addr"][2]
     assert bright1.status == bright1_config["status"]
+    # Test correct Heater
     heater1 = dev.Heater("heater1", "M-0_H1", system.IndividualAddress(0,0,11), "enabled", 400) #400W max power
     assert heater1.name == heater1_config["name"]
     assert heater1.refid == heater1_config["refid"]
@@ -49,6 +50,7 @@ def test_correct_devices_creation():
     assert heater1.individual_addr.device == heater1_config["indiv_addr"][2]
     assert heater1.status == heater1_config["status"]
     assert heater1.max_power == heater1_config["max_power"]
+    # Test correct AC
     ac1 = dev.AC("ac1", "M-0_C1", system.IndividualAddress(0,0,12), "enabled", 400)
     assert ac1.name == ac1_config["name"]
     assert ac1.refid == ac1_config["refid"]
@@ -68,11 +70,7 @@ wrong_device_names = {  "LED":["LED1", "led 1", "led_1", "switch4"],
                         "Brightness":["BRIGHT1", "bright 1", "bright_1", "heater4"],
                         "Heater":["HEATER1", "heater 1", "heater_1", "switch4"],
                         "AC":["AC1", "ac 1", "ac_1", "led4"]} 
-false_device_refid = ["", " ", 420]
-false_indiv_addr = [(-1,0,12), (2.4, 10,10), (0, 20, 200), ('a', 'l0', 20)]
-false_status = ["enabl", "ok", 420, "disabl", "nop", "activated"]
-
-                        
+                      
 # Test Sys Exit if incorrect device name 
 def test_incorrect_device_name():
     for dev_name in false_device_names:
@@ -87,6 +85,7 @@ def test_incorrect_device_name():
             assert pytest_wrapped_error.type == SystemExit
 
 # Test Sys Exit if incorrect refid
+false_device_refid = ["", " ", 420]
 def test_incorrect_device_refid():
     for dev_refid in false_device_refid:
         for dev_class in devices_classes:
@@ -95,6 +94,7 @@ def test_incorrect_device_refid():
             assert pytest_wrapped_error.type == SystemExit
 
 # Test Sys Exit if incorrect Individual Address
+false_indiv_addr = [(-1,0,12), (2.4, 10,10), (0, 20, 200), ('a', 'l0', 20)]
 def test_incorrect_device_ia():
     for dev_ia in false_indiv_addr:
         for dev_class in devices_classes:
@@ -102,6 +102,8 @@ def test_incorrect_device_ia():
                 devices_classes[dev_class](dev_class.lower(), "M-0_XX", system.IndividualAddress(dev_ia[0],dev_ia[1],dev_ia[2]), "enabled") 
             assert pytest_wrapped_error.type == SystemExit
 
+# Test Sys Exit if incorrect status
+false_status = ["enable", "ok", 420, "disable", "nop", "activated", ""]
 def test_incorrect_device_status():
     for status in false_status:
         for dev_class in devices_classes:

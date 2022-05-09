@@ -30,6 +30,7 @@ import system
 SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
 print(SAVED_CONFIG_PATH)
 CONFIG_PATH = "./docs/config/simulation_config.json"
+# CONFIG_PATH = "./docs/config/saved_config_09052022_042903"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 # Configure logging messages format
 LOGGING_LEVEL = logging.INFO
