@@ -1,6 +1,7 @@
 """
 Simple simulator prototype.
 """
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 
 # Standard library imports
 import functools

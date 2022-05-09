@@ -1,3 +1,4 @@
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 from claripy import true
 import pytest
 from _pytest.logging import LogCaptureFixture
@@ -34,14 +35,14 @@ def test_correct_style_name(): #,encoding_styles_gas_split
         ga_style = system.check_group_address(encoding_style, style_check=True)
         assert ga_style == encoding_style
 
-def test_wrong_style_name(caplog: LogCaptureFixture):
+def test_wrong_style_name(): #caplog: LogCaptureFixture
     for encoding_style in encoding_style_wrong:
-        caplog.clear
-        ga =system.check_group_address(encoding_style, '1/1/1')
+        # caplog.clear
+        ga = system.check_group_address(encoding_style, '1/1/1')
         assert ga is None
         # for record in caplog.records:
         #     assert record.levelname != "CRITICAL"
-        assert "unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255)" in caplog.text
+        # assert "unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255)" in caplog.text
 
 
 def test_correct_group_address():
@@ -63,25 +64,44 @@ def test_correct_group_address():
                 assert ga.main == group_addresses_split[gc]
             gc += 1
 
-def test_wrong_group_address(caplog: LogCaptureFixture):
+def test_wrong_group_address(): #caplog: LogCaptureFixture
     for encoding_style in encoding_styles:
         group_addresses = gas[encoding_style]['gas_wrong']
         # Out-of-bounds address
         for group_address in group_addresses:
-            caplog.clear
+            # caplog.clear
             ga = system.check_group_address(encoding_style, group_address)
             assert ga is None
             # assert ("group address is out of bounds" in caplog.text or "has wrong value type," in caplog.text)
 
 
-def test_false_group_address(caplog: LogCaptureFixture):
+def test_false_group_address(): #caplog: LogCaptureFixture
     for encoding_style in encoding_styles:
         group_addresses = gas[encoding_style]['gas_false']
         # Totally false group addresses
         for group_address in group_addresses:
-            caplog.clear
+            # caplog.clear
             ga = system.check_group_address(encoding_style, group_address)
             assert ga is None
             # assert ("style is not respected," in caplog.text or "group address has wrong value type," in caplog.text)
   
 
+correct_indiv_addr = [(0 ,0, 0), (2, 10, 250), (15, 15, 255)]
+false_indiv_addr = [(-1 ,0, 12), (2.4, 10, 10), (0, 20, 200), ('a', 'l0', 20)]
+
+def test_correct_individual_address():
+    for ia_tuple in correct_indiv_addr:
+        area, line, device = ia_tuple[0], ia_tuple[1], ia_tuple[2]
+        ia = system.IndividualAddress(area, line, device)
+        assert ia.area is not None and ia.area == area
+        assert ia.line is not None and ia.line == line
+        assert ia.device is not None and ia.device == device
+        # assert 
+        # assert ia.line == line
+        # assert ia.device == device
+
+def test_incorrect_individual_address():
+    for ia_tuple in false_indiv_addr:
+        area, line, device = ia_tuple[0], ia_tuple[1], ia_tuple[2]
+        ia = system.IndividualAddress(area, line, device)
+        assert ia.area is None and ia.line is None and ia.device is None

@@ -1,14 +1,16 @@
 """
 Some class definitions for the rooms contained in the system
 """
-
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 import logging, sys
+import numbers
 from typing import List
 import gui
 import simulation as sim
 from devices import Device
 
-from .tools import Location, check_group_address, check_simulation_speed_factor
+from .tools import Location
+from .check_tools import check_group_address, check_room_config #, check_simulation_speed_factor
 from .knxbus import KNXBus
 from abc import ABC, abstractclassmethod
 
@@ -18,7 +20,10 @@ class InRoomDevice:
             self.device = device
             self.name = device.name
             self.location = Location(room, x, y, z)
-            self.type = type(device)  ## whait is this ?
+            if self.location.pos is None:
+                logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
+                sys.exit(1)
+            # self.type = type(device)  ## whait is this ?
 
         def __eq__(self, other_device):
             return self.name == other_device.name
@@ -36,48 +41,33 @@ class InRoomDevice:
             return self.location.pos[2]
 
 
+    
+
 class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: int, length: int, height:int, simulation_speed_factor:float, group_address_style:str):
-        """The room's given name"""
-        try:
-            assert len(name) > 0
-            assert name.isalnum() # check alphanumericness
-        except AssertionError:
-            logging.error("A non-empty alphanumeric name is required to create the room, check your config before launching the simulator")
-            sys.exit(1)
-        self.name = name
-        """Along x axis"""
-        self.width = width
-        """Along y axis"""
-        self.length = length
-        """Along z axis"""
-        self.height = height
-        """Representation of the world"""
-        try:
-            assert simulation_speed_factor == check_simulation_speed_factor(simulation_speed_factor)
-        except AssertionError:
-            logging.error(f"The simulation speed factor {simulation_speed_factor} is incorrect, check your config before launching the simulator")
-            sys.exit()
-        self.world = sim.World(self.width, self.length, self.height, simulation_speed_factor)
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str):
+        """Check and assign room configuration"""
+        self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style)
+       
+        """Creation of the world object from room config"""
+        self.world = sim.World(self.width, self.length, self.height, self.speed_factor)
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
         """List of all devices in the room"""
         self.devices: List[InRoomDevice] = []
         """Simulation status to pause/resume"""
         self.simulation_status = True
-        """Group addresses style by default"""
-        self.group_address_style = group_address_style 
+        
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
         from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Switch, TemperatureController
         """Adds a device to the room at the given position"""
-        if(x < 0 or x > self.width or y < 0 or y > self.length):
-            logging.warning("Cannot add a device outside the room")
-            return
+        # if(x < 0 or x > self.width or y < 0 or y > self.length):
+        #     logging.warning("Cannot add a device outside the room")
+        #     return
 
         in_room_device = InRoomDevice(device, self, x, y, z) #self is for the room, important if we want to find the room of a certain device
         self.devices.append(in_room_device)
@@ -127,7 +117,6 @@ class Room:
             return 1
         else:
             return 0
-
                 # remove from List
                 # detach from bus
                 # remove from world

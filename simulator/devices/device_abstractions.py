@@ -1,8 +1,8 @@
 """
 Gather the abstract class definitions for the simulated KNX devices.
 """
-
-import logging
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
+import logging, sys
 from abc import ABC, abstractmethod
 # from system import Telegram  #IndividualAddress, GroupAddress,
 
@@ -13,21 +13,18 @@ ACTUATOR_TYPES = ["light", "heater", "cooler"]
 class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)
     """
-    def __init__(self, name, refid, individual_addr, default_status, dev_type): #The constructor is also a good place for imposing various checks on attribute values
-        self.name = name
-        self.refid = refid
-        self.status: bool = default_status  # enable/disable status determine if sensor is activated or not, kind of power switch
-
-        # Init addresses
-        self.individual_addr = individual_addr
+    def __init__(self, class_name, name, refid, individual_addr, default_status, dev_type): #The constructor is also a good place for imposing various checks on attribute values
+        from system import check_device_config
+        self.class_name, self.name, self.refid, self.individual_addr, self.status = check_device_config(class_name, name, refid, individual_addr, default_status)
+        
         # Store the different ga the device is linked to
         self.group_addresses = []
 
-        #TODO: not necessary because already included in device types:
-        if dev_type in ["actuator", "sensor", "sysdevice", "functional_module"]: #TODO: maybe create a config file, with the list of different types?
-            self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
-        else:
-            logging.warning(f"Device type '{dev_type}' unknown")
+        # #TODO: not necessary because already included in device types:
+        # if dev_type in ["actuator", "sensor", "sysdevice", "functional_module"]: #TODO: maybe create a config file, with the list of different types?
+        #     self.dev_type = dev_type # usefull when we add device to rooms (e.g. to add a light to the light_soucres list)
+        # else:
+        #     logging.warning(f"Device type '{dev_type}' unknown")
 
 
     def is_enabled(self) -> bool:
@@ -69,14 +66,13 @@ class Device(ABC):
 
 
 
-
 class FunctionalModule(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status, input_type):
-        super().__init__(name, refid, individual_addr, default_status, "functional_module")
-        if input_type in FUNCTIONAL_MODULE_TYPES:
-            self.input_type = input_type
-        else:
-            logging.warning(f"Functional Module input type '{input_type}' unknown")
+    def __init__(self, class_name, name, refid, individual_addr, default_status, input_type):
+        super().__init__(class_name, name, refid, individual_addr, default_status, "functional_module")
+        # if input_type in FUNCTIONAL_MODULE_TYPES:
+        #     self.input_type = input_type
+        # else:
+        #     logging.warning(f"Functional Module input type '{input_type}' unknown")
 
 
     @abstractmethod # must be implemented independantly for each particular functional module device
@@ -89,25 +85,25 @@ class FunctionalModule(Device, ABC):
         pass
 
 class Sensor(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status, sensor_type):
-        super().__init__(name, refid, individual_addr, default_status, "sensor")
+    def __init__(self, class_name, name, refid, individual_addr, default_status, sensor_type):
+        super().__init__(class_name, name, refid, individual_addr, default_status, "sensor")
         #TODO: necessary?
-        if sensor_type in SENSOR_TYPES:
-            self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
-        else:
-            logging.warning(f"Sensor type '{sensor_type}' unknown")
+        # if sensor_type in SENSOR_TYPES:
+        #     self.sensor_type = sensor_type  # usefull to differentiate light, temperature, humidity,...
+        # else:
+        #     logging.warning(f"Sensor type '{sensor_type}' unknown")
 
 
 class Actuator(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status,  actuator_type, default_state=False):
-        super().__init__(name, refid, individual_addr, default_status, "actuator")
+    def __init__(self, class_name, name, refid, individual_addr, default_status,  actuator_type, default_state=False):
+        super().__init__(class_name, name, refid, individual_addr, default_status, "actuator")
 
         self.state = default_state #=False if not indicated, meaning OFF, some actuator can have a value in addition to their state (dimmed light)
         #TODO: necessary?
-        if actuator_type in ACTUATOR_TYPES:
-            self.actuator_type = actuator_type
-        else:
-            logging.warning(f"Actuator type '{actuator_type}' unknown")
+        # if actuator_type in ACTUATOR_TYPES:
+        #     self.actuator_type = actuator_type
+        # else:
+        #     logging.warning(f"Actuator type '{actuator_type}' unknown")
 
 
     @abstractmethod # must be implemented independantly for each particular actuator state
@@ -117,5 +113,5 @@ class Actuator(Device, ABC):
 
 
 class SysDevice(Device, ABC):
-    def __init__(self, name, refid, individual_addr, default_status):
-        super().__init__(name, refid, individual_addr, default_status, "sys_device")
+    def __init__(self, class_name,  name, refid, individual_addr, default_status):
+        super().__init__(class_name, name, refid, individual_addr, default_status, "sys_device")

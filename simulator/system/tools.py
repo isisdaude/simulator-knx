@@ -3,7 +3,7 @@ import logging, sys
 import math
 import json
 import devices as dev
-
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 #from .room import InRoomDevice not useful, but if used, put it on the class / function directly # to avoid circular import room <-> tools
 COMMAND_HELP = "enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\n>'q' to exit the simulation, 'h' for help<\n"
 # dict to link string to devices constructor object
@@ -19,16 +19,22 @@ INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
 class Location:
     """Class to represent location"""
     def __init__(self, room, x, y, z):
+        from .check_tools import check_location
         self.room = room
-        self.pos = (x, y, z)
-        self.x = x
-        self.y = y
-        self.z = z
+        self.min_x, self.max_x = 0, self.room.width
+        self.min_y, self.max_y = 0, self.room.length
+        self.min_z, self.max_z = 0, self.room.height
+        self.bounds = [[ self.min_x, self.max_x], [self.min_y, self.max_y], [self.min_z, self.max_z]]
+        # Check that location is correct, replace in the room if out of bounds
+        self.x, self.y, self.z = check_location(self.bounds, x, y, z)
+        self.pos = (self.x, self.y, self.z)
 
     def update_location(self, new_x=None, new_y=None, new_z=None):
-        self.x = (new_x or self.x)
-        self.y = (new_y or self.y)
-        self.z = (new_z or self.z)
+        from .check_tools import check_location
+        x = (new_x or self.x)
+        y = (new_y or self.y)
+        z = (new_z or self.z)
+        self.x, self.y, self.z = check_location(self.bounds, x, y, z)
         self.pos = (self.x, self.y, self.z)
 
     def __str__(self):
@@ -39,22 +45,16 @@ class Location:
         return f"Location in {self.room.name} is {self.pos}\n"
 
 
-
 class IndividualAddress:
     """Class to represent individual addresses (virtual location on the KNX Bus)"""
     ## Magic Number
     def __init__(self, area, line, device): # area[4bits], line[4bits], device[8bits]
-        try: # test if the group address has the correct format
-            assert (area >= 0 and area <= 15 and line >= 0 and line <= 15 and device >= 0 and device <= 255), 'Individual address is out of bounds.'
-        except AssertionError as msg:
-            print(msg)
-        self.area = area
-        self.line = line
-        self.device = device
+        from .check_tools import check_individual_address
+        self.area, self.line, self.device = check_individual_address(area, line, device)
+
 
     def __str__(self): # syntax when instance is called with print()
         return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
-
 
 
 class GroupAddress:
@@ -141,94 +141,6 @@ class GroupAddress:
                             return False
 
 """ Functions tools """
-def check_simulation_speed_factor(simulation_speed_factor:str):
-    try:
-        speed_factor = float(simulation_speed_factor)
-    except ValueError:
-        logging.error("The simulation speed should be a decimal number")
-        return None
-    except SyntaxError as msg:
-        logging.error(f"Wrong Syntax: {msg}")
-        return None
-    try:
-        assert speed_factor >= 1
-    except AssertionError:
-        logging.error("The simulation speed should be a positive number >=1")
-        return None
-    return speed_factor
-
-
-
-def check_group_address(group_address_style, text='', style_check=False): ## TODO: verify if the group address entered in text box is correct
-        # from system.tools import GroupAddress
-        ''' Verify that the group address entered by the user is correct (2, 3-levels or free) '''
-        if not style_check:
-            text_split = text.split('/')
-            for split in text_split:
-                if not split.lstrip('-').isdecimal():
-                    logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only")
-                    return None
-                if int(split) == 0: # special case for -0
-                    if not split.isdecimal():
-                        logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only")
-                        return None
-        if group_address_style == '3-levels':
-            if style_check: # We just want to check if style exists
-                return group_address_style
-            if len(text_split) == 3:
-                try:
-                    main, middle, sub = int(text_split[0]), int(text_split[1]), int(text_split[2])
-                except ValueError:
-                    logging.warning(f"'3-levels' group address {text} has wrong value type, should be int: 0/0/0 -> 31/7/255")
-                    return None
-                try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 31 and middle >= 0 and middle <= 7 and sub >= 0 and sub <= 255)
-                    return GroupAddress('3-levels', main = main, middle = middle, sub = sub)
-                except AssertionError:
-                    logging.warning(f"'3-levels' group address {text} is out of bounds, should be in 0/0/0 -> 31/7/255")
-                    return None
-            else:
-                logging.warning("'3-levels' style is not respected, possible addresses: 0/0/0 -> 31/7/255")
-                return None
-        elif group_address_style == '2-levels':
-            if style_check: # We just want to check if style exists
-                return group_address_style
-            if len(text_split) == 2:
-                try:
-                    main, sub = int(text_split[0]), int(text_split[1])
-                except ValueError:
-                    logging.warning(f"'2-levels' group address {text} has wrong value type, should be int: 0/0 -> 31/2047")
-                    return None
-                try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 31 and sub >= 0 and sub <= 2047)
-                    return GroupAddress('2-levels', main = main, sub = sub)
-                except AssertionError:
-                    logging.warning(f"'2-levels' group address {text} is out of bounds, should be in 0/0 -> 31/2047")
-                    return None
-            else:
-                logging.warning("'2-levels' style is not respected, possible addresses: 0/0 -> 31/2047")
-                return None
-        elif group_address_style == 'free':
-            if style_check: # We just want to check if style exists
-                return group_address_style
-            if len(text_split) == 1:
-                try:
-                    main = int(text_split[0])
-                except ValueError:
-                    logging.warning(f"'free' group address {text} has wrong value type, should be int: 0 -> 65535")
-                    return None
-                try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 65535)
-                    return GroupAddress('free', main = main)
-                except AssertionError:
-                    logging.warning(f"'free' group address {text} is out of bounds, should be in 0 -> 65535")
-                    return None
-            else:
-                logging.warning("'free' style is not respected, possible addresses: 0 -> 65535")
-                return None
-        else: # not a correct group address style
-            logging.error(f"Group address style '{group_address_style}' unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255)")
-            return None
 
 def configure_system(simulation_speed_factor):
     from .room import Room
@@ -236,8 +148,8 @@ def configure_system(simulation_speed_factor):
     led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
     led2 = dev.LED("led2", "M-0_L1", IndividualAddress(0,0,2), "enabled")
 
-    # heater1 = dev.Heater("heater1", "M-0_T1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
-    # cooler1 = dev.AC("cooler1", "M-0_T2", IndividualAddress(0,0,12), "enabled", 400)
+    # heater1 = dev.Heater("heater1", "M-0_H1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
+    # ac1 = dev.AC("ac1", "M-0_AC1", IndividualAddress(0,0,12), "enabled", 400)
     switch1 = dev.Switch("switch1", "M-0_S1", IndividualAddress(0,0,20), "enabled")
     switch2 = dev.Switch("switch2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
     bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
@@ -265,6 +177,7 @@ def configure_system(simulation_speed_factor):
 
 def configure_system_from_file(config_file_path):
     from .room import Room
+    from .check_tools import check_group_address, check_simulation_speed_factor
     with open(config_file_path, "r") as file:
         config_dict = json.load(file) ###
     knx_config = config_dict["knx"]
@@ -367,6 +280,7 @@ def configure_system_from_file(config_file_path):
         logging.info("No group address is defined in config file.")
     return rooms
 
+
 def user_command_parser(command, room):
     if command[:3] == 'set': #FunctionalModule
         name = command[4:]
@@ -403,8 +317,8 @@ def compute_distance(source, sensor) -> float:
     dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
     return dist
 
-"""Tools used by the devices to perform update calculations"""
 
+"""Tools used by the devices to perform update calculations"""
 def required_power(desired_temperature=20, volume=1, insulation_state="good"):
     def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
         dist = 18 - temp

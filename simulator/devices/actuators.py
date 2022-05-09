@@ -11,8 +11,8 @@ sys.path.append("core")
 class LightActuator(Actuator, ABC):
     """Abstract class to represent light devices"""
 
-    def __init__(self, name, refid, individual_addr, default_status, state, lumen):
-        super().__init__(name, refid, individual_addr, default_status, "light", state)
+    def __init__(self, class_name, name, refid, individual_addr, default_status, state, lumen):
+        super().__init__(class_name, name, refid, individual_addr, default_status, "light", state)
         self.lumen = lumen
 
     def lumen_to_Lux(self, lumen, area):
@@ -29,8 +29,7 @@ class LED(LightActuator):
 
     # state is ON/OFF=True/False
     def __init__(self, name, refid, individual_addr, default_status, state=False):
-        super().__init__(name, refid, individual_addr, default_status, state, lumen=800)
-        self.class_name = 'LED'
+        super().__init__('LED', name, refid, individual_addr, default_status, state, lumen=800)
     def update_state(self, telegram):
         if telegram.control_field == True: # Control field bit
 
@@ -50,8 +49,8 @@ class LED(LightActuator):
 class TemperatureActuator(Actuator, ABC):
     """Abstract class to represent temperature devices"""
 
-    def __init__(self, name, refid, individual_addr, default_status, actuator_type, state, update_rule, max_power=0):
-        super().__init__(name, refid, individual_addr, default_status, actuator_type, state)
+    def __init__(self, class_name, name, refid, individual_addr, default_status, actuator_type, state, update_rule, max_power=0):
+        super().__init__(class_name, name, refid, individual_addr, default_status, actuator_type, state)
         self.update_rule = update_rule
         self.max_power = max_power
         """Power of the device in Watts"""
@@ -62,29 +61,30 @@ class TemperatureActuator(Actuator, ABC):
 class Heater(TemperatureActuator):
     """Concrete class to represent a heating device"""
 
-    def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=1):
-        self.class_name = 'Heater'
+    def __init__(self, name, refid, individual_addr, default_status, max_power=400, state=False, update_rule=1):
         # Verification of update_rule sign
         try:
             assert update_rule >= 0
         except AssertionError:
             logging.error("The Heater should have update_rule>=0")
             sys.exit()
-        super().__init__(name , refid, individual_addr, default_status, "heater", state, update_rule, max_power)
+        super().__init__('Heater', name, refid, individual_addr, default_status, "heater", state, update_rule, max_power)
 
 
     def watts_to_temp(self, watts):
         return ((watts - 70)*2)/7 + 18
 
     def required_power(self, desired_temperature=20, volume=1, insulation_state="good"):
+        from system import INSULATION_TO_CORRECTION_FACTOR
         assert desired_temperature >= 10 and desired_temperature <= 40
         desired_wattage = volume*self.temp_to_watts(desired_temperature)
-        desired_wattage += desired_wattage*self.insulation_to_correction_factor[insulation_state]
+        desired_wattage += desired_wattage*INSULATION_TO_CORRECTION_FACTOR[insulation_state]
         return desired_wattage
 
     def max_temperature_in_room(self, volume=1, insulation_state="good"):
         """Maximum reachable temperature for this heater in the specified room"""
-        watts = self.power/((1+self.insulation_to_correction_factor[insulation_state])*volume)
+        from system import INSULATION_TO_CORRECTION_FACTOR
+        watts = self.power/((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
         return self.watts_to_temp(watts)
 
 
@@ -103,15 +103,14 @@ class Heater(TemperatureActuator):
 class AC(TemperatureActuator):
     """Concrete class to represent a cooling device"""
 
-    def __init__(self, name, refid, individual_addr, default_status, max_power, state=False, update_rule=-1):
-        self.class_name = 'AC'
+    def __init__(self, name, refid, individual_addr, default_status, max_power=400, state=False, update_rule=-1):
         # Verification of update_rule sign
         try:
             assert update_rule <= 0
         except AssertionError:
             logging.error("The Cooler should have update_rule<=0")
             sys.exit()
-        super().__init__(name, refid, individual_addr, default_status, "cooler", state, update_rule, max_power)
+        super().__init__('AC', name, refid, individual_addr, default_status, "cooler", state, update_rule, max_power)
 
     def update_state(self, telegram):
         if telegram.control_field == True:  # Control field bit

@@ -13,9 +13,8 @@ from system.telegrams import ButtonPayload, SwitchPayload, HeaterPayload, Payloa
 
 class Button(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
-        super().__init__(name, refid, location, default_status, "button")
+        super().__init__('Button', name, refid, location, default_status, "button")
         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
-        self.class_name = 'Button'
 
     def user_input(self):
         logging.info(f"The {self.name} has been pressed")
@@ -26,8 +25,7 @@ class Button(FunctionalModule):
 
 class Switch(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
-        super().__init__(name, refid, location, default_status, "switch")
-        self.class_name = 'Switch'
+        super().__init__('Switch', name, refid, location, default_status, "switch")
         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
         self.state = False
         self.str_state = "OFF"
@@ -43,8 +41,7 @@ class Switch(FunctionalModule):
 
 class TemperatureController(FunctionalModule):
     def __init__(self, name, refid, individual_addr, default_status):
-        super().__init__(name, refid, individual_addr, default_status, "thermostat")
-        self.class_name = 'TemperatureController'
+        super().__init__('TemperatureController', name, refid, individual_addr, default_status, "thermostat")
         self.state = 10
         self.room_volume = 0
         self.room_insulation = 'average'

@@ -1,85 +1,41 @@
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 import pytest
 import logging
 
 import system
+import devices as dev
+
+# Creation of the system base (devices + room)
+led1 = dev.LED("led1", "M-0_L1", system.IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
+switch1 = dev.Switch("switch1", "M-0_S1", system.IndividualAddress(0,0,20), "enabled")
+brightness1 = dev.Brightness("brightness1", "M-0_L3", system.IndividualAddress(0,0,5), "enabled")
+devices = [led1, switch1, brightness1]
+simulation_speed_factor = 180
+room1 = system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')
+
+ir_led1 = system.InRoomDevice(led1, room1, 5, 5, 1)
+ir_switch1 = system.InRoomDevice(switch1, room1, 0, 0, 1)
+ir_bright1 = system.InRoomDevice(brightness1, room1, 20, 20, 1)
+ir_devices = [ir_led1, ir_switch1, ir_bright1]
+
+devices_name = ["led1", "switch1", "brightness1"]
+devices_loc = [[5, 5, 1], [0, 0, 1], [20, 20, 1]]
+
+def test_correct_device_addition():
+    for d in range(len(devices)):
+        x, y, z = devices_loc[d]
+        # Test that there is no unit issue (indiv addr,...)
+        room1.add_device(devices[d], x, y, z)
+        # Test the the in_room_device has been created and added to room's device list
+        assert ir_devices[d] in room1.devices
+        # Test if name of device is the same as name of in_room_device object
+        assert room1.devices[room1.devices.index(ir_devices[d])].name == devices_name[d]
 
 
-# Test the speed factor given by user
-speed_factor_correct = ['1', ' 1 ', '50', '180', '300.67', '004']
-speed_factor_correct_verif = [1.0, 1.0, 50.0, 180.0, 300.67, 4.0]
-speed_factor_wrong = ['0.99', '0', '-45', '-792.56']
-speed_factor_false = ['a4', '-056','0x4', '0b1001']
-
-def test_correct_speed_factor():
-    for s in range(len(speed_factor_correct)):
-        assert system.check_simulation_speed_factor(speed_factor_correct[s]) == speed_factor_correct_verif[s]
-    
-def test_incorrect_speed_factor():
-    for wrong_factor in speed_factor_wrong:
-        assert system.check_simulation_speed_factor(wrong_factor) == None
-    for false_factor in speed_factor_false:
-        assert system.check_simulation_speed_factor(false_factor) == None
+# test addition to ambient list for each device
+# test
 
 
-## Test unit configuration functions (add_device, constructors,...)
-speed_factor = 180
-group_address_style = '3-levels'
-room1_config = {"name":"bedroom1", "dimensions":[20,20,3]}
-# Test room configuration (constructor call)
-def test_correct_room_config():
-    room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style)
-    assert room1.name == room1_config["name"]
-    assert room1.width == room1_config["dimensions"][0]
-    assert room1.length == room1_config["dimensions"][1]
-    assert room1.height == room1_config["dimensions"][2]
-    assert room1.group_address_style == group_address_style
-
-wrong_dimensions = [[-1, 20, 3], [10, 0, 0], [5, '5', 'a']]
-
-def test_incorrect_room_config():
-    # Test system exit if empty name
-    with pytest.raises(SystemExit) as pytest_wrapped_error:
-        room1 = system.Room("", 20, 20, 3, speed_factor, group_address_style)
-    assert pytest_wrapped_error.type == SystemExit
-    # Test system exit if non alphanumeric char name
-    with pytest.raises(SystemExit) as pytest_wrapped_error:
-        room1 = system.Room("room_4*", 20, 20, 3, speed_factor, group_address_style)
-    assert pytest_wrapped_error.type == SystemExit
-
-    +
-
-
-    # assert pytest_wrapped_error.value.code == 1 # Only if 'exit(1)' called, no code if sys.exit() is called
-
-
-# def test_wrong_room_config():
-
-
-# assert list(led1.location.pos) == led1_config["location"]
-
-# Test configuration of system in developper case 
-devices_config = ['led1', 'led2', 'switch1', 'switch2', 'bright1']
-led1_config = {"name":"led1", "refid":"M-0_L1", "indiv_addr":[0,0,1], "status":"enabled", "location":[5,5,1], "group_addresses":['1/1/1']}
-switch1_config = {"name":"switch1", "refid":"M-0_B1", "indiv_addr":[0,0,20], "status":"enabled", "location":[0,0,1], "group_addresses":['1/1/1']}
-bright1_config = {"name":"bright1", "refid":"M-0_L3", "indiv_addr":[0,0,5], "status":"enabled", "location":[20,20,1], "group_addresses":[]}
-#heater = 
-#cooler = 
-
-## TODO: add an example for each device type
-
-# def test_configure_system_correct():
-#     rooms = system.configure_system(speed_factor)
-#     assert len(rooms) == 1  ##TODO: change this test if multiple rooms
-#     for room in rooms:
-#         assert room.group_address_style == group_address_style
-#         for inroom_device in room.devices:
-#             assert inroom_device.device.name in config_devices
-#             try:
-#                 config_devices.remove(inroom_device.device.name)
-#             except ValueError: # if no more items in the list
-#                 logging.warning(f"Device {inroom_device.device.name} not in test list")
-        
-            
 
 
 
