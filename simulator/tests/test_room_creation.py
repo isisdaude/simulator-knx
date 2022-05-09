@@ -26,6 +26,7 @@ def test_incorrect_room_name():
         with pytest.raises(SystemExit) as pytest_wrapped_error:
             room1 = system.Room(wrong_name, 20, 20, 3, speed_factor, group_address_style)
         assert pytest_wrapped_error.type == SystemExit
+
 # Test incorrect room dimensions
 def test_incorrect_room_dimensions():
     # Test system exit with wrong room dimensions
@@ -34,6 +35,7 @@ def test_incorrect_room_dimensions():
         with pytest.raises(SystemExit) as pytest_wrapped_error:
             room1 = system.Room("bedroom1", x, y, z, speed_factor, group_address_style)
         assert pytest_wrapped_error.type == SystemExit
+
 # Test incorrect room speed_factor
 wrong_room_speed_factors = ['0.99', '0', '-45', '-792.56'] + ['a4', '-056','0x4', '0b1001']
 def test_incorrect_room_speed_factor():
@@ -41,6 +43,7 @@ def test_incorrect_room_speed_factor():
         with pytest.raises(SystemExit) as pytest_wrapped_error:
             room1 = system.Room("bedroom1", 20, 20, 3, wrong_speed_factor, group_address_style)
         assert pytest_wrapped_error.type == SystemExit
+        
 # Test incorrect room group address style
 wrong_room_ga_styles = ['0-levels', '1-levels', '2-level', '2levels', '3level', '4-levels']
 def test_incorrect_room_ga_style():
