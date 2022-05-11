@@ -14,6 +14,13 @@ DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC,
 # Situation of the insulation of the room associated to the correction factor for the heating
 INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
 
+# TODO: should check that in the right boundaries!!!
+MAX_MAIN = 31
+MAX_MIDDLE = 7
+MAX_SUB_LONG = 255
+MAX_SUB_SHORT = 2047
+MAX_FREE = 65535
+
 """ Class tools """
 
 class Location:
@@ -60,6 +67,10 @@ class IndividualAddress:
     
     def __repr__(self): # syntax when instance is called in python interpreter
         return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
+
+    def __repr__(self) -> str:
+        '''Following XKNX handling of individual addresses'''
+        return f"{self.area}.{self.device}.{self.line}"
 
 
 class GroupAddress:

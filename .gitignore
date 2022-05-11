@@ -91,3 +91,7 @@ ENV/
 
 # Pylint config
 .pylintrc
+# vscode and computer files
+.vscode
+.tags
+.bash_profile

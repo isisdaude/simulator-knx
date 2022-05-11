@@ -7,6 +7,6 @@ datetime
 apscheduler
 bs4
 lxml
-json
-copy
+numpy
 pytest
+xknx
