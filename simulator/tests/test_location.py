@@ -11,3 +11,4 @@ def test_correct_location():
     simulation_speed_factor = 180
     room1 = system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')
     assert True
+    assert True
