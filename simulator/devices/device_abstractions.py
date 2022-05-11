@@ -17,7 +17,7 @@ class Device(ABC):
         from system import check_device_config
         self.class_name, self.name, self.refid, self.individual_addr, self.status = check_device_config(class_name, name, refid, individual_addr, default_status)
         
-        # Store the different ga the device is linked to
+        # List to store the different ga the device is linked to
         self.group_addresses = []
 
         # #TODO: not necessary because already included in device types:
@@ -77,7 +77,7 @@ class FunctionalModule(Device, ABC):
 
     @abstractmethod # must be implemented independantly for each particular functional module device
     def user_input(self):
-        """ Interpret the user input (set switch ON/OFF, set temperature,...)"""
+        """ Interpret the user input (set button ON/OFF, set temperature,...)"""
 
     # should be an abstract method
     def receive_telegram(self, telegram):

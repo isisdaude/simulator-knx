@@ -20,15 +20,25 @@
             "refid":"M-0_L3",
             "knx_location":"0.0.3",
             "status":"enabled"},
-          "switch1":{
-            "class":"Switch",
+          "led4":{
+            "class":"LED",
+            "refid":"M-0_L4",
+            "knx_location":"0.0.4",
+            "status":"enabled"},
+          "button1":{
+            "class":"Button",
             "refid":"M-0_B1",
             "knx_location":"0.0.20",
             "status":"enabled"},
-          "switch2":{
-            "class":"Switch",
+          "button2":{
+            "class":"Button",
             "refid":"M-0_B2",
             "knx_location":"0.0.21",
+            "status":"enabled"},
+          "dimmer1":{
+            "class":"Dimmer",
+            "refid":"M-0_D2",
+            "knx_location":"0.0.41",
             "status":"enabled"},
           "brightness1":{
             "class":"Brightness",
@@ -46,9 +56,11 @@
     "group_address_style":"3-levels",
     "group_addresses":[
       {"address":"1/1/1",
-      "group_devices":["led1", "switch1"]},
+      "group_devices":["led1", "button1"]},
       {"address":"1/1/2",
-      "group_devices":["led2", "led3", "switch2"]}]
+      "group_devices":["led2", "led3", "button2"]},
+      {"address":"1/1/4",
+        "group_devices":["led4", "dimmer1"]}]
   },
 
   "world":{
@@ -61,12 +73,14 @@
         "insulation":"good",
         "room_devices":{
           "led1":[5, 5, 1],
-          "led2":[10, 17, 1],
+          "led2":[18, 13, 1],
           "led3":[7, 19, 1],
-          "switch1":[0, 0, 1],
-          "switch2":[7, 9, 1],
+          "led4":[10, 10, 1],
+          "button1":[0, 0, 1],
+          "button2":[12, 4, 1],
           "brightness1":[18, 18, 1],
-          "brightness2":[18, 6, 1]}
+          "brightness2":[18, 6, 1],
+          "dimmer1":[2, 17, 1]}
       }
     }
   }

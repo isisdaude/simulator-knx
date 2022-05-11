@@ -1,4 +1,5 @@
 """Tools used by the devices to perform update calculations"""
+
 def required_power(desired_temperature=20, volume=1, insulation_state="good"):
     def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
         dist = 18 - temp
@@ -22,3 +23,5 @@ def max_temperature_in_room(power, volume=1.0, insulation_state="good"):
 insulation_to_correction_factor = {
     "average": 0, "good": -10/100, "bad": 15/100}
 """Situation of the insulation of the room associated to the correction factor for the heating"""
+
+

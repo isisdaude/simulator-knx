@@ -1,4 +1,4 @@
-
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 import pyglet
 import logging
 import json
@@ -77,11 +77,42 @@ class ButtonDefault(object):
 
     def activate(self, gui_window):
         gui_window.reload_simulation(default_config = True)
-    
 
 
+class DimmerSetterWidget(object):
+    def __init__(self, room_device_widget):
+        # Initialize dimmer state ratio label
+        self.room_device_widget = room_device_widget
+        self.room_device_widget.sprite.opacity = OPACITY_CLICKED
+        self.init_state_ratio = room_device_widget.in_room_device.device.state_ratio
+        self.center_x, self.center_y = room_device_widget.pos_x, room_device_widget.pos_y
+        self.state_label_x = self.center_x + room_device_widget.width//2
+        self.state_label_y = self.center_y - room_device_widget.length//2
+        
+        self.being_set = False
+        # self.state_ratio_label.color = color_from_state_ratio(self.init_state_ratio)
+        # Update sprite of dimmer when mouse released
 
+    def start_setting_dimmer(self, batch, group):
+        self.being_set = True
+        self.state_ratio_label = pyglet.text.Label(str(self.init_state_ratio),
+                                    font_name=FONT_DIMMER_RATIO, font_size=30,
+                                    x=(self.state_label_x+OFFSET_DIMMER_RATIO), y=self.state_label_y,
+                                    anchor_x='left', anchor_y='bottom',
+                                    batch=batch, group=group,
+                                    color=color_from_state_ratio(self.init_state_ratio))
 
+    def update_ratio(self, new_ratio):
+        self.state_ratio = new_ratio
+        self.state_ratio_label.text = str(self.state_ratio)
+        self.state_ratio_label.color = color_from_state_ratio(self.state_ratio)
+
+    def delete(self):
+        self.room_device_widget.sprite.opacity = OPACITY_DEFAULT
+        if hasattr(self, 'state_ratio_label'):
+            self.state_ratio_label.delete()
+            return 1
+        return 0
 
 
 # Device widgets
@@ -95,6 +126,7 @@ class DeviceWidget(object):
         self.in_motion = False # Temporary flag to inform that the device widget is being moved
         self.linking_group_address = False # Temporary flag to establish a group address connection between two devices
         self.sprite_state = False # devices turned ON/OFF
+        self.sprite_state_ratio = 100
         # self.group_addresses = [] # will store the group addresses, can control the number e.g. for sensors
         self.file_ON = img_file_ON
         self.file_OFF = img_file_OFF #usefull to create a moving instance of the available devices
@@ -137,18 +169,36 @@ class DeviceWidget(object):
         self.sprite.delete()
         self.label.delete()
 
+
 class AvailableDevices(object): # library of devices availables, presented on the left side on the GUI
     def __init__(self, batch, group):
         self.in_motion = False
         self.devices = []
-        self.led = DeviceWidget(100, 800, batch, DEVICE_LED_ON_PATH, DEVICE_LED_OFF_PATH, group, "actuator", "LED", '', available_device=True)
+        # Line 1
+        self.led = DeviceWidget(WIN_BORDER, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_LED_ON_PATH, DEVICE_LED_OFF_PATH, group, "actuator", "LED", '', available_device=True)
         self.devices.append(self.led)
-        self.switch = DeviceWidget(30, 800, batch, DEVICE_SWITCH_ON_PATH, DEVICE_SWITCH_OFF_PATH, group, "functional_module", "Switch", '', available_device=True)
-        self.devices.append(self.switch)
-        self.brightness = DeviceWidget(170, 800, batch, DEVICE_BRIGHT_SENSOR_PATH, DEVICE_BRIGHT_SENSOR_PATH, group, "sensor", "Brightness", '', available_device=True)
+        next_image_offset_x = self.led.pos_x + self.led.width + OFFSET_AVAILABLE_DEVICES
+        self.button = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_BUTTON_ON_PATH, DEVICE_BUTTON_OFF_PATH, group, "functional_module", "Button", '', available_device=True)
+        self.devices.append(self.button)
+        next_image_offset_x = self.button.pos_x + self.button.width + OFFSET_AVAILABLE_DEVICES
+        self.dimmer = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_DIMMER_ON_PATH, DEVICE_DIMMER_OFF_PATH, group, "functional_module", "Dimmer", '', available_device=True)
+        self.devices.append(self.dimmer)
+        next_image_offset_x = self.dimmer.pos_x + self.dimmer.width + OFFSET_AVAILABLE_DEVICES
+        self.brightness = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_BRIGHT_SENSOR_PATH, DEVICE_BRIGHT_SENSOR_PATH, group, "sensor", "Brightness", '', available_device=True)
         self.devices.append(self.brightness)
-        self.thermometer = DeviceWidget(280, 800, batch, DEVICE_THERMO_COLD_PATH, DEVICE_THERMO_HOT_PATH, group, "sensor", "Thermometer", '', available_device=True)
+        next_image_offset_x = self.brightness.pos_x + self.brightness.width + OFFSET_AVAILABLE_DEVICES
+        self.thermometer = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_THERMO_COLD_PATH, DEVICE_THERMO_HOT_PATH, group, "sensor", "Thermometer", '', available_device=True)
         self.devices.append(self.thermometer)
+        # Line 2
+        self.heater = DeviceWidget(WIN_BORDER, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_HEATER_ON_PATH, DEVICE_HEATER_OFF_PATH, group, "actuator", "Heater", '',  available_device=True)
+        self.devices.append(self.heater)
+        next_image_offset_x = self.heater.pos_x + self.heater.width + OFFSET_AVAILABLE_DEVICES
+        self.ac = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_AC_ON_PATH, DEVICE_AC_OFF_PATH, group, "actuator", "AC", '',  available_device=True)
+        self.devices.append(self.ac)
+        next_image_offset_x = self.ac.pos_x + self.ac.width + OFFSET_AVAILABLE_DEVICES
+        self.presence = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_PRESENCE_ON_PATH, DEVICE_PRESENCE_OFF_PATH, group, "sensor", "PresenceDetector", '',  available_device=True)
+        self.devices.append(self.presence)
+
 
 
 
@@ -203,3 +253,24 @@ def system_loc_to_gui_pos( loc_x, loc_y, width_ratio, length_ratio, room_x, room
     except AttributeError:
         logging.warning("The system is not initialized and the room width/length ratios are not defined")
     return pos_x, pos_y
+
+def color_from_state_ratio(state_ratio): #state_ratio in 0-100
+    if 0 <= state_ratio:
+        if state_ratio < 25:
+            return COLOR_LOW
+        elif state_ratio < 50:
+            return COLOR_MEDIUM_LOW
+        elif state_ratio < 75:
+            return COLOR_MEDIUM_HIGH
+        elif state_ratio <= 100 :
+            return COLOR_HIGH
+def dimmer_ratio_from_mouse_pos(mouse_y, dimmer_center_y):
+    # We check distance from mouse to center on vertical y axis only
+    relative_distance = mouse_y - dimmer_center_y 
+    if relative_distance >= OFFSET_MAX_DIMMER_RATIO:
+        return 100 # max percentage ratio
+    elif relative_distance <= -OFFSET_MAX_DIMMER_RATIO:
+        return 0 # min percentage ratio
+    else:
+        ratio = round(100 * (relative_distance+OFFSET_MAX_DIMMER_RATIO) / (2*OFFSET_MAX_DIMMER_RATIO), 2)
+        return ratio

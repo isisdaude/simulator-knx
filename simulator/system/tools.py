@@ -8,7 +8,7 @@ import devices as dev
 COMMAND_HELP = "enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\n>'q' to exit the simulation, 'h' for help<\n"
 # dict to link string to devices constructor object
 DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC,
-                "Button": dev.Button, "Switch": dev.Switch, "TemperatureController": dev.TemperatureController,
+                "Button": dev.Button, "Dimmer": dev.Dimmer, "TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
                 "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySensor":dev.HumiditySensor,
                 "CO2Sensor": dev.CO2Sensor, "PresenceDetector": dev.PresenceDetector, "MovementDetector": dev.MovementDetector}
 # Situation of the insulation of the room associated to the correction factor for the heating
@@ -51,9 +51,14 @@ class IndividualAddress:
     def __init__(self, area, line, device): # area[4bits], line[4bits], device[8bits]
         from .check_tools import check_individual_address
         self.area, self.line, self.device = check_individual_address(area, line, device)
+        self.ia_string = '.'.join([str(self.area), str(self.line), str(self.device)])
 
 
     def __str__(self): # syntax when instance is called with print()
+        return self.ia_string
+        # return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
+    
+    def __repr__(self): # syntax when instance is called in python interpreter
         return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
 
 
@@ -150,8 +155,8 @@ def configure_system(simulation_speed_factor):
 
     # heater1 = dev.Heater("heater1", "M-0_H1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
     # ac1 = dev.AC("ac1", "M-0_AC1", IndividualAddress(0,0,12), "enabled", 400)
-    switch1 = dev.Switch("switch1", "M-0_S1", IndividualAddress(0,0,20), "enabled")
-    switch2 = dev.Switch("switch2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
+    button1 = dev.Button("button1", "M-0_S1", IndividualAddress(0,0,20), "enabled")
+    button2 = dev.Button("button2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
     bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
 
     # Declaration of the physical system
@@ -159,19 +164,19 @@ def configure_system(simulation_speed_factor):
     # room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
-    room1.add_device(switch1, 0, 0, 1)
-    room1.add_device(switch2, 0, 1, 1)
+    room1.add_device(button1, 0, 0, 1)
+    room1.add_device(button2, 0, 1, 1)
     room1.add_device(bright1, 20, 20, 1)
 
-    # room1.add_device(heater1, 0, 5, 1)
-    # room1.add_device(cooler1, 20, 5, 1)
+    room1.add_device(heater1, 0, 5, 1)
+    room1.add_device(ac1, 20, 5, 1)
     print(room1)
 
     # Group addresses # '3-levels', '2-levels' or 'free'
     # ga1 = GroupAddress('3-levels', main = 1, middle = 1, sub = 1)
     ga1 = '1/1/1'
     room1.attach(led1, ga1) # Actuator is linked to the group address ga1 through the KNXBus
-    room1.attach(switch1, ga1)
+    room1.attach(button1, ga1)
     # return the room object to access all elements of the room (world included)
     return [room1]
 
@@ -197,7 +202,7 @@ def configure_system_from_file(config_file_path):
         logging.error("Incorrect simulation speed factor, review the config file before launching the simulator")
         sys.exit()
 
-    rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'switch': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
+    rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
     rooms = []
     ga_builders = []
     rooms_config = world_config["rooms"]
@@ -215,10 +220,12 @@ def configure_system_from_file(config_file_path):
         # Store room object to return to main
         rooms.append(room)
         room_devices_config = room_config["room_devices"]
+        print(" ------- Room config dict -------")
         print(room_devices_config)
         # Store temporarily the room object with devices and their physical position
         rooms_builders.append([room, room_devices_config])
     # Parsing of devices to add in the room
+    print(" ------- Room devices from configuration file -------")
     for a in range(number_of_areas):
         area_key = "area"+str(a) #area0, area1,...
         number_of_lines = knx_config[area_key]["number_of_lines"]
@@ -261,6 +268,7 @@ def configure_system_from_file(config_file_path):
                         continue # get out of the for loop iteration
     # Parsing of group addresses to connect devices together
     #TODO: link GAs to iterface IP SVSHI
+    print(" ------- KNX System Configuration -------")
     ga_style =  knx_config["group_address_style"]
     ga_builders = knx_config["group_addresses"]
     if len(ga_builders):

@@ -41,7 +41,7 @@ class InRoomDevice:
             return self.location.pos[2]
 
 
-    
+
 
 class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
@@ -63,7 +63,7 @@ class Room:
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
-        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Switch, TemperatureController
+        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Button, TemperatureController
         """Adds a device to the room at the given position"""
         # if(x < 0 or x > self.width or y < 0 or y > self.length):
         #     logging.warning("Cannot add a device outside the room")
@@ -85,7 +85,7 @@ class Room:
                 self.world.ambient_light.add_sensor(in_room_device)
                 #print(f"A brightness sensor was added at {x} : {y}.")
         elif isinstance(device, FunctionalModule):
-            if isinstance(device, Switch):
+            if isinstance(device, Button):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             if isinstance(device, TemperatureController):
                 device.room_volume = self.width*self.length*self.height

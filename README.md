@@ -10,3 +10,7 @@ When adding new devices types ("light",...):
 
 Config file json:
 -> keys are names (area0, line0, led1, switch1,...)
+
+
+launch pytest command
+pytest -q --log-cli-level error simulator/tests/

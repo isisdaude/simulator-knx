@@ -8,8 +8,9 @@ from time import time
 from datetime import timedelta
 
 
-from system.tools import configure_system_from_file, DEV_CLASSES
-from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc
+
+from system.tools import configure_system_from_file, DEV_CLASSES, GroupAddress, Location
+from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos
 from .gui_config import *
 
 
@@ -127,7 +128,7 @@ class GUIWindow(pyglet.window.Window):
 
 ## Method to initialize the gui system from room object
     def initialize_system(self, saved_config_path=None):
-        from devices import Switch, LED, Brightness
+        from devices import Button, LED, Brightness, Dimmer
         self.room.window = self # same for the GUi window object, but to room1 object
         if saved_config_path: # stor the saved config path only at first call, not when user reload the system
             self.saved_config_path = saved_config_path + "saved_config_" # We will add the time when the simulation was saved
@@ -143,13 +144,13 @@ class GUIWindow(pyglet.window.Window):
 
         # self.green_img = pyglet.image.load(GREEN_PATH)
         # self.green_sprite = pyglet.sprite.Sprite(self.green_img, x=80, y=0, batch=self.batch, group=self.foreground)
-
+        print(" ------- Initialization of the KNX System's GUI representation -------")
         for in_room_device in self.room.devices:
             device = in_room_device.device
             if isinstance(device, Brightness):
                 brightness_sensor = self.available_devices.brightness
-                print(type(device))
-                print(type(device) == str)
+                # print(type(device))
+                # print(type(device) == str)
                 # x, y = in_room_device.location.x, in_room_device.location.y
                 # x = int(self.room_widget.x + self.room_width_ratio * x)
                 # y = int(self.room_widget.y + self.room_length_ratio * y)
@@ -159,14 +160,25 @@ class GUIWindow(pyglet.window.Window):
                 device_widget.in_room_device = in_room_device
                 self.room_devices.append(device_widget)
 
-            if isinstance(device, Switch):
-                switch = self.available_devices.switch
+            if isinstance(device, Button):
+                button = self.available_devices.button
                 # x, y = in_room_device.location.x, in_room_device.location.y
                 # x = int(self.room_widget.x + self.room_width_ratio * x)
                 # y = int(self.room_widget.y + self.room_length_ratio * y)
                 pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.room_width_ratio, self.room_length_ratio, self.room_widget.origin_x, self.room_widget.origin_y)
                 print(f"{device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
-                device_widget = DeviceWidget(pos_x, pos_y, self.batch, switch.file_ON, switch.file_OFF, group=self.foreground, device_type='functional_module', device_class=device.name[:-1], device_number=device.name[-1])
+                device_widget = DeviceWidget(pos_x, pos_y, self.batch, button.file_ON, button.file_OFF, group=self.foreground, device_type='functional_module', device_class=device.name[:-1], device_number=device.name[-1])
+                device_widget.in_room_device = in_room_device
+                self.room_devices.append(device_widget)
+            
+            if isinstance(device, Dimmer):
+                dimmer = self.available_devices.dimmer
+                # x, y = in_room_device.location.x, in_room_device.location.y
+                # x = int(self.room_widget.x + self.room_width_ratio * x)
+                # y = int(self.room_widget.y + self.room_length_ratio * y)
+                pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.room_width_ratio, self.room_length_ratio, self.room_widget.origin_x, self.room_widget.origin_y)
+                print(f"{device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
+                device_widget = DeviceWidget(pos_x, pos_y, self.batch, dimmer.file_ON, dimmer.file_OFF, group=self.foreground, device_type='functional_module', device_class=device.name[:-1], device_number=device.name[-1])
                 device_widget.in_room_device = in_room_device
                 self.room_devices.append(device_widget)
 
@@ -197,16 +209,24 @@ class GUIWindow(pyglet.window.Window):
         # Display the current room devices name in list
         for room_device in self.room_devices:
             room_dev_x = list_x
-            room_dev_y = list_y - room_devices_counter*OFFSET_LIST_ELEMENT # display device name below main label
+            room_dev_y = list_y - room_devices_counter*(OFFSET_LIST_DEVICE) # display device name below main label
+            room_dev_ia_y = room_dev_y - OFFSET_INDIVIDUAL_ADDR_LABEL 
+            ia_label = room_device.in_room_device.device.individual_addr.ia_string
             room_dev_gas = room_device.in_room_device.device.group_addresses
-            ga_text = '  --  (' + ', '.join([str(ga) for ga in room_dev_gas]) + ')'
+            ga_text = ' -- (' + ', '.join([str(ga) for ga in room_dev_gas]) + ')'
             label_text = room_device.label.text + ga_text
             room_device_label = pyglet.text.Label(label_text,
                                 font_name=FONT_SYSTEM_INFO, font_size=15,
                                 x=room_dev_x, y=room_dev_y,
                                 anchor_x='left', anchor_y='bottom',
                                 batch=self.batch)
-            self.room_devices_labels.append(room_device_label)
+            room_device_ia_label = pyglet.text.Label(ia_label,
+                                font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_INDIVIDUAL_ADDR,
+                                x=room_dev_x, y=room_dev_ia_y,
+                                anchor_x='left', anchor_y='bottom',
+                                batch=self.batch)
+            self.room_devices_labels.append(room_device_label) 
+            self.room_devices_labels.append(room_device_ia_label) 
             room_devices_counter += 1
 
     def display_brightness_labels(self):
@@ -278,7 +298,7 @@ class GUIWindow(pyglet.window.Window):
                 self.room_brightness_levels.append(room_brightness_level)
             room_brightness_counter +=1
 
-## Methods to react to user actions (activate a switch, press a gui button, add device to simulation,...)
+## Methods to react to user actions (turn ON/OFF a device button, press a gui button, add device to simulation,...)
     def switch_sprite(self):
         for room_device in self.room_devices:
             try:
@@ -289,6 +309,11 @@ class GUIWindow(pyglet.window.Window):
                         room_device.sprite = pyglet.sprite.Sprite(room_device.img_ON, x=room_device.origin_x, y=room_device.origin_y, batch=self.batch, group=self.foreground)
                     else: # device turned OFF
                         room_device.sprite = pyglet.sprite.Sprite(room_device.img_OFF, x=room_device.origin_x, y=room_device.origin_y, batch=self.batch, group=self.foreground)
+                if room_device.sprite_state and room_device.sprite_state_ratio != room_device.in_room_device.device.state_ratio: # dimmmer changed state_ratio of e.g. a light that is ON
+                    room_device.sprite_state_ratio = room_device.in_room_device.device.state_ratio
+                    new_opacity = OPACITY_MIN + (OPACITY_DEFAULT-OPACITY_MIN) * room_device.sprite_state_ratio/100
+                    room_device.sprite.opacity = new_opacity
+        
             except AttributeError: #if no state attribute (e.g. sensor)
                 pass
     
@@ -485,21 +510,31 @@ class GUIWindow(pyglet.window.Window):
                 room_device.sprite.opacity = OPACITY_DEFAULT
             for button in self.buttons:
                 button.widget.sprite.opacity = OPACITY_DEFAULT
+        # Cancel the Dimmer ratio setting if SHIFT key is released before the mouse is released to validate the value
+        if symbol == pyglet.window.key.LSHIFT or symbol == pyglet.window.key.RSHIFT:
+            if hasattr(self, 'dimmer_being_set'):
+                self.dimmer_being_set.delete()
+                delattr(self, 'dimmer_being_set')
 
     def on_mouse_press(self, x, y, button, modifiers):
-        from system.tools import GroupAddress
         ''' Called when a mouse button is pressed (LEFT, RIGHT or MIDDLE):
             Define multiple action to do when one of the mouse button is pressed'''
         if button == pyglet.window.mouse.LEFT:
-            # LEFT click + SHIFT : activate functional module (e.g. turn switch ON/OFF)
+            # LEFT click + SHIFT : activate functional module (e.g. turn button ON/OFF)
             if modifiers & pyglet.window.key.MOD_SHIFT:
+                from devices.device_abstractions import FunctionalModule
+                from devices.functional_modules import Button, Dimmer
                 for room_device in self.room_devices:
                     # Test if the user clicked on a room device instanciated
                     if room_device.hit_test(x, y):
-                        if room_device.device_type == "functional_module": # button, switch,..
-                            functional_device = room_device
-                            room_device.in_room_device.device.user_input() ###TODO: add the user cmmand input (e.g., temperature,...)
-                            self.switch_sprite()
+                        if isinstance(room_device.in_room_device.device, FunctionalModule):# == "functional_module": # button,..
+                            if isinstance(room_device.in_room_device.device, Dimmer):
+                                # Create an object to set the dimmer value, and validate by releasing the mouse with SHIFT pressed
+                                self.dimmer_being_set = DimmerSetterWidget(room_device)
+                                return
+                            elif isinstance(room_device.in_room_device.device, Button):
+                                room_device.in_room_device.device.user_input() # user_input will send the telegram with the appropriate payload on the bus
+                                self.switch_sprite()
             # LEFT click + CTRL : set up group address between multiple devices
             elif modifiers & pyglet.window.key.MOD_CTRL:
                 for room_device in self.room_devices:
@@ -545,13 +580,23 @@ class GUIWindow(pyglet.window.Window):
                         self.display_devices_list()
 
     def on_mouse_release(self, x, y, button, modifiers):
-        from system import Location
         ''' Called when a mouse button is released (LEFT, RIGHT or MIDDLE):
             Define multiple action to do when one of the mouse button is released'''
         # The LEFT button is used to select and manage devices  (position, group addresses, activation,...)
         if button == pyglet.window.mouse.LEFT:
+            if modifiers & pyglet.window.key.MOD_SHIFT:
+                if hasattr(self, 'dimmer_being_set'):
+                    if not self.dimmer_being_set.being_set: # if mouse was not dragged but only pressed (to turn ON/OFF dimmer)
+                        self.dimmer_being_set.room_device_widget.in_room_device.device.user_input(switch_state=True)
+                    else: # if mouse was dragged while pressing left button to set dimmer ratio
+                        new_ratio = dimmer_ratio_from_mouse_pos(y, self.dimmer_being_set.center_y)
+                        self.dimmer_being_set.room_device_widget.in_room_device.device.user_input(state_ratio=new_ratio, keep_on=True)
+                    self.switch_sprite()
+                    self.dimmer_being_set.delete() # will change ratio and color of it
+                    delattr(self, 'dimmer_being_set')
+
             # If there is a moving device, the release of LEFT button is to place the devce in the room or remove it from the GUI (release outside of the room)
-            if hasattr(self, 'moving_device'):
+            elif hasattr(self, 'moving_device'):
                 # Place the device in the Room if user drop it in the room widget
                 if self.room_widget.hit_test(x, y):
                     pos_x, pos_y = x, y
@@ -579,10 +624,18 @@ class GUIWindow(pyglet.window.Window):
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         ''' Called when the mouse is dragged:
             Drag device accross the GUI if there is a moving device defined'''
-        if not (modifiers & pyglet.window.key.MOD_SHIFT): # if SHIFT pressed, the user only want to activate the device and not move it
+        if (modifiers & pyglet.window.key.MOD_SHIFT):
+            if hasattr(self, 'dimmer_being_set'):
+                if not self.dimmer_being_set.being_set:
+                    self.dimmer_being_set.start_setting_dimmer(self.batch, self.foreground) # Initialize ratio label
+                new_ratio = dimmer_ratio_from_mouse_pos(y, self.dimmer_being_set.center_y)
+                self.dimmer_being_set.update_ratio(new_ratio)
+
+        else: # if SHIFT pressed, the user only want to activate the device and not move it
             if buttons & pyglet.window.mouse.LEFT:
                 if hasattr(self, 'moving_device'):
                     self.moving_device.update_position(new_x = x, new_y = y) # - (self.moving_device.width//2)   - (self.moving_device.length//2)
+
 
 
 def update_window(dt, window, speed_factor, start_time): # cannot be a class method because first argument must be dt, and thus cannot be self.

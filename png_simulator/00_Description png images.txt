@@ -2,11 +2,20 @@
 PNG images for KNX Simulator using piglet library
 
 lightbulb (40x60)
-switch (60x31)
+button (60x31)
 Brightness sensor (61x42)
 Thermometer 26x80
+Dimmer 60x60
+Heater 55x44
+AC 80x29
+Presence 55x55
+switch_light 55x55
 
-Button 51x50 or 50x51 or 50x50
+GUI action Button 51x50 or 50x51 or 50x50
 
 
 CTRL-leftclick to set up group addresses
+
+Colors:
+Heater off: 213,205,204
+AC ON : 0,67,149

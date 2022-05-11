@@ -1,7 +1,7 @@
 """
 Some class definitions for the simulation of the physical world
 """
-
+#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 
 from typing import List
 import time, math, schedule
@@ -93,7 +93,7 @@ class AmbientTemperature:
         else:
             max_temps = []
             for source in self.temp_sources: # sources of heat or cold
-                if source.device.is_enabled():
+                if source.device.status:
                     if isinstance(source.device, Heater):
                         max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
                     self.temperature += source.device.update_rule
@@ -136,7 +136,7 @@ class AmbientLight:
                 # Compute distance between sensor and each source
                 dist = system.compute_distance(source, brightness_sensor)
                 # Compute the new brightness
-                residual_lumen = (1/dist)*source.device.lumen
+                residual_lumen = (1/dist)*source.device.lumen*(source.device.state_ratio/100) # we suppose proportionality between state ratio and lumen 
                 brightness += residual_lumen
         return brightness
 
@@ -149,6 +149,22 @@ class AmbientLight:
             brightness_levels.append((sensor.device.name, sensor.device.brightness))
 
         return brightness_levels
+
+class AmbientHumidity:
+    # elements that influence humidity:
+    # - windows
+    # - heater/cooler
+    def __init__(self):
+        self.default_humidity = 50 # Relative Humidity in %
+
+class AmbientCO2:
+    # elements that influence humidity:
+    # - windows
+    def __init__(self):
+        self.default_CO2 = 600 # ppm
+
+
+
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
@@ -156,6 +172,8 @@ class World:
         self.time = Time(simulation_speed_factor) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, default_temp=(20.0))
         self.ambient_light = AmbientLight() #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
+        self.ambient_humidity = AmbientHumidity()
+        self.ambient_CO2 = AmbientCO2()
         self.ambient_world = [self.ambient_temperature, self.ambient_light]
 
     def update(self):

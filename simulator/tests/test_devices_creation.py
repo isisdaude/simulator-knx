@@ -7,9 +7,9 @@ import devices as dev
 
 
 # Test configuration of system in developper case 
-devices_config = ['led1', 'led2', 'switch1', 'switch2', 'bright1']
+devices_config = ['led1', 'led2', 'button1', 'bright1', 'heater1']
 led1_config = {"name":"led1", "refid":"M-0_L1", "indiv_addr":[0,0,1], "status":"enabled", "location":[5,5,1], "group_addresses":['1/1/1']}
-switch1_config = {"name":"switch1", "refid":"M-0_S1", "indiv_addr":[0,0,20], "status":"enabled", "location":[0,0,1], "group_addresses":['1/1/1']}
+button1_config = {"name":"button1", "refid":"M-0_S1", "indiv_addr":[0,0,20], "status":"enabled", "location":[0,0,1], "group_addresses":['1/1/1']}
 bright1_config = {"name":"brightness1", "refid":"M-0_L3", "indiv_addr":[0,0,5], "status":"enabled", "location":[20,20,1], "group_addresses":[]}
 heater1_config = {"name":"heater1", "refid":"M-0_H1", "indiv_addr":[0,0,11], "status":"enabled", "max_power":400, "location":[20,20,1], "group_addresses":[]}
 ac1_config = {"name":"ac1", "refid":"M-0_C1", "indiv_addr":[0,0,12], "status":"enabled", "max_power":400, "location":[20,20,1], "group_addresses":[]}
@@ -25,14 +25,14 @@ def test_correct_devices_creation():
     assert led1.individual_addr.line == led1_config["indiv_addr"][1]
     assert led1.individual_addr.device == led1_config["indiv_addr"][2]
     assert led1.status == led1_config["status"]
-    # Test correct Switch
-    switch1 = dev.Switch("switch1", "M-0_S1", system.IndividualAddress(0,0,20), "enabled")
-    assert switch1.name == switch1_config["name"]
-    assert switch1.refid == switch1_config["refid"]
-    assert switch1.individual_addr.area == switch1_config["indiv_addr"][0]
-    assert switch1.individual_addr.line == switch1_config["indiv_addr"][1]
-    assert switch1.individual_addr.device == switch1_config["indiv_addr"][2]
-    assert switch1.status == switch1_config["status"]
+    # Test correct Button
+    button1 = dev.Button("button1", "M-0_S1", system.IndividualAddress(0,0,20), "enabled")
+    assert button1.name == button1_config["name"]
+    assert button1.refid == button1_config["refid"]
+    assert button1.individual_addr.area == button1_config["indiv_addr"][0]
+    assert button1.individual_addr.line == button1_config["indiv_addr"][1]
+    assert button1.individual_addr.device == button1_config["indiv_addr"][2]
+    assert button1.status == button1_config["status"]
     # Test correct Brightness sensor
     bright1 = dev.Brightness("brightness1", "M-0_L3", system.IndividualAddress(0,0,5), "enabled")
     assert bright1.name == bright1_config["name"]
@@ -62,13 +62,13 @@ def test_correct_devices_creation():
     ## TODO: add devices
 
 ## TODO: add devices
-devices_classes = { "LED": dev.LED, "Switch": dev.Switch, "Brightness": dev.Brightness, "Heater":dev.Heater, "AC":dev.AC}
+devices_classes = { "LED": dev.LED, "Button": dev.Button, "Brightness": dev.Brightness, "Heater":dev.Heater, "AC":dev.AC}
 false_device_names = ["", "device_4*", 420]
 ## TODO: add devices
-wrong_device_names = {  "LED":["LED1", "led 1", "led_1", "switch4"],
-                        "Switch":["SWITCH1", "switch 1", "switch_1", "bright4"],
+wrong_device_names = {  "LED":["LED1", "led 1", "led_1", "bright4"],
+                        "Button":["BUTTON1", "button 1", "button_1", "switch4"],
                         "Brightness":["BRIGHT1", "bright 1", "bright_1", "heater4"],
-                        "Heater":["HEATER1", "heater 1", "heater_1", "switch4"],
+                        "Heater":["HEATER1", "heater 1", "heater_1", "button1"],
                         "AC":["AC1", "ac 1", "ac_1", "led4"]} 
                       
 # Test Sys Exit if incorrect device name 

@@ -10,8 +10,8 @@
             "refid":"M-0_L1",
             "knx_location":"0.0.1",
             "status":"enabled"},
-          "switch1":{
-            "class":"Switch",
+          "button1":{
+            "class":"Button",
             "refid":"M-0_B1",
             "knx_location":"0.0.20",
             "status":"enabled"},
@@ -26,7 +26,7 @@
     "group_address_style":"3-levels",
     "group_addresses":[
       {"address":"1/1/1",
-      "group_devices":["led1", "switch1"]}]
+      "group_devices":["led1", "button1"]}]
   },
   "world":{
     "simulation_speed_factor":180,
@@ -38,7 +38,7 @@
         "insulation":"average",
         "room_devices":{
           "led1":[7, 12, 1],
-          "switch1":[0, 0, 1],
+          "button1":[0, 0, 1],
           "bright1":[18, 3, 1]
         }
       }
