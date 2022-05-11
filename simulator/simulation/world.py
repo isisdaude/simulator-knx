@@ -96,16 +96,16 @@ class AmbientTemperature:
                 if source.device.status:
                     if isinstance(source.device, Heater):
                         max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
-                    self.temperature += source.device.update_rule
+                    self.temperature += source.device.update_rule ##
             max_temp = mean(max_temps)
             if self.temperature >= max_temp:
                 self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
         temperature_levels = []
         for sensor in self.temp_sensors:
             sensor.temperature = self.temperature
-            temperature_levels.append((sensor.name, sensor.temperature))
-        for controller in self.temp_controllers:#
-            controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources
+        #     temperature_levels.append((sensor.name, sensor.temperature))
+        # for controller in self.temp_controllers:#
+        #     controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources
         return temperature_levels
 
     def __repr__(self):
