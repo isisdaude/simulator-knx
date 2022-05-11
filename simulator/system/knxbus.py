@@ -21,8 +21,8 @@ class KNXBus:
         self.temp_functional = []
         self.group_address_to_payload_type = {}
         # TODO: add this to the bus with proper variables
-        self.communication_interface = CommunicationInterface('localhost', '???', self.group_address_to_payload_type)
-        self.communication_interface.start_communication()
+        # self.communication_interface = CommunicationInterface('localhost', '???', self.group_address_to_payload_type)
+        # self.communication_interface.start_communication()
 
     # If not in list, add the observer to the list
     def attach(self, device, group_address: GroupAddress):
@@ -85,7 +85,7 @@ class KNXBus:
         for ga_bus in self.ga_buses:
             if telegram.destination == ga_bus.group_address:
                 # Sending to external applications
-                self.communication_interface.add_telegram_to_send(telegram)
+                # self.communication_interface.add_telegram_to_send(telegram)
                 # TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators:  # loop on actuator linked to this group address
                     actuator.update_state(telegram)
@@ -96,16 +96,16 @@ class KNXBus:
 
     def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
         # TODO: Heater does not send telegrams for the moment
-        from simulator.devices.functional_modules import Switch, TemperatureController
-        from simulator.system.telegrams import SwitchPayload, TempControllerPayload
+        from devices.functional_modules import Button, TemperatureController
+        from system.telegrams import ButtonPayload, TempControllerPayload
 
         # TODO: can add other devices here
-        if isinstance(device, Switch):
-            self.group_address_to_payload_type.update(
-                (str(group_address), SwitchPayload))
-        elif isinstance(device, TemperatureController):
-            self.group_address_to_payload_type.update(
-                (str(group_address), TempControllerPayload))
+        # if isinstance(device, Button):
+        #     self.group_address_to_payload_type.update(
+        #         (str(group_address), ButtonPayload))
+        # elif isinstance(device, TemperatureController):
+        #     self.group_address_to_payload_type.update(
+        #         (str(group_address), TempControllerPayload))
 
         # TODO: to be added when async things handled correctly
         # self.communication_interface.group_address_to_payload = self.group_address_to_payload_type

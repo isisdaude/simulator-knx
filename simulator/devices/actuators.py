@@ -2,7 +2,7 @@
 Some class definitions for the simulated KNX actuators.
 """
 
-from system.telegrams import HeaterPayload, Payload, Telegram, TempControllerPayload, ButtonPayload, BinaryPayload, DimmerPayload, SwitchPayload
+from system.telegrams import HeaterPayload, Payload, Telegram, TempControllerPayload, ButtonPayload, BinaryPayload, DimmerPayload#, SwitchPayload
 from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 import sys, logging
