@@ -7,7 +7,7 @@ from .device_abstractions import FunctionalModule
 # from .actuators import
 # from .sensors import Thermometer
 # from system.tools import IndividualAddress
-from system.telegrams import ButtonPayload, BinaryPayload, DimmerPayload, HeaterPayload, Payload, Telegram, TempControllerPayload
+from system.telegrams import ButtonPayload, BinaryPayload, DimmerPayload, HeaterPayload, Payload, Telegram#, TempControllerPayload
 
 #from abc import ABC, abstractclassmethod
 

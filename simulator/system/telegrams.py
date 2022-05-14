@@ -105,13 +105,13 @@ class HeaterPayload(Payload):
         ## TODO: display a more truthful payload
         return f"The maximum power of this heater is {self.max_power}."
 
-class TempControllerPayload(Payload):
-    """Class to represent the payload of a temperature controller, fields are none if unused"""
+# class TempControllerPayload(Payload):
+#     """Class to represent the payload of a temperature controller, fields are none if unused"""
 
-    def __init__(self, set_heater_power):
-        super().__init__()
-        self.set_heater_power = set_heater_power
+#     def __init__(self, set_heater_power):
+#         super().__init__()
+#         self.set_heater_power = set_heater_power
 
-    def __str__(self) -> str:
-        ## TODO: display a more truthful payload
-        return f"The temperature controller sets the power of the heater to {self.set_heater_power}."
+#     def __str__(self) -> str:
+#         ## TODO: display a more truthful payload
+#         return f"The temperature controller sets the power of the heater to {self.set_heater_power}."

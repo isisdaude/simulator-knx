@@ -34,8 +34,8 @@ class TelegramParser:
         self.payload_to_dpt: Dict[sim_t.Payload, Union[DPTBinary, DPTArray]] = {
             # sim_t.ButtonPayload: DPTBinary,
             sim_t.HeaterPayload: DPTArray,
-            sim_t.TempControllerPayload: DPTArray,
-            sim_t.SwitchPayload: DPTBinary
+            sim_t.BinaryPayload: DPTBinary,
+            sim_t.ButtonPayload: DPTBinary
         }
 
         # Represent true and false values in knx communication
@@ -52,11 +52,6 @@ class TelegramParser:
             '3-levels': self.__LONG
         }
 
-        self.__knx_encoding_to_sim = {
-            self.__FREE: 'free',
-            self.__SHORT: '2-levels',
-            self.__LONG: '3-levels'
-        }
 
     def from_knx_telegram(self, telegram: Telegram):
         '''Creates a simulator telegram from a knx telegram'''
@@ -107,17 +102,17 @@ class TelegramParser:
         dpt = None
         value = None
 
-        if isinstance(payload, sim_t.SwitchPayload):
-            dpt = self.payload_to_dpt.get(sim_t.SwitchPayload)
-            value = payload.switched
+        if isinstance(payload, sim_t.BinaryPayload):
+            dpt = self.payload_to_dpt.get(sim_t.BinaryPayload)
+            value = payload.binary_state
+        
+        elif isinstance(payload, sim_t.ButtonPayload):
+            dpt = self.payload_to_dpt.get(sim_t.ButtonPayload)
+            value = payload.state
 
-        elif isinstance(payload, sim_t.HeaterPayload):
-            dpt = self.payload_to_dpt.get(sim_t.HeaterPayload)
-            value = payload.max_power
-
-        elif isinstance(payload, sim_t.TempControllerPayload):
-            dpt = self.payload_to_dpt.get(sim_t.TempControllerPayload)
-            value = payload.set_heater_power
+        # elif isinstance(payload, sim_t.HeaterPayload):
+        #     dpt = self.payload_to_dpt.get(sim_t.HeaterPayload)
+        #     value = payload.max_power
 
 
         if dpt != None and value != None:
@@ -142,11 +137,11 @@ class TelegramParser:
             return None
 
 def main():
-    from system.telegrams import SwitchPayload, HeaterPayload
+    from system.telegrams import ButtonPayload, HeaterPayload
     from system.tools import GroupAddress, IndividualAddress
 
     group_address_to_payload_example = {
-        '0/0/0': SwitchPayload,
+        '0/0/0': ButtonPayload,
         '0/0': HeaterPayload,
     }
 

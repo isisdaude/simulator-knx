@@ -1,5 +1,5 @@
 from itertools import tee
-from .telegram_parser import *
+from telegram_parser import *
 import xknx.telegram.telegram as knx_t
 import system.telegrams as sim_t
 
@@ -26,7 +26,7 @@ class CommunicationInterface:
         self.communication.send_all()
         
 
-    async def __initialize_communication(self):
+    async def initialize_communication(self):
         '''Initializes all necessary processes for the external communication'''
         from xknx.xknx import XKNX
         from xknx.io.connection import ConnectionConfig, ConnectionType
@@ -42,18 +42,22 @@ class CommunicationInterface:
         xknx_for_listening = XKNX(
             daemon_mode=True, connection_config=connection_config)
 
-        self.communication = __ExternalCommunication(xknx_for_listening, self.group_address_to_payload)
+        # self.communication = __ExternalCommunication(xknx_for_listening, self.group_address_to_payload)
         
-        print("Connecting to KNX and listening to telegrams...", flush=True)
-        await self.communication.listen()
+        # print("Connecting to KNX and listening to telegrams...", flush=True)
+        # self.communication.listen()
 
-        print("Disconnecting from KNX... ", end="", flush=True)
-        await self.communication.stop()
-        print("done!", flush=True)
+        # print("Disconnecting from KNX... ", end="", flush=True)
+        # self.communication.stop()
+        # print("done!", flush=True)
 
-    async def start_communication(self):
-        '''Starts the communication process'''
-        asyncio.run(self.__initialize_communication())
+        await xknx_for_listening.start()
+
+        await xknx_for_listening.stop()
+
+    # def start_communication(self):
+    #     '''Starts the communication process'''
+    #     self.__initialize_communication()
 
 class __ExternalCommunication:
 
@@ -102,6 +106,7 @@ class __ExternalCommunication:
         """
         Updates the received buffer with simulated telegram once a knx telegram is received.
         """
+        print('Received a telegram!')
         async with self.exec_lock:
             simulated_t = self.telegram_parser.from_knx_telegram(telegram)
             if simulated_t:
