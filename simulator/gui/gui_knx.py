@@ -29,8 +29,9 @@ class GUIWindow(pyglet.window.Window):
         self.batch = pyglet.graphics.Batch()
         # Create multiple layers to superpose the graphical elements
         self.background = pyglet.graphics.OrderedGroup(0)
-        self.middleground = pyglet.graphics.OrderedGroup(0)
-        self.foreground = pyglet.graphics.OrderedGroup(2)
+        self.middlebackground = pyglet.graphics.OrderedGroup(1)
+        self.middleground = pyglet.graphics.OrderedGroup(2)
+        self.foreground = pyglet.graphics.OrderedGroup(3)
         #document = pyglet.text.document.UnformattedDocument()
         # STore the initial configuration file path if the user wants to reload the simulation
         self.CONFIG_PATH = config_path
@@ -49,7 +50,7 @@ class GUIWindow(pyglet.window.Window):
         # Flag to set up group addresses
         self.linking_group_address = True
         # Initialize the room widget to draw in the window
-        self.room_widget = RoomWidget(ROOM_WIDTH, ROOM_LENGTH, self.batch, group=self.background, label=self.room.name, label_group=self.middleground)
+        self.room_widget = RoomWidget(ROOM_WIDTH, ROOM_LENGTH, self.batch, group_bg=self.background, group_mg=self.middlebackground, label=self.room.name, label_group=self.middleground)
         # Array to store labels to display in room devices list
         self.room_devices_labels = []
         # Array to store brightnesses & temperature in the room
@@ -127,8 +128,8 @@ class GUIWindow(pyglet.window.Window):
         self.buttons.append(self.button_default)
 
 ## Method to initialize the gui system from room object
-    def initialize_system(self, saved_config_path=None):
-        from devices import Button, LED, Brightness, Dimmer
+    def initialize_system(self, saved_config_path=None, system_dt=1):
+        from devices import Button, LED, Brightness, Dimmer, Heater, Thermometer
         self.room.window = self # same for the GUi window object, but to room1 object
         if saved_config_path: # stor the saved config path only at first call, not when user reload the system
             self.saved_config_path = saved_config_path + "saved_config_" # We will add the time when the simulation was saved
@@ -137,7 +138,7 @@ class GUIWindow(pyglet.window.Window):
                 self.system_config_dict = json.load(config_file)
         # self.saved_config_path_temp = shutil.copyfile(self.CONFIG_PATH, self.saved_config_path+"temp.json")
         # self.room.saved_config_path = self.saved_config_path
-        pyglet.clock.schedule_interval(self.room.update_world, interval=1, gui_mode=True) # update every 1seconds, corresponding to 1 * speed_factor real seconds
+        pyglet.clock.schedule_interval(self.room.update_world, interval=system_dt, gui_mode=True) # update every 1seconds, corresponding to 1 * speed_factor real seconds
         # ratio to translate room physical (simulated) size in pixels to place correctly devices
         self.room_width_ratio = ROOM_WIDTH / self.room.width
         self.room_length_ratio = ROOM_LENGTH / self.room.length
@@ -193,6 +194,28 @@ class GUIWindow(pyglet.window.Window):
                 device_widget.in_room_device = in_room_device
                 self.room_devices.append(device_widget)
 
+            if isinstance(device, Heater):
+                heater = self.available_devices.heater
+                # x, y = in_room_device.location.x, in_room_device.location.y
+                # x = int(self.room_widget.x + self.room_width_ratio * x)
+                # y = int(self.room_widget.y + self.room_length_ratio * y)
+                pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.room_width_ratio, self.room_length_ratio, self.room_widget.origin_x, self.room_widget.origin_y)
+                print(f"{device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
+                device_widget = DeviceWidget(pos_x, pos_y, self.batch, heater.file_ON, heater.file_OFF, group=self.foreground, device_type='actuator', device_class=device.name[:-1], device_number=device.name[-1])
+                device_widget.in_room_device = in_room_device
+                self.room_devices.append(device_widget)
+            
+            if isinstance(device, Thermometer):
+                thermometer = self.available_devices.thermometer
+                # x, y = in_room_device.location.x, in_room_device.location.y
+                # x = int(self.room_widget.x + self.room_width_ratio * x)
+                # y = int(self.room_widget.y + self.room_length_ratio * y)
+                pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.room_width_ratio, self.room_length_ratio, self.room_widget.origin_x, self.room_widget.origin_y)
+                print(f"{device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
+                device_widget = DeviceWidget(pos_x, pos_y, self.batch, thermometer.file_ON, thermometer.file_OFF, group=self.foreground, device_type='actuator', device_class=device.name[:-1], device_number=device.name[-1])
+                device_widget.in_room_device = in_room_device
+                self.room_devices.append(device_widget)
+            
         self.display_devices_list()
         self.display_brightness_labels()
         self.display_temperature_labels()
@@ -264,7 +287,7 @@ class GUIWindow(pyglet.window.Window):
                 room_temp_x = temp_x + room_temperature_counter*OFFSET_SENSOR_LEVELS
                 room_temp_y = temp_y
                 room_temperature_counter += 1
-                room_temperature_label = pyglet.text.Label('Thermo'+room_device.label.text[-1],
+                room_temperature_label = pyglet.text.Label('thermo'+room_device.label.text[-1],
                                     font_name=FONT_SYSTEM_INFO, font_size=15,
                                     x=room_temp_x, y=room_temp_y,
                                     anchor_x='left', anchor_y='bottom',
@@ -282,6 +305,9 @@ class GUIWindow(pyglet.window.Window):
         for bright in brightness_levels:
             bright_name, brightness = bright[0], round(bright[1],1)
             self.display_brightness_levels(bright_name, brightness)
+        for temp in temperature_levels:
+            temp_name, temperature = temp[0], round(temp[1],2)
+            self.display_temperature_levels(temp_name, temperature)
 
     def display_brightness_levels(self, bright_name, brightness):
         room_brightness_counter = 0
@@ -297,6 +323,21 @@ class GUIWindow(pyglet.window.Window):
                                     batch=self.batch)
                 self.room_brightness_levels.append(room_brightness_level)
             room_brightness_counter +=1
+
+    def display_temperature_levels(self, temp_name, temperature):
+        room_temperature_counter = 0
+        for room_temperature_label in self.room_temperature_labels:
+            if temp_name[-1] == room_temperature_label.text[-1]: #check only the digit
+                temp_level_x = room_temperature_label.x #+ room_brightness_counter*OFFSET_SENSOR_LEVELS
+                temp_level_y = room_temperature_label.y - OFFSET_SENSOR_TITLE
+                temp_level_label = str(temperature) # + ' lm'
+                room_temperature_level = pyglet.text.Label(temp_level_label,
+                                    font_name=FONT_SYSTEM_INFO, font_size=13,
+                                    x=temp_level_x, y=temp_level_y,
+                                    anchor_x='left', anchor_y='bottom',
+                                    batch=self.batch)
+                self.room_temperature_levels.append(room_temperature_level)
+            room_temperature_counter +=1
 
 ## Methods to react to user actions (turn ON/OFF a device button, press a gui button, add device to simulation,...)
     def switch_sprite(self):

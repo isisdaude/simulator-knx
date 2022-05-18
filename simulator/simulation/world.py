@@ -64,7 +64,10 @@ class Time:
 class AmbientTemperature:
     '''Class that implements temperature in a system'''
 
-    def __init__(self, room_volume, default_temp:float):
+    def __init__(self, room_volume, simulation_speed_factor, system_dt, default_temp:float):
+        # self.simulation_speed_factor = simulation_speed_factor
+        # self.simulated_dt = system_dt * simulation_speed_factor # e.g., update called every 1*180seconds = 3min
+        self.update_rule_ratio = (system_dt * simulation_speed_factor)/3600 # update rules are per hour, ratio translate it to the system dt
         self.temperature = default_temp # Will be obsolete when we introduce gradient of temperature
         self.outside_temperature = default_temp
         self.room_volume = room_volume
@@ -75,35 +78,62 @@ class AmbientTemperature:
         """List of temperature sensors in the room"""
         self.temp_controllers = []
 
-    def add_source(self, source): # Heatsource is an object that heats the room
+        self.max_power_heater = 0
+        self.max_power_ac = 0
+
+    def add_source(self, source ): # source is an InRoomDevice # Heatsource is an object that heats the room
+        from devices import Heater, AC
         self.temp_sources.append(source) #add check on source
+        if isinstance(source.device, Heater):
+            self.max_power_heater += source.device.max_power
+        if isinstance(source.device, AC):
+            self.max_power_ac += source.device.max_power
 
     def add_sensor(self, tempsensor):
         self.temp_sensors.append(tempsensor) #add check on sensor
 
-    def add_temp_controllers(self, temp_controllers):
-        self.temp_controllers.append(temp_controllers) #add check on sensor
+    # def add_temp_controllers(self, temp_controllers):
+    #     self.temp_controllers.append(temp_controllers) #add check on sensor
+    
+    def watts_to_temp(self, watts):
+        return ((watts - 70)*2)/7 + 18
+
+    def max_temperature_in_room(self, volume, max_power, insulation_state='good'):
+        """Maximum reachable temperature in the specified room with the current enabled heaters, with exterior temperature being 20C"""
+        from system import INSULATION_TO_CORRECTION_FACTOR
+        watts = max_power/((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
+        return self.watts_to_temp(watts)
 
     def update(self):
-        from devices import Heater
+        from devices import Heater, AC
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         logging.info("Temperature update")
         if(not self.temp_sources):
             self.temperature = (self.temperature + self.outside_temperature)//2 # Decreases by the average of temp and outside_temp, is a softer slope
         else:
-            max_temps = []
+            self.total_max_power = self.max_power_heater + self.max_power_ac
             for source in self.temp_sources: # sources of heat or cold
-                if source.device.status:
+                if source.device.status and source.device.state: # if source enabled
                     if isinstance(source.device, Heater):
-                        max_temps.append(source.device.max_temperature_in_room(self.room_volume,"average"))
-                    self.temperature += source.device.update_rule ##
-            max_temp = mean(max_temps)
-            if self.temperature >= max_temp:
-                self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
+                        source.device.update_rule = source.device.max_power/self.total_max_power  ## TODO: change for actual power set, not max
+                        self.temperature += source.device.update_rule*self.update_rule_ratio
+                    if isinstance(source.device, AC):
+                        source.device.update_rule = - source.device.max_power/self.total_max_power
+                        self.temperature += source.device.update_rule*self.update_rule_ratio # The ac update rule is <0
+            # Compute max temp
+            #relative_max_power = self.max_power_heater - self.max_power_ac
+            #TODO: compute max and min temp!!!
+            max_temp = 30.0 #self.max_temperature_in_room(self.room_volume, self.max_power_heater, "good") ##mean(max_temps)
+            min_temp = 10.0
+            self.temperature = max(min_temp, min(max_temp, self.temperature)) # temperature cannot exceed max temp
+            print(f"system temp= {self.temperature}")
+            # self.temperature = max(min_temp, self.temperature)
+                # self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
         temperature_levels = []
-        for sensor in self.temp_sensors:
-            sensor.temperature = self.temperature
-        #     temperature_levels.append((sensor.name, sensor.temperature))
+        for sensor in self.temp_sensors: # temp sensors are in room devices
+            print(f"sensor {sensor.device.name} temp= {self.temperature}")
+            sensor.device.temperature = self.temperature
+            temperature_levels.append((sensor.name, sensor.device.temperature))
         # for controller in self.temp_controllers:#
         #     controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources
         return temperature_levels
@@ -168,9 +198,9 @@ class AmbientCO2:
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
-    def __init__(self, room_width, room_length, room_height, simulation_speed_factor):
+    def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt):
         self.time = Time(simulation_speed_factor) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
-        self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, default_temp=(20.0))
+        self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, simulation_speed_factor, system_dt, default_temp=20.0)
         self.ambient_light = AmbientLight() #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
         self.ambient_humidity = AmbientHumidity()
         self.ambient_CO2 = AmbientCO2()

@@ -49,7 +49,9 @@ class Device(ABC):
             except AttributeError:
                 logging.warning(f"The device '{self.name}' is not connected to the bus, and thus cannot send telegrams")
             except:
-                logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed")
+                print(f"hasattr knxbus: {hasattr(self, 'knxbus')}")
+                print(f"knx bus hasattr transmit_telegram: {hasattr(self.knxbus, 'transmit_telegram')}")
+                logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
         return 0
 
     def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams

@@ -48,12 +48,14 @@ FONT_DIMMER_RATIO = 'Roc'
 
 FONT_SIZE_INDIVIDUAL_ADDR = 10
 
+
 OPACITY_DEFAULT = 255
 OPACITY_MIN = 55
 OPACITY_CLICKED = 150
 OPACITY_ROOM = 180
 OPACITY_ROOM_LABEL = 60
 
+ROOM_BACKGROUND_PATH = 'png_simulator/room_1.png'
 BUTTON_RELOAD_PATH = 'png_simulator/reload.png'
 BUTTON_PAUSE_PATH = 'png_simulator/pause.png'
 BUTTON_PLAY_PATH = 'png_simulator/play.png'

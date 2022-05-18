@@ -34,12 +34,12 @@
     "rooms":{
       "room1":{
         "name":"bedroom1",
-        "dimensions":[20, 20, 3],
+        "dimensions":[12.5, 10, 3],
         "insulation":"average",
         "room_devices":{
-          "led1":[7, 12, 1],
+          "led1":[3.5, 6, 1],
           "button1":[0, 0, 1],
-          "bright1":[18, 3, 1]
+          "bright1":[9, 1.5, 1]
         }
       }
     }

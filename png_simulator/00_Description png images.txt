@@ -11,6 +11,8 @@ AC 80x29
 Presence 55x55
 switch_light 55x55
 
+Room background 1000x800 (as defined in gui_config)
+
 GUI action Button 51x50 or 50x51 or 50x50
 
 

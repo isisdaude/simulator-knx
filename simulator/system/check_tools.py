@@ -263,6 +263,7 @@ def check_location(bounds, x, y, z):
         logging.error(f"The given coordinates are not correct: "+loc_assert_msg)
         sys.exit(1)
 
+    # Replace location in Room if out-of-bounds
     min_x, max_x = bounds[0]
     min_y, max_y = bounds[1]
     min_z, max_z = bounds[2]
@@ -271,13 +272,14 @@ def check_location(bounds, x, y, z):
         assert min_y <= y and y <= max_y
         assert min_z <= z and z <= max_z
     except AssertionError:
-        logging.error(f"The location is out of room's bounds: '({x},{y},{z})' given while room's dimensions are '({max_x},{max_y},{max_})'")
+        logging.warning(f"The location is out of room's bounds: '({x},{y},{z})' given while room's dimensions are '({max_x},{max_y},{max_z})'")
         new_x = (min_x if x<min_x else x)
         new_x = (max_x if max_x<new_x else new_x)
         new_y = (min_y if y<min_y else y)
         new_y = (max_y if max_y<new_y else new_y)
         new_z = (min_z if z<min_z else z)
         new_z = (max_z if max_z<new_z else new_z)
+        logging.info(f"The device's location is replaced in the rooms's bounds: '({x},{y},{z})' -> '({new_x},{new_y},{new_z})'")
         return new_x, new_y, new_z
     else:
         return x, y, z

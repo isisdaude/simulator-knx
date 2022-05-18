@@ -4,6 +4,7 @@ Simple simulator prototype.
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 
 # Standard library imports
+#sys, os, io, time, datetime, ast, abc, dataclasses, json, copy, typing, math, logging, shutil, itertools, functools, numbers, collections, enum
 import functools
 import asyncio, aioconsole
 import time, datetime, sys, os
@@ -15,7 +16,7 @@ import aioreactive as rx
 # Third party imports
 from pathlib import Path
 from pynput import keyboard
-from contextlib import suppress
+# from contextlib import suppress
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # Local application imports
@@ -54,11 +55,12 @@ def launch_simulation():
     DEV_CONFIG = False
     default_mode = False
     DEFAULT_CONFIG = True
+    SYSTEM_DT = 1
     logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
     # System configuration based on a JSON config file
     if FILE_CONFIG_MODE:
-        rooms = system.configure_system_from_file(CONFIG_PATH)
+        rooms = system.configure_system_from_file(CONFIG_PATH, SYSTEM_DT)
 
     # System configuration from function configure_system
     elif DEV_CONFIG:
@@ -66,12 +68,12 @@ def launch_simulation():
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
             if system.check_simulation_speed_factor(simulation_speed_factor):
                 break
-        rooms = system.configure_system(simulation_speed_factor)
+        rooms = system.configure_system(simulation_speed_factor, SYSTEM_DT)
 
     # System configuration based on a default JSON config file
     elif DEFAULT_CONFIG:
         default_mode = True
-        rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH)
+        rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH, SYSTEM_DT)
 
     # System configuration based on a simple Room with no devices
     else:
@@ -93,7 +95,7 @@ def launch_simulation():
     if GUI_MODE:
         config_path = DEFAULT_CONFIG_PATH if default_mode else CONFIG_PATH
         window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, rooms)###
-        window.initialize_system(SAVED_CONFIG_PATH)
+        window.initialize_system(SAVED_CONFIG_PATH, SYSTEM_DT) #system_dt is delta time for scheduling update_world
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time

@@ -36,13 +36,13 @@ class Location:
         self.x, self.y, self.z = check_location(self.bounds, x, y, z)
         self.pos = (self.x, self.y, self.z)
 
-    def update_location(self, new_x=None, new_y=None, new_z=None):
-        from .check_tools import check_location
-        x = (new_x or self.x)
-        y = (new_y or self.y)
-        z = (new_z or self.z)
-        self.x, self.y, self.z = check_location(self.bounds, x, y, z)
-        self.pos = (self.x, self.y, self.z)
+    # def update_location(self, new_x=None, new_y=None, new_z=None):
+    #     from .check_tools import check_location
+    #     x = (new_x or self.x)
+    #     y = (new_y or self.y)
+    #     z = (new_z or self.z)
+    #     self.x, self.y, self.z = check_location(self.bounds, x, y, z)
+    #     self.pos = (self.x, self.y, self.z)
 
     def __str__(self):
         str_repr =  f"Location: {self.room.name}: {self.pos}\n"
@@ -158,20 +158,20 @@ class GroupAddress:
 
 """ Functions tools """
 
-def configure_system(simulation_speed_factor):
+def configure_system(simulation_speed_factor, system_dt=1):
     from .room import Room
     # Declaration of sensors, actuators and functional modules
     led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
     led2 = dev.LED("led2", "M-0_L1", IndividualAddress(0,0,2), "enabled")
 
-    # heater1 = dev.Heater("heater1", "M-0_H1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
-    # ac1 = dev.AC("ac1", "M-0_AC1", IndividualAddress(0,0,12), "enabled", 400)
+    heater1 = dev.Heater("heater1", "M-0_H1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
+    ac1 = dev.AC("ac1", "M-0_AC1", IndividualAddress(0,0,12), "enabled", 400)
     button1 = dev.Button("button1", "M-0_S1", IndividualAddress(0,0,20), "enabled")
     button2 = dev.Button("button2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
     bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
 
     # Declaration of the physical system
-    room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels') #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+    room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
     # room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -191,7 +191,7 @@ def configure_system(simulation_speed_factor):
     # return the room object to access all elements of the room (world included)
     return [room1]
 
-def configure_system_from_file(config_file_path):
+def configure_system_from_file(config_file_path, system_dt=1):
     from .room import Room
     from .check_tools import check_group_address, check_simulation_speed_factor
     with open(config_file_path, "r") as file:
@@ -226,7 +226,7 @@ def configure_system_from_file(config_file_path):
             continue # get out of the for loop iteratiom
         x, y, z = room_config["dimensions"]
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
-        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style)
+        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt)
         # room.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)

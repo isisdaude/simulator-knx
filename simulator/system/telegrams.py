@@ -33,7 +33,7 @@ class BinaryPayload(Payload):
         self.binary_state = binary_state
 
     def __str__(self) -> str:
-        return f" BinaryPayload: {self.binary_state}"
+        return f" BinaryPayload: state={self.binary_state}"
 
 # class SwitchPayload(Payload):
 #     """Class to represent a switch 'binary' payload (True/False)"""
@@ -59,7 +59,7 @@ class DimmerPayload(BinaryPayload):
         self.state_ratio = state_ratio
 
     def __str__(self) -> str:
-        return f" DimmerPayload: {self.binary_state} | {self.state_ratio}"
+        return f" DimmerPayload: state={self.binary_state} | ratio={self.state_ratio}"
 
 # class SwitchPayload(Payload):
 #     """Class to represent the Switch's state (device receiving a boolean on the bus), if demanded by another device or the user"""
@@ -75,6 +75,9 @@ class ButtonPayload(Payload):
     def __init__(self, state: bool): # pushed: bool,
         super().__init__()
         self.state = state
+    
+    def __str__(self) -> str:
+        return f" ButtonPayload: state={self.state}"
 
     # def __str__(self) -> str:
     #     ## TODO: display a more truthful payload

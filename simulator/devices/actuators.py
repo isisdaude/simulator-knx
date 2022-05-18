@@ -111,17 +111,17 @@ class Heater(TemperatureActuator):
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
                 self.power = self.max_power
-            if isinstance(telegram.payload, SwitchPayload):
-                # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
-                self.state = telegram.payload.switch_state
-                self.power = self.max_power
+            # if isinstance(telegram.payload, SwitchPayload):
+            #     # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
+            #     self.state = telegram.payload.switch_state
+            #     self.power = self.max_power
             # If more complex telegram, we can adapt the power of the heater
-            if isinstance(telegram.payload, TempControllerPayload):
-                if telegram.payload.set_heater_power is not Payload.EMPTY_FIELD:
-                    wished_power = telegram.payload.set_heater_power
-                    if wished_power < 0:
-                        wished_power = 0
-                    self.power = wished_power if wished_power <= self.max_power else self.max_power
+            # if isinstance(telegram.payload, TempControllerPayload):
+            #     if telegram.payload.set_heater_power is not Payload.EMPTY_FIELD:
+            #         wished_power = telegram.payload.set_heater_power
+            #         if wished_power < 0:
+            #             wished_power = 0
+            #         self.power = wished_power if wished_power <= self.max_power else self.max_power
 
 
 class AC(TemperatureActuator):
@@ -143,10 +143,10 @@ class AC(TemperatureActuator):
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
                 self.power = self.max_power
-            if isinstance(telegram.payload, SwitchPayload):
-                # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
-                self.state = telegram.payload.switch_state
-                self.power = self.max_power
+            # if isinstance(telegram.payload, SwitchPayload):
+            #     # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
+            #     self.state = telegram.payload.switch_state
+            #     self.power = self.max_power
             
             # if isinstance(telegram.payload, ACPayload):
 

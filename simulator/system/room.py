@@ -5,6 +5,7 @@ Some class definitions for the rooms contained in the system
 import logging, sys
 import numbers
 from typing import List
+
 import gui
 import simulation as sim
 from devices import Device
@@ -17,28 +18,36 @@ from abc import ABC, abstractclassmethod
 class InRoomDevice:
         """Inner class to represent a device located at a certain position in a room"""
         def __init__(self, device: Device, room,  x:float, y:float, z:float):
+            self.room = room
             self.device = device
             self.name = device.name
-            self.location = Location(room, x, y, z)
-            if self.location.pos is None:
-                logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
-                sys.exit(1)
+            self.location = Location(self.room, x, y, z)
+            # if self.location.pos is None:
+            #     logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
+            #     sys.exit(1)
             # self.type = type(device)  ## whait is this ?
 
         def __eq__(self, other_device):
             return self.name == other_device.name
 
+        def update_location(self, new_x=None, new_y=None, new_z=None):
+            new_loc = Location(self.room, new_x, new_y, new_z)
+            # if new_loc.pos is None:
+            #     logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
+            #     sys.exit(1)
+            self.location = new_loc
+
         def get_position(self):
             return self.location.pos
 
         def get_x(self) -> float:
-            return self.location.pos[0]
+            return self.location.x
 
         def get_y(self) -> float:
-            return self.location.pos[1]
+            return self.location.y
 
         def get_z(self) -> float:
-            return self.location.pos[2]
+            return self.location.z
 
 
 
@@ -47,12 +56,12 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str):
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1):
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style)
        
         """Creation of the world object from room config"""
-        self.world = sim.World(self.width, self.length, self.height, self.speed_factor)
+        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt)
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
         """List of all devices in the room"""
@@ -63,7 +72,7 @@ class Room:
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
-        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Button, TemperatureController
+        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Button, TemperatureController, Thermometer
         """Adds a device to the room at the given position"""
         # if(x < 0 or x > self.width or y < 0 or y > self.length):
         #     logging.warning("Cannot add a device outside the room")
@@ -84,6 +93,9 @@ class Room:
             if isinstance(device, Brightness):
                 self.world.ambient_light.add_sensor(in_room_device)
                 #print(f"A brightness sensor was added at {x} : {y}.")
+            if isinstance(device, Thermometer):
+                self.world.ambient_temperature.add_sensor(in_room_device)
+
         elif isinstance(device, FunctionalModule):
             if isinstance(device, Button):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams

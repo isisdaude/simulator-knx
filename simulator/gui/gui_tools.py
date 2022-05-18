@@ -162,7 +162,7 @@ class DeviceWidget(object):
         self.label.update(x=(self.origin_x+self.width//2), y=(self.origin_y-OFFSET_LABEL_DEVICE))
         if update_loc:
             self.loc_x, self.loc_y = loc_x, loc_y
-            self.in_room_device.location.update_location(new_x=self.loc_x, new_y=self.loc_y)
+            self.in_room_device.update_location(new_x=self.loc_x, new_y=self.loc_y)
             logging.info(f"Location of {self.label_name} is updated to {self.loc_x}, {self.loc_y}")
 
     def delete(self):
@@ -206,7 +206,7 @@ class AvailableDevices(object): # library of devices availables, presented on th
 
 # Room widget
 class RoomWidget(object):
-    def __init__(self, width, length, batch, group, label_group, label):
+    def __init__(self, width, length, batch, group_bg, group_mg, label_group, label):
         # Coordinates to draw room rectangle shape
         self.origin_x_shape = WIN_WIDTH - width - WIN_BORDER - 2*ROOM_BORDER
         self.origin_y_shape = WIN_BORDER
@@ -220,11 +220,13 @@ class RoomWidget(object):
         self.width = width
         self.length = length
         self.name = label
+        self.img = pyglet.image.load(ROOM_BACKGROUND_PATH)
         self.batch = batch
         self.shape = pyglet.shapes.BorderedRectangle(self.origin_x_shape, self.origin_y_shape, width+2*ROOM_BORDER, length+2*ROOM_BORDER, border=ROOM_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
-                                            batch=self.batch, group=group)#, group = group
+                                            batch=self.batch, group=group_bg)#, group = group
         self.shape.opacity = OPACITY_ROOM
+        self.sprite = pyglet.sprite.Sprite(self.img, self.origin_x, self.origin_y, batch=self.batch, group=group_mg)
         self.label = pyglet.text.Label(self.name,
                                     font_name=FONT_SYSTEM_INFO, font_size=75,
                                     x=(self.origin_x + self.width/2), y=(self.origin_y + self.length/2),
