@@ -134,7 +134,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
             logging.error(f"Group address style '{group_address_style}' unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255)")
             return None
 
-def check_room_config(name, width, length, height, speed_factor, ga_style):
+def check_room_config(name, width, length, height, speed_factor, ga_style, insulation):
     # Room name check
     try:
         assert isinstance(name, str)
@@ -193,8 +193,14 @@ def check_room_config(name, width, length, height, speed_factor, ga_style):
     except AssertionError:
         logging.error(f"The room's group address encoding style '{ga_style}' is not recognized -> program terminated.")
         sys.exit(1)
+    # Room insulation type check
+    try:
+        assert insulation in ['perfect', 'good', 'average', 'bad']
+    except AssertionError:
+        logging.error(f"The insulation type {insulation} is not recognised, should be 'perfect', 'average', 'good' or 'bad'. 'average' is considered by default.")
+        insulation = 'average'
     
-    return name, width, length, height, speed_factor, ga_style
+    return name, width, length, height, speed_factor, ga_style, insulation
 
 
 def check_device_config(class_name, name, refid, individual_addr, status):

@@ -56,7 +56,7 @@ def test_incorrect_room_ga_style():
 
     # assert pytest_wrapped_error.value.code == 1 # Only if 'exit(1)' called, no code if sys.exit() is called
 
-
+## TODO test correct/incorrect insulation
 
 
 

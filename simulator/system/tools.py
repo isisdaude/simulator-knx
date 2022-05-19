@@ -7,12 +7,18 @@ import devices as dev
 #from .room import InRoomDevice not useful, but if used, put it on the class / function directly # to avoid circular import room <-> tools
 COMMAND_HELP = "enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\n>'q' to exit the simulation, 'h' for help<\n"
 # dict to link string to devices constructor object
-DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC,
+DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch,
                 "Button": dev.Button, "Dimmer": dev.Dimmer, "TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
                 "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySensor":dev.HumiditySensor,
-                "CO2Sensor": dev.CO2Sensor, "PresenceDetector": dev.PresenceDetector, "MovementDetector": dev.MovementDetector}
+                "CO2Sensor": dev.CO2Sensor, "PresenceSensor": dev.PresenceSensor, "AirSensor": dev.AirSensor}
 # Situation of the insulation of the room associated to the correction factor for the heating
 INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
+# Influence of outdoor temp
+INSULATION_TO_TEMPERATURE_FACTOR = {"perfect": 0, "good": 10/100, "average": 20/100, "bad":40/100}
+# Influence of outdoor humidity
+INSULATION_TO_HUMIDITY_FACTOR = {"perfect": 0, "good": 20/100, "average": 45/100, "bad":75/100}
+# Influence of outdoor co2
+INSULATION_TO_CO2_FACTOR = {"perfect": 0, "good": 10/100, "average": 25/100, "bad":50/100}
 
 # TODO: should check that in the right boundaries!!!
 MAX_MAIN = 31
@@ -170,8 +176,13 @@ def configure_system(simulation_speed_factor, system_dt=1):
     button2 = dev.Button("button2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
     bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
 
+    outside_temperature = 20.0
+    outside_humidity = 50.0
+    outside_co2 = 300
+    room_insulation = 'good'
     # Declaration of the physical system
-    room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+    room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
+                room_insulation, outside_temperature, outside_humidity, outside_co2) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
     # room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -212,6 +223,10 @@ def configure_system_from_file(config_file_path, system_dt=1):
     except AssertionError:
         logging.error("Incorrect simulation speed factor, review the config file before launching the simulator")
         sys.exit()
+    
+    outside_temperature = world_config["outside_temperature"]
+    outside_humidity = world_config["outside_relativehumidity"]
+    outside_co2 = world_config["outside_co2"]
 
     rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
     rooms = []
@@ -225,8 +240,10 @@ def configure_system_from_file(config_file_path, system_dt=1):
             logging.warning(f"'{room_key}' not defined in config file, or wrong number of rooms")
             continue # get out of the for loop iteratiom
         x, y, z = room_config["dimensions"]
+        room_insulation = room_config["insulation"]
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
-        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt)
+        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
+                    room_insulation, outside_temperature, outside_humidity, outside_co2)
         # room.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
@@ -278,7 +295,7 @@ def configure_system_from_file(config_file_path, system_dt=1):
                         logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected")
                         continue # get out of the for loop iteration
     # Parsing of group addresses to connect devices together
-    #TODO: link GAs to iterface IP SVSHI
+    #TODO: link GAs to interface IP SVSHI
     print(" ------- KNX System Configuration -------")
     ga_style =  knx_config["group_address_style"]
     ga_builders = knx_config["group_addresses"]

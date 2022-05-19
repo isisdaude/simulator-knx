@@ -15,7 +15,7 @@
             "refid":"M-0_B1",
             "knx_location":"0.0.20",
             "status":"enabled"},
-          "bright1":{
+          "brightness1":{
             "class":"Brightness",
             "refid":"M-0_S1",
             "knx_location":"0.0.5",
@@ -30,6 +30,9 @@
   },
   "world":{
     "simulation_speed_factor":180,
+    "outside_temperature":20.0,
+    "outside_relativehumidity": 50.0,
+    "outside_co2": 300,
     "number_of_rooms":1,
     "rooms":{
       "room1":{
@@ -39,7 +42,7 @@
         "room_devices":{
           "led1":[3.5, 6, 1],
           "button1":[0, 0, 1],
-          "bright1":[9, 1.5, 1]
+          "brightness1":[9, 1.5, 1]
         }
       }
     }

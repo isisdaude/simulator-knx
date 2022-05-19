@@ -70,6 +70,9 @@
 
   "world":{
     "simulation_speed_factor":180,
+    "outside_temperature":20.0,
+    "outside_relativehumidity": 50.0,
+    "outside_co2": 300,
     "number_of_rooms":1,
     "rooms":{
       "room1":{

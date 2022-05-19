@@ -42,18 +42,28 @@ class CO2Sensor(Sensor):
         super().__init__('CO2Sensor', name, refid, location, default_status, "co2")
         self.co2level = 0
 
+class AirSensor(Sensor):
+    """Concrete class to represent am Air Sensor: CO2, Humidity and/or Temperature"""
+    def __init__(self, name, refid, location, default_status, temp_supported=False, hum_supported=False, co2_supported=False):
+        super().__init__('AirSensor', name, refid, location, default_status, "air")
+        if temp_supported:
+            self.temperature = None
+        if hum_supported:
+            self.humidity = None
+        if co2_supported:
+            self.co2_level = None
 
-class PresenceDetector(Sensor):
-    """Concrete class to represent a CO2 Sensor"""
+class PresenceSensor(Sensor):
+    """Concrete class to represent a Presence Detector"""
     def __init__(self, name, refid, location, default_status):
-        super().__init__('PresenceDetector', name, refid, location, default_status, "presence")
+        super().__init__('PresenceSensor', name, refid, location, default_status, "presence")
         self.presence = False
 
-class MovementDetector(Sensor):
-    """Concrete class to represent a CO2 Sensor"""
-    def __init__(self, name, refid, location, default_status):
-        super().__init__('MovementDetector', name, refid, location, default_status, "movement")
-        self.movement = False
+# class MovementDetector(Sensor):
+#     """Concrete class to represent a CO2 Sensor"""
+#     def __init__(self, name, refid, location, default_status):
+#         super().__init__('MovementDetector', name, refid, location, default_status, "movement")
+#         self.movement = False
 
 
 # if type == "binary":

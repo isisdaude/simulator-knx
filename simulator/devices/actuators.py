@@ -31,7 +31,6 @@ class LED(LightActuator):
     # state is ON/OFF=True/False
     def __init__(self, name, refid, individual_addr, default_status, state=False):
         super().__init__('LED', name, refid, individual_addr, default_status, state, lumen=800)
-        self.state = False
         self.state_ratio = 100 # Percentage of 'amplitude'
 
     def update_state(self, telegram):
@@ -55,12 +54,6 @@ class LED(LightActuator):
         # if the control field is not True, the telegram does nto concern the LED, except for a read state
 
 
-# class Switch(Actuator):
-#     """ Class to represent KNX Switch Actuators"""
-#     def __init__(self, name, refid, individual_addr, default_status, switch_state=False):
-#         super().__init__('Switch', name, refid, individual_addr, default_status, switch_state)
-#         self.switch_state = switch_state
-
 
 
 class TemperatureActuator(Actuator, ABC):
@@ -71,8 +64,10 @@ class TemperatureActuator(Actuator, ABC):
         self.update_rule = update_rule
         self.max_power = max_power
         """Power of the device in Watts"""
-        self.power = max_power
+        self.state_ratio = 100 # Percentage of 'amplitude'
+        self.power = self.max_power * self.state_ratio/100
         """Power really used, max by default"""
+        
 
 
 class Heater(TemperatureActuator):
@@ -86,7 +81,7 @@ class Heater(TemperatureActuator):
             logging.error("The Heater should have update_rule>=0")
             sys.exit()
         super().__init__('Heater', name, refid, individual_addr, default_status, "heater", state, update_rule, max_power)
-
+        
 
     def watts_to_temp(self, watts):
         return ((watts - 70)*2)/7 + 18
@@ -111,17 +106,11 @@ class Heater(TemperatureActuator):
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
                 self.power = self.max_power
-            # if isinstance(telegram.payload, SwitchPayload):
-            #     # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
-            #     self.state = telegram.payload.switch_state
-            #     self.power = self.max_power
-            # If more complex telegram, we can adapt the power of the heater
-            # if isinstance(telegram.payload, TempControllerPayload):
-            #     if telegram.payload.set_heater_power is not Payload.EMPTY_FIELD:
-            #         wished_power = telegram.payload.set_heater_power
-            #         if wished_power < 0:
-            #             wished_power = 0
-            #         self.power = wished_power if wished_power <= self.max_power else self.max_power
+            if isinstance(telegram.payload, DimmerPayload):
+                self.state = telegram.payload.binary_state
+                if self.state:
+                    self.state_ratio = telegram.payload.state_ratio
+                    self.power = self.max_power * self.state_ratio/100
 
 
 class AC(TemperatureActuator):
@@ -136,19 +125,27 @@ class AC(TemperatureActuator):
             sys.exit()
         super().__init__('AC', name, refid, individual_addr, default_status, "ac", state, update_rule, max_power)
 
-
     def update_state(self, telegram):
         if telegram.control_field == True:  # Control field bit
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
                 self.power = self.max_power
-            # if isinstance(telegram.payload, SwitchPayload):
-            #     # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
-            #     self.state = telegram.payload.switch_state
-            #     self.power = self.max_power
-            
-            # if isinstance(telegram.payload, ACPayload):
+            if isinstance(telegram.payload, DimmerPayload):
+                self.state = telegram.payload.binary_state
+                if self.state:
+                    self.state_ratio = telegram.payload.state_ratio
+                    self.power = self.max_power * self.state_ratio/100
 
 
-            # TODO: Payload for AC
+
+class Switch(Actuator):
+    """Concrete class to represent a swicth indicator, to be linked to a physical device to turn ON/OFF"""
+    def __init__(self, name, refid, individual_addr, default_status, state=False ):
+        super().__init__('Switch', name, refid, individual_addr, default_status, 'switch', state)
+
+    def update_state(self, telegram):
+        if isinstance(telegram.payload, BinaryPayload):
+            self.state = telegram.payload.binary_state
+        if isinstance(telegram.payload, DimmerPayload):
+            self.state = telegram.payload.binary_state # do not consider the state_ratio

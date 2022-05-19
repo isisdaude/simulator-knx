@@ -30,9 +30,10 @@ import system
 
 SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
 # print(SAVED_CONFIG_PATH)
-CONFIG_PATH = "./docs/config/simulation_config.json"
+CONFIG_PATH = "./docs/config/sim_config_bedroom.json"
 # CONFIG_PATH = "./docs/config/saved_config_09052022_042903"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
+EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
 # Configure logging messages format
 LOGGING_LEVEL = logging.INFO
 
@@ -94,7 +95,7 @@ def launch_simulation():
     # GUI interface with the user
     if GUI_MODE:
         config_path = DEFAULT_CONFIG_PATH if default_mode else CONFIG_PATH
-        window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, rooms)###
+        window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, rooms)###
         window.initialize_system(SAVED_CONFIG_PATH, SYSTEM_DT) #system_dt is delta time for scheduling update_world
         start_time = time.time()
         for room in rooms:

@@ -20,7 +20,9 @@ devices = [led1, button1, brightness1]
 ir_devices = [ir_led1, ir_button1, ir_bright1]
 devices_name = ["led1", "button1", "brightness1"]
 devices_class = [dev.LightActuator, dev.Button, dev.Brightness]
-devices_loc = [(5, 5, 1), (0, 0, 1), (20, 20, 1)]
+devices_loc = [(2.5, 2.5, 1), (0, 0, 1), (12.5, 10, 1)]
+
+ga1 = '1/1/1'
 
 def test_correct_device_addition():
     for d in range(len(devices)):
@@ -32,6 +34,8 @@ def test_correct_device_addition():
         assert room1.devices[room1.devices.index(ir_devices[d])].name == devices_name[d]
         # Test if loc is correct
         assert room1.devices[room1.devices.index(ir_devices[d])].location.pos == devices_loc[d]
+        # Test if class is correct
+        assert isinstance(room1.devices[room1.devices.index(ir_devices[d])].device, devices_class[d])
         
 # test addition to ambient list for each device
     # for functional module: test if bus is added to the device object
@@ -42,13 +46,18 @@ def test_correct_attachement_to_bus():
     for d in range(len(devices)):
         x, y, z = devices_loc[d]
         room1.add_device(devices[d], x, y, z)
+        room1.attach(devices[d], ga1)
+        # test group address bus created, knxbus
+        # test ga1 added to devices group addresses list
+        
+
 
     
+  
 
 
-
-# test good attach to bus
-
+# test wrong config files, test good/wrong attachement to bus, detachement
+# 
 
 
 

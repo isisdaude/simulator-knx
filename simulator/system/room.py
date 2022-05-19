@@ -30,7 +30,11 @@ class InRoomDevice:
         def __eq__(self, other_device):
             return self.name == other_device.name
 
-        def update_location(self, new_x=None, new_y=None, new_z=None):
+        def update_location(self, new_x=None, new_y=None, new_z=None):  
+            # We keep old location if None is given to avoid program failure (None is not supported and considered an error if given to constructor Location)
+            new_z = self.location.z if new_z is None else new_z
+            new_y = self.location.y if new_y is None else new_y
+            new_x = self.location.x if new_x is None else new_x
             new_loc = Location(self.room, new_x, new_y, new_z)
             # if new_loc.pos is None:
             #     logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
@@ -56,12 +60,11 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1):
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', out_temp=20.0, out_hum=50.0, out_co2=300): # system_dt is delta t in seconds between updates
         """Check and assign room configuration"""
-        self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style)
-       
+        self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style, self.insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
-        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt)
+        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt, self.insulation, out_temp, out_hum, out_co2)
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
         """List of all devices in the room"""
@@ -72,7 +75,7 @@ class Room:
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
-        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Button, TemperatureController, Thermometer
+        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Button, TemperatureController, Thermometer, AirSensor
         """Adds a device to the room at the given position"""
         # if(x < 0 or x > self.width or y < 0 or y > self.length):
         #     logging.warning("Cannot add a device outside the room")
@@ -93,13 +96,16 @@ class Room:
             if isinstance(device, Brightness):
                 self.world.ambient_light.add_sensor(in_room_device)
                 #print(f"A brightness sensor was added at {x} : {y}.")
-            if isinstance(device, Thermometer):
+            elif isinstance(device, Thermometer):
                 self.world.ambient_temperature.add_sensor(in_room_device)
-
+            elif isinstance(device, AirSensor):
+                self.world.ambient_temperature.add_sensor(in_room_device)
+                self.world.ambient_humidity.add_sensor(in_room_device)
+                self.world.ambient_co2.add_sensor(in_room_device)
         elif isinstance(device, FunctionalModule):
             if isinstance(device, Button):
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
-            if isinstance(device, TemperatureController):
+            elif isinstance(device, TemperatureController):
                 device.room_volume = self.width*self.length*self.height
                 device.room_insulation = self.insulation
                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
@@ -135,19 +141,19 @@ class Room:
 
     def update_world(self, interval=1, gui_mode=False):
         if self.simulation_status:
-            brightness_levels, temperature_levels = self.world.update() #call the update function of all ambient modules in world
+            brightness_levels, temperature_levels, humidity_levels, co2_levels = self.world.update() #call the update function of all ambient modules in world
             #brightness_levels = brightness_sensor_name, brightness
             if gui_mode:
                 try: # attributes are created in main (proto_simulator)
                     gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
                 except AttributeError:
                     logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
-                except Exception as msg:
-                    logging.error(f"Cannot update GUI window: '{msg}'")
+                except Exception:
+                    logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
                 try:
-                    self.window.update_sensors(brightness_levels, temperature_levels) #only brightness for now #TODO implement for temperatures
-                except Exception as msg:
-                    logging.error(f"Cannot update sensors value on GUI window: '{msg}'")
+                    self.window.update_sensors(brightness_levels, temperature_levels, humidity_levels, co2_levels) 
+                except Exception:
+                    logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
 
 
 
