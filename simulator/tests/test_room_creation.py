@@ -11,13 +11,13 @@ group_address_style = '3-levels'
 room1_config = {"name":"bedroom1", "dimensions":[20,20,3]}
 # Test correct room configuration (constructor call)
 def test_correct_room_creation():
-    room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style)
+    room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation='good')
     assert room1.name == room1_config["name"]
     assert room1.width == room1_config["dimensions"][0]
     assert room1.length == room1_config["dimensions"][1]
     assert room1.height == room1_config["dimensions"][2]
     assert room1.group_address_style == group_address_style
-
+    assert room1.insulation in system.INSULATION_TO_TEMPERATURE_FACTOR
 wrong_room_names = ["", "room_4*", 420]
 wrong_room_dimensions = [[-1, 20, 3], [10, 0, 0], [5, '5', 'a']]
 
@@ -53,10 +53,12 @@ def test_incorrect_room_ga_style():
             room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, wrong_ga_style)
         assert pytest_wrapped_error.type == SystemExit
 
-
-    # assert pytest_wrapped_error.value.code == 1 # Only if 'exit(1)' called, no code if sys.exit() is called
-
-## TODO test correct/incorrect insulation
+# Test incorrect insulation type, should be changed for 'average'
+wrong_insulation_types = ['nice', 'good_', 'p3rf3ct.', 25, 0x67]
+def test_incorrect_room_insulation():
+    for wrong_insulation in wrong_insulation_types:
+        room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation=wrong_insulation)
+        assert room1.insulation == 'average'
 
 
 

@@ -22,13 +22,12 @@ class InRoomDevice:
             self.device = device
             self.name = device.name
             self.location = Location(self.room, x, y, z)
-            # if self.location.pos is None:
-            #     logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
-            #     sys.exit(1)
-            # self.type = type(device)  ## whait is this ?
 
         def __eq__(self, other_device):
-            return self.name == other_device.name
+            return (self.device.name == other_device.device.name and
+                    self.location.pos == other_device.location.pos and
+                    self.device.individual_addr == other_device.device.individual_addr and 
+                    self.device.refid == other_device.device.refid)
 
         def update_location(self, new_x=None, new_y=None, new_z=None):  
             # We keep old location if None is given to avoid program failure (None is not supported and considered an error if given to constructor Location)
@@ -36,9 +35,6 @@ class InRoomDevice:
             new_y = self.location.y if new_y is None else new_y
             new_x = self.location.x if new_x is None else new_x
             new_loc = Location(self.room, new_x, new_y, new_z)
-            # if new_loc.pos is None:
-            #     logging.error(f"The device '{self.name}' location is out of room's bounds -> program terminated.")
-            #     sys.exit(1)
             self.location = new_loc
 
         def get_position(self):
@@ -52,8 +48,6 @@ class InRoomDevice:
 
         def get_z(self) -> float:
             return self.location.z
-
-
 
 
 class Room:
@@ -75,11 +69,8 @@ class Room:
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
-        from devices import Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, FunctionalModule, Button, TemperatureController, Thermometer, AirSensor
+        from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor
         """Adds a device to the room at the given position"""
-        # if(x < 0 or x > self.width or y < 0 or y > self.length):
-        #     logging.warning("Cannot add a device outside the room")
-        #     return
 
         in_room_device = InRoomDevice(device, self, x, y, z) #self is for the room, important if we want to find the room of a certain device
         self.devices.append(in_room_device)
@@ -103,14 +94,11 @@ class Room:
                 self.world.ambient_humidity.add_sensor(in_room_device)
                 self.world.ambient_co2.add_sensor(in_room_device)
         elif isinstance(device, FunctionalModule):
-            if isinstance(device, Button):
-                device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
-            elif isinstance(device, TemperatureController):
-                device.room_volume = self.width*self.length*self.height
-                device.room_insulation = self.insulation
-                device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
-                self.world.ambient_temperature.add_sensor(in_room_device)
-                #print(f"A button was added at {x} : {y}.")
+            device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
+            # if isinstance(device, Button):
+            #     device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
+            # elif isinstance(device, Dimmer):
+            #     device.connect_to(self.knxbus)
         return in_room_device # return for gui
 
     ### TODO: implement removal of devices

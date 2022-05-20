@@ -12,7 +12,7 @@ DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.
                 "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySensor":dev.HumiditySensor,
                 "CO2Sensor": dev.CO2Sensor, "PresenceSensor": dev.PresenceSensor, "AirSensor": dev.AirSensor}
 # Situation of the insulation of the room associated to the correction factor for the heating
-INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
+# INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
 # Influence of outdoor temp
 INSULATION_TO_TEMPERATURE_FACTOR = {"perfect": 0, "good": 10/100, "average": 20/100, "bad":40/100}
 # Influence of outdoor humidity
@@ -66,6 +66,10 @@ class IndividualAddress:
         self.area, self.line, self.device = check_individual_address(area, line, device)
         self.ia_string = '.'.join([str(self.area), str(self.line), str(self.device)])
 
+    def __eq__(self, other):
+        return (self.area == other.area and
+                self.line == other.line and
+                self.device == self.device)
 
     def __str__(self): # syntax when instance is called with print()
         return self.ia_string

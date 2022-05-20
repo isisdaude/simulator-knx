@@ -23,17 +23,17 @@ class Time:
 
     def __init__(self, simulation_speed_factor:float):
         # Real world simulated time that passed between 2 clock ticks
-        self.physical_interval = 3600
+        # self.physical_interval = 3600
         self.speed_factor = simulation_speed_factor
         # Amount of time (in seconds) between two software clock ticks
-        self.virtual_interval = self.physical_interval/self.speed_factor
+        # self.virtual_interval = self.physical_interval/self.speed_factor
 
-    def set_simulation_speed_factor(self, speed_factor):
-        self.virtual_interval = self.physical_interval/speed_factor
+    # def set_simulation_speed_factor(self, speed_factor):
+    #     self.virtual_interval = self.physical_interval/speed_factor
 
-    def set_virtual_interval(self, interval:float):
-        # seconds of software simulation corresponding to a simulated 'real-world' hour
-        self.virtual_interval = interval
+    # def set_virtual_interval(self, interval:float):
+    #     # seconds of software simulation corresponding to a simulated 'real-world' hour
+    #     self.virtual_interval = interval
 
     # Scheduler management, if not in GUI mode
     def scheduler_init(self):
@@ -208,7 +208,7 @@ class AmbientHumidity:
         # https://www.weather.gov/lmk/humidity
         self.saturation_vapour_pressure = self.compute_saturation_vapor_pressure_water(self.temp)
         self.humidity = 35 # default Relative Humidity in %, same in the whole room
-        self.vapor_pressure = self.saturation_vapour_pressure * self.humidity/100 # Absolut vapor pressure in room
+        self.vapor_pressure = round(self.saturation_vapour_pressure * self.humidity/100, 8) # Absolut vapor pressure in room
         self.update_rule_ratio = update_rule_ratio
 
     
@@ -223,7 +223,7 @@ class AmbientHumidity:
             num = math.exp(exp_arg)
             denom = math.pow(temperature+105, 1.57)
             p_sat = num / denom
-            return p_sat
+            return round(p_sat, 8)
         else:
             logging.warning(f"Cannot compute saturation vapor pressure because temperature {temperature}<0")
             return None

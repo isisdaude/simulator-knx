@@ -33,22 +33,24 @@ class KNXBus:
             return
         else:
             if isinstance(device, FunctionalModule):
-                try:
-                    device.knxbus == self
-                    self.__update_group_address_to_payload(device, group_address)
-                except AttributeError:  # if bus is not connected yet
+                self.__update_group_address_to_payload(device, group_address)
+                # try:
+                ### NOTE: Already done when calling room.add_device(FunctionalModule)
+                    # device.knxbus == self
+                # except AttributeError:  # if bus is not connected yet
                     # store KNX Bus object in functional module class
-                    device.connect_to(self)
-                    logging.info(
-                        f"Functional Module {device.name} establish connection to the bus (KNXBus object stored in device's class)")
-
+                ### NOTE: Already done when calling room.add_device(FunctionalModule)
+                    # device.connect_to(self)
+                    # logging.info(
+                    #     f"Functional Module {device.name} establish connection to the bus (KNXBus object stored in device's class)")
+            
             if group_address not in self.group_addresses:  # if ga not in group_addresses of KNXBus
                 logging.info(
                     f"Creation of a ga_bus ({group_address.name}) for {device.name}")
                 self.group_addresses.append(group_address)
                 # Creation of the instance that link all devices connected to this group address
                 ga_bus = GroupAddressBus(group_address)
-                ga_bus.add_device(device)
+                ga_bus.add_device(device) # add ga to devices ga list
                 # we add the new object to the list
                 self.ga_buses.append(ga_bus)
             else:  # if the group address already exists, we just add the device to the corresponding class GroupAddressBus
@@ -56,22 +58,22 @@ class KNXBus:
                     if ga_bus.group_address == group_address:
                         logging.info(
                             f"{device.name} is added to the ga_bus ({group_address.name})")
-                        ga_bus.add_device(device)
+                        ga_bus.add_device(device) # add ga to devices ga list
 
     # Remove the device from the group address
     def detach(self, device, group_address: GroupAddress):
         '''Removes a device from the knx bus'''
         if group_address not in self.group_addresses:
             logging.warning(
-                f"The group address '{group_address.name}' is not linked to any device.")
+                f"The group address '{group_address.name}' is not linked to any device, thus device {device.name} cannot be detached.")
             return
         elif group_address not in device.group_addresses:
             logging.warning(
-                f"The group address '{group_address.name}' is not linked to {device.name}.")
+                f"The group address '{group_address.name}' is not linked to {device.name}, that thus cannot be detached.")
         else:
             for ga_bus in self.ga_buses:
                 if ga_bus.group_address == group_address:
-                    if not ga_bus.detach_device(device):
+                    if not ga_bus.detach_device(device): # return number of devices linked to this ga_bus, if none, we delete the ga bus
                         self.ga_buses.remove(ga_bus)
                         self.group_addresses.remove(group_address)
                         logging.info(
