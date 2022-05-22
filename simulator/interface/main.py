@@ -1,13 +1,94 @@
-from communication_interface import *
+import asyncio
 
-class Main:
-    '''Test class for our KNX telegram exchange framework'''
+# from xknx import XKNX
+# from xknx.dpt import DPTBinary
+# from xknx_tweaked.tunnel import UDPTunnel
+# from xknx.telegram import GroupAddress, IndividualAddress, Telegram
+# from xknx.telegram.apci import GroupValueWrite
+# Changed request response to wait for any received packet
+# async def main():
+#     """Connect to a tunnel, send 2 telegrams and disconnect."""
+#     xknx = XKNX()
 
-    from system.telegrams import ButtonPayload, HeaterPayload
-    group_address_to_payload_example = {
-        '0/0/0': ButtonPayload,
-        '0/0': HeaterPayload,
-    }
-    com = CommunicationInterface('224.0.23.12', 3671, group_address_to_payload_example)
+#     # an individual address will most likely be assigned by the tunnelling server
+#     xknx.own_address = IndividualAddress("15.15.249")
 
-    asyncio.run(com.initialize_communication())
+#     tunnel = UDPTunnel(
+#         xknx,
+#         gateway_ip="127.0.0.1",
+#         gateway_port=3671,
+#         local_ip="127.0.0.1",
+#         local_port=3671,
+#         route_back=False,
+#     )
+
+#     await tunnel.connect()
+
+#     await tunnel.send_telegram(
+#         Telegram(
+#             destination_address=GroupAddress("1/0/15"),
+#             payload=GroupValueWrite(DPTBinary(1)),
+#         )
+#     )
+#     await asyncio.sleep(2)
+#     await tunnel.send_telegram(
+#         Telegram(
+#             destination_address=GroupAddress("1/0/15"),
+#             payload=GroupValueWrite(DPTBinary(0)),
+#         )
+#     )
+#     await asyncio.sleep(2)
+
+#     await tunnel.disconnect()
+
+
+# asyncio.run(main())
+import socket
+import sys
+from xknx import XKNX
+from xknx.knxip import *
+from xknx.io.connection import ConnectionConfig, ConnectionType
+import numpy as np
+from xknx.io.transport import *
+from xknx.io.knxip_interface import *
+from xknx.io.request_response import *
+
+async def main():
+	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+
+	server_address = ('192.168.1.10', 3671)
+	sock.bind(server_address)
+
+	print("waiting on port:", 3671)
+	connection_config = ConnectionConfig(
+				route_back=True,  # To enable connection through the docker
+				connection_type=ConnectionType.TUNNELING,
+				gateway_ip="192.168.1.10",
+				gateway_port=3671,
+			)
+	xknx = XKNX(connection_config=connection_config)
+
+	while True:
+		data, addr = sock.recvfrom(1024)
+		
+		if data:
+			print("Address of the sender:", addr)
+			# Initializing the KNX/IP Frame to be sent
+			frame = KNXIPFrame(xknx)
+			frame.from_knx(data)
+			frame.init(KNXIPServiceType.CONNECT_RESPONSE)
+			frame.header.set_length(frame.body)
+
+			# Sending the response
+			data_to_send = bytes(frame.to_knx())
+			sock.sendto(data_to_send, addr)
+			break
+	
+	while True:
+		data, addr = sock.recvfrom(1024)
+
+		print(data)
+		
+			
+asyncio.run(main())
