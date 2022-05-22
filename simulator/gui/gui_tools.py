@@ -114,7 +114,7 @@ class ButtonSave(object):
 
     def activate(self, gui_window):
         #from system import generate_configfile_from_system
-        saved_config_path = gui_window.saved_config_path + datetime.now().strftime("%d%m%Y_%H%M%S")
+        saved_config_path = gui_window.SAVED_CONFIG_PATH + datetime.now().strftime("%d%m%Y_%H%M%S")
         # generate_configfile_from_system(gui_window.room, saved_config_path)
         with open(saved_config_path, 'w') as saved_config_file:
             json.dump(gui_window.system_config_dict, saved_config_file, indent=2)

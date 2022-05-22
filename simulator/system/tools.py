@@ -3,12 +3,15 @@ import logging, sys
 import math
 import json
 import devices as dev
+import pprint
+pp=pprint.PrettyPrinter(compact=True)
+
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 #from .room import InRoomDevice not useful, but if used, put it on the class / function directly # to avoid circular import room <-> tools
-COMMAND_HELP = "enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\n>'q' to exit the simulation, 'h' for help<\n"
+COMMAND_HELP = "enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\nAPI: 'getinfo' + device_name or 'getinfo world' + ambient \n>'q' to exit the simulation, 'h' for help<\n"
 # dict to link string to devices constructor object
 DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch,
-                "Button": dev.Button, "Dimmer": dev.Dimmer, "TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
+                "Button": dev.Button, "Dimmer": dev.Dimmer, #"TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
                 "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySensor":dev.HumiditySensor,
                 "CO2Sensor": dev.CO2Sensor, "PresenceSensor": dev.PresenceSensor, "AirSensor": dev.AirSensor}
 # Situation of the insulation of the room associated to the correction factor for the heating
@@ -64,7 +67,7 @@ class IndividualAddress:
     def __init__(self, area, line, device): # area[4bits], line[4bits], device[8bits]
         from .check_tools import check_individual_address
         self.area, self.line, self.device = check_individual_address(area, line, device)
-        self.ia_string = '.'.join([str(self.area), str(self.line), str(self.device)])
+        self.ia_str = '.'.join([str(self.area), str(self.line), str(self.device)])
 
     def __eq__(self, other):
         return (self.area == other.area and
@@ -72,7 +75,7 @@ class IndividualAddress:
                 self.device == self.device)
 
     def __str__(self): # syntax when instance is called with print()
-        return self.ia_string
+        return self.ia_str
         # return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
     
     def __repr__(self): # syntax when instance is called in python interpreter
@@ -168,7 +171,7 @@ class GroupAddress:
 
 """ Functions tools """
 
-def configure_system(simulation_speed_factor, system_dt=1):
+def configure_system(simulation_speed_factor, system_dt=1, test_mode=False):
     from .room import Room
     # Declaration of sensors, actuators and functional modules
     led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
@@ -186,7 +189,7 @@ def configure_system(simulation_speed_factor, system_dt=1):
     room_insulation = 'good'
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
-                room_insulation, outside_temperature, outside_humidity, outside_co2) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+                room_insulation, outside_temperature, outside_humidity, outside_co2, test_mode=test_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
     # room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -206,7 +209,7 @@ def configure_system(simulation_speed_factor, system_dt=1):
     # return the room object to access all elements of the room (world included)
     return [room1]
 
-def configure_system_from_file(config_file_path, system_dt=1):
+def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
     from .room import Room
     from .check_tools import check_group_address, check_simulation_speed_factor
     with open(config_file_path, "r") as file:
@@ -247,7 +250,7 @@ def configure_system_from_file(config_file_path, system_dt=1):
         room_insulation = room_config["insulation"]
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
-                    room_insulation, outside_temperature, outside_humidity, outside_co2)
+                    room_insulation, outside_temperature, outside_humidity, outside_co2, test_mode=test_mode)
         # room.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
@@ -331,6 +334,37 @@ def user_command_parser(command, room):
                     break
                 print("user_input()")
                 in_room_device.device.user_input()
+    elif command[:7] == 'getinfo':
+        print("getinfo:> ", command[8:])
+        if 'world' in command[8:13]: # user asks for world info
+            ambient = command[14:].strip() # can be 'time', 'temperature', 'humidity', 'co2level', 'co2', 'brightness', 'all'
+            if len(ambient) >= len('all'): # smallest str acceptable after 'getinfo world' command
+                if 'time' in ambient:
+                    world_dict = room.get_world_info('time')
+                if 'temperature' in ambient:
+                    world_dict = room.get_world_info('temperature')
+                if 'humidity' in ambient:
+                    world_dict = room.get_world_info('humidity')
+                if 'co2' in ambient:
+                    world_dict = room.get_world_info('co2level')
+                    # brightness is a global average from edge location in room, or average of sensors
+                if 'brightness' in ambient: 
+                    world_dict = room.get_world_info('brightness')
+                if 'all' in ambient:
+                    world_dict = room.get_world_info('all')
+            else: # if nothing detailed, just get all world info
+                world_dict = room.get_world_info('all')
+            ## TODO check some stuff with info, write some kind of API
+            pp.pprint(world_dict)
+        
+        elif 'dev' in command[8:11]: # user ask for info on a device
+            name = command[12:].strip() # strip to remove spaces
+        else:
+            name = command[8:].strip()
+        device_dict = room.get_device_info(name)
+        ## TODO check some stuff with info, write some kind of API
+        pp.pprint(device_dict)
+
     elif command[:3] == 'get': #Sensor
         name = command[4:]
         if "bright" in name: # brightness sensor
@@ -359,14 +393,14 @@ def compute_distance(source, sensor) -> float:
 
 
 """Tools used by the devices to perform update calculations"""
-def required_power(desired_temperature=20, volume=1, insulation_state="good"):
-    def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
-        dist = 18 - temp
-        return 70 - (dist * 7)/2
-    desired_wattage = volume*temp_to_watts(desired_temperature)
-    desired_wattage += desired_wattage * \
-        INSULATION_TO_CORRECTION_FACTOR[insulation_state]
-    return desired_wattage
+# def required_power(desired_temperature=20, volume=1, insulation_state="good"):
+#     def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
+#         dist = 18 - temp
+#         return 70 - (dist * 7)/2
+#     desired_wattage = volume*temp_to_watts(desired_temperature)
+#     desired_wattage += desired_wattage * \
+#         INSULATION_TO_CORRECTION_FACTOR[insulation_state]
+#     return desired_wattage
 
 
 def max_temperature_in_room(power, volume=1.0, insulation_state="good"):

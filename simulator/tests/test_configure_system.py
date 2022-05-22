@@ -18,7 +18,7 @@ airsensor1 = dev.AirSensor("airsensor1", "M-0_A1", system.IndividualAddress(0,0,
 presencesensor1 = dev.PresenceSensor("presencesensor1", "M-0_A1", system.IndividualAddress(0,0,66), "enabled")
 
 simulation_speed_factor = 180
-room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
 knx_bus = room1.knxbus
 
 ir_button1 = system.InRoomDevice(button1, room1, 0, 0, 1)
@@ -39,7 +39,7 @@ devices_class = [dev.Button, dev.Dimmer, dev.LED, dev.Heater, dev.AC, dev.Switch
 devices_loc = [(0, 0, 1), (0, 0, 2), (0, 1, 1), (0, 1, 2), (0, 1, 3), (0, 1, 4), (1, 1, 1), (1, 1, 2), (1, 1, 3), (1, 1, 4)]
 
 def test_correct_device_addition():
-    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     for d in range(len(devices)):
         x, y, z = devices_loc[d]
         room1.add_device(devices[d], x, y, z)
@@ -73,7 +73,7 @@ ga1 = system.GroupAddress('3-levels', main=1, middle=1, sub=1)
 ga1_bus = None
 ga1_str = '1/1/1'
 def test_correct_attachement_to_bus():
-    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     for d in range(len(devices)):
         x, y, z = devices_loc[d]
         room1.add_device(devices[d], x, y, z)
@@ -100,7 +100,7 @@ ga2_bus = None
 ga2_str = '2/2/2'
 led22 = dev.LED("led22", "M-0_L22", system.IndividualAddress(2,2,2), "enabled") #Area 0, Line 0, Device 0
 def test_correct_detachement_from_bus():
-    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     room1.add_device(led22, 2, 2, 2)
     # We attaxch a first device
     room1.attach(led22, ga2_str) 

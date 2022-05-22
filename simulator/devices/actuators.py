@@ -14,15 +14,15 @@ class LightActuator(Actuator, ABC):
 
     def __init__(self, class_name, name, refid, individual_addr, default_status, state, lumen):
         super().__init__(class_name, name, refid, individual_addr, default_status, "light", state)
-        self.lumen = lumen
+        self.max_lumen = lumen
 
-    def lumen_to_Lux(self, lumen, area):
-        ''' The conversion from Lumens to Lux given the surface area in squared meters '''
-        return lumen/area
+    # def lumen_to_Lux(self, lumen, area):
+    #     ''' The conversion from Lumens to Lux given the surface area in squared meters '''
+    #     return lumen/area
 
-    def lux_to_Lumen(self, lux, area):
-        ''' The conversion from Lux to Lumen given the surface area in squared meters '''
-        return area*lux
+    # def lux_to_Lumen(self, lux, area):
+    #     ''' The conversion from Lux to Lumen given the surface area in squared meters '''
+    #     return area*lux
 
 
 class LED(LightActuator):
@@ -38,22 +38,19 @@ class LED(LightActuator):
 
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
-            # if isinstance(telegram.payload, SwitchPayload):
-            #     # telegrams with Switch payload are telegrams from SVSHI, that are supposed to turn on a Switch
-            #     self.state = telegram.payload.switch_state
+
             if isinstance(telegram.payload, DimmerPayload):
                 self.state = telegram.payload.binary_state
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
 
-            # if isinstance(telegram.payload, SwitchPayload):
-            #     if telegram.payload.switched:
-            #         self.state = not self.state
             self.str_state = 'ON' if self.state else 'OFF'
             logging.info(f"{self.name} has been turned {self.str_state} by device '{telegram.source}'.")
-        # if the control field is not True, the telegram does nto concern the LED, except for a read state
 
-
+    def get_dev_info(self):
+        dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "state_ratio":self.state_ratio}
+        dev_specific_dict.update(self.dev_basic_dict)
+        return dev_specific_dict
 
 
 class TemperatureActuator(Actuator, ABC):
@@ -67,7 +64,13 @@ class TemperatureActuator(Actuator, ABC):
         self.state_ratio = 100 # Percentage of 'amplitude'
         self.power = self.max_power * self.state_ratio/100
         """Power really used, max by default"""
-        
+    
+    def get_dev_info(self):
+        self.str_state = "ON" if self.state else "OFF"
+        dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "power":self.power}
+        dev_specific_dict.update(self.dev_basic_dict)
+        return dev_specific_dict
+
 
 
 class Heater(TemperatureActuator):
@@ -111,6 +114,8 @@ class Heater(TemperatureActuator):
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
                     self.power = self.max_power * self.state_ratio/100
+    
+    
 
 
 class AC(TemperatureActuator):
@@ -136,6 +141,7 @@ class AC(TemperatureActuator):
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
                     self.power = self.max_power * self.state_ratio/100
+    
 
 
 

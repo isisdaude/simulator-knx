@@ -6,6 +6,7 @@ Some class definitions for the simulation of the physical world
 from typing import List
 import time, math, schedule
 import sys, logging
+from datetime import timedelta
 from numpy import mean
 
 #from soupsieve import escape
@@ -54,10 +55,18 @@ class Time:
             logging.warning("The Scheduler is not initialized and cannot be started")
 
     # Simulation time management
-    def simulation_time(self):
+    def simulation_time(self, str_mode=False):
         try:
-            elapsed_time = time.time() - self.start_time
-            return elapsed_time
+            if hasattr(self, 'pause_time'): # if system was paused, we consider only the active simulation time 
+                elapsed_time = (self.pause_time - self.start_time)*self.speed_factor
+            else:
+                # Elapsed time from simulation point-of-view (not real seconds but simulated seconds)
+                elapsed_time = (time.time() - self.start_time)*self.speed_factor
+            if str_mode:
+                str_elapsed_time = str(timedelta(seconds=round(elapsed_time, 2)))[:-5]
+                return str_elapsed_time
+            else:
+                return elapsed_time # in seconds
         except AttributeError:
             logging.warning("The Simulation time is not initialized")
 
@@ -153,6 +162,13 @@ class AmbientTemperature:
 
     def __str__(self):
         return f"{self.temperature} °C"
+    
+    def get_temperature(self, str_mode=False):
+        if str_mode:
+            temp = str(round(self.temperature, 2)) + " °C"
+        else:
+            temp = self.temperature
+        return temp
 
 
 class AmbientLight:
@@ -177,10 +193,11 @@ class AmbientLight:
                 # Compute distance between sensor and each source
                 dist = system.compute_distance(source, brightness_sensor)
                 # Compute the new brightness
-                residual_lumen = (1/dist)*source.device.lumen*(source.device.state_ratio/100) # we suppose proportionality between state ratio and lumen 
+                residual_lumen = (1/dist)*source.device.max_lumen*(source.device.state_ratio/100) # we suppose proportionality between state ratio and lumen 
                 brightness += residual_lumen
+                ## TODO: add here if there is ambient light
         return brightness
-
+    
     def update(self): #Updates all brightness sensors of the world (the room)
         logging.info("Brightness update")
         brightness_levels = []
@@ -188,8 +205,44 @@ class AmbientLight:
             # Update the sensor's brightness
             sensor.device.brightness = self.read_brightness(sensor) # set the newly calculated sensor brightness
             brightness_levels.append((sensor.device.name, sensor.device.brightness))
-
         return brightness_levels
+
+    # API functions    
+    def read_global_brightness(self, room):
+        from devices import Brightness
+        from system import IndividualAddress, InRoomDevice, Location
+        w, l, height = room.get_dim()
+        h = height/2 # mid height to simplify and reduce edge cases to 5
+        edge_locations = [(0,0,h), (w,0,h), (0,l,h), (w,l,h), (w/2,l/2,h)]
+        brightness_sensor = Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
+        brightness_levels = []
+        for loc in edge_locations:
+            brightness = 0
+            x, y, z = loc[0], loc[1], loc[2]
+            brightness_sensor.location = Location(room, x, y, z)
+            for source in self.light_sources:
+                if source.device.is_enabled() and source.device.state:
+                    dist = system.compute_distance(source, brightness_sensor)
+                    residual_lumen = (1/dist)*source.device.max_lumen*(source.device.state_ratio/100) # we suppose proportionality between state ratio and lumen 
+                    brightness += residual_lumen
+            brightness_levels.append(brightness)
+            ## TODO: add here if there is ambient light
+        return mean(brightness_levels)
+
+    def get_global_brightness(self, room = None, str_mode=False):
+        if room is None: # simply make an average of all sensors
+            brightness_levels = []
+            for sensor in self.light_sensors:
+                brightness_levels.append(self.read_brightness(sensor))
+            bright = mean(brightness_levels)
+        else:
+            bright = self.read_global_brightness(room)
+        if str_mode:
+            bright = str(round(bright, 2)) + " lumens"
+        else:
+            return bright
+
+
 
 
 class AmbientHumidity:
@@ -250,6 +303,13 @@ class AmbientHumidity:
             humidity_levels.append((sensor.device.name, sensor.device.humidity))
         return humidity_levels
 
+    def get_humidity(self, str_mode=False):
+        if str_mode:
+            hum = str(round(self.humidity, 2)) + " %"
+        else:
+            hum = self.humidity
+        return hum
+
 
 
 class AmbientCO2:
@@ -264,7 +324,7 @@ class AmbientCO2:
     # >40,000 ppm	Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
 
     def __init__(self, out_co2, room_insulation, update_rule_ratio):
-        self.co2_level = 800 # ppm
+        self.co2level = 800 # ppm
         self.outside_co2 = out_co2
         self.room_insulation = room_insulation
         self.co2_sensors: List = []
@@ -276,16 +336,23 @@ class AmbientCO2:
     def update(self, temperature, humidity):
         from system import INSULATION_TO_CO2_FACTOR
         logging.info("CO2 update")
-        # self.co2_level = compute_co2level(temperature, humidity) # totally wrong values...
+        # self.co2level = compute_co2level(temperature, humidity) # totally wrong values...
         ## TODO : change CO2 if window opened, co2 rise until window is opened
         ## TODO: check of presence 
         # Apply humidity factor from outside temp and insulation
-        self.co2_level += (self.outside_co2 - self.co2_level) * INSULATION_TO_CO2_FACTOR[self.room_insulation] * self.update_rule_ratio
+        self.co2level += (self.outside_co2 - self.co2level) * INSULATION_TO_CO2_FACTOR[self.room_insulation] * self.update_rule_ratio
         co2_levels = []
         for sensor in self.co2_sensors:
-            sensor.device.co2_level = int(self.co2_level)
-            co2_levels.append((sensor.device.name, sensor.device.co2_level))
+            sensor.device.co2level = int(self.co2level)
+            co2_levels.append((sensor.device.name, sensor.device.co2level))
         return co2_levels
+    
+    def get_co2level(self, str_mode=False):
+        if str_mode:
+            co2 = str(round(self.co2level, 2)) + " ppm"
+        else:
+            co2 = self.co2level
+        return co2
 
 
 
@@ -316,24 +383,53 @@ class World:
         print(f" Temperature: {self.ambient_temperature.temperature}")
         #TODO: add others when availaible
         print("+----------------------------+")
+    
+    def get_info(self, ambient, room):
+        basic_dict = {"room_insulation":self.room_insulation, "out_temp":str(self.out_temp)+" °C", "out_hum":str(self.out_hum)+" %", "out_co2":str(self.out_co2)+" ppm"}
+        if 'temperature' == ambient:
+            basic_dict.update({"temperature": self.ambient_temperature.get_temperature(str_mode=True)})
+            return basic_dict
+        elif 'humidity' == ambient:
+            basic_dict.update({"humidity": self.ambient_humidity.get_humidity(str_mode=True)})
+            return basic_dict
+        elif 'co2level' == ambient:
+            basic_dict.update({"co2level": self.ambient_co2.get_co2level(str_mode=True)})
+            return basic_dict
+        elif 'brightness' == ambient:
+            basic_dict.update({"brightness": self.ambient_light.get_global_brightness(room, str_mode=True)}) # room can be None, average of bright sensors is then computed
+            return basic_dict
+        elif 'time' == ambient:
+            basic_dict.update({"simtime": self.time.simulation_time(str_mode=True)})
+            return basic_dict
+        elif 'all' == ambient:
+            ambient_dict = {"temperature": self.ambient_temperature.get_temperature(str_mode=True),
+                            "humidity": self.ambient_humidity.get_humidity(str_mode=True),
+                            "co2level": self.ambient_co2.get_co2level(str_mode=True),
+                            "brightness": self.ambient_light.get_global_brightness(room, str_mode=True),
+                            "simtime": self.time.simulation_time(str_mode=True)}
+            basic_dict.update(ambient_dict)
+            return basic_dict
+        
 
 
 
 
 
-def compute_co2level(temperature, humidity):
-    # https://iopscience.iop.org/article/10.1088/1755-1315/81/1/012083/pdf
-    p1 = -122304.827954597
-    p2 = 5420.9575012248 
-    p3 = -195.944936343794 
-    p4 = 2.36182806127216 
-    p5 = 634340.418393413
-    p6 = -1884046.22528529
-    p7 = 1749351.78760737
-    p8 = 1191371.85647522
-    p9 = -2122702.79768627
-    h = temperature # in °C
-    t = humidity/100 # 0<h<1
-    co2_ppm = p1 + p2*t + p3*math.pow(t,2) + p4*math.pow(t,3)
-    co2_ppm += p5*h + p6*math.pow(t,2) + p7*math.pow(t,3) + p8*math.pow(t,4) + p9*math.pow(t,5)
-    return co2_ppm
+
+
+# def compute_co2level(temperature, humidity):
+#     # https://iopscience.iop.org/article/10.1088/1755-1315/81/1/012083/pdf
+#     p1 = -122304.827954597
+#     p2 = 5420.9575012248 
+#     p3 = -195.944936343794 
+#     p4 = 2.36182806127216 
+#     p5 = 634340.418393413
+#     p6 = -1884046.22528529
+#     p7 = 1749351.78760737
+#     p8 = 1191371.85647522
+#     p9 = -2122702.79768627
+#     h = temperature # in °C
+#     t = humidity/100 # 0<h<1
+#     co2_ppm = p1 + p2*t + p3*math.pow(t,2) + p4*math.pow(t,3)
+#     co2_ppm += p5*h + p6*math.pow(t,2) + p7*math.pow(t,3) + p8*math.pow(t,4) + p9*math.pow(t,5)
+#     return co2_ppm

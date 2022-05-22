@@ -16,7 +16,8 @@ class Device(ABC):
     def __init__(self, class_name, name, refid, individual_addr, default_status, dev_type): #The constructor is also a good place for imposing various checks on attribute values
         from system import check_device_config
         self.class_name, self.name, self.refid, self.individual_addr, self.status = check_device_config(class_name, name, refid, individual_addr, default_status)
-        
+        # dict to prepare data for API to get dev info from room 
+        self.dev_basic_dict = {"class_name":self.class_name, "refid":self.refid, "individual_address":self.individual_addr.ia_str, "status":self.status}
         # List to store the different ga the device is linked to
         self.group_addresses = []
 
@@ -55,13 +56,17 @@ class Device(ABC):
             del self.knxbus
         except AttributeError:
             logging.warning(f"The Functional Module '{self.name}' is not connected to this KNX bus, and thus cannot deconnect from it")
+    
 
+    @abstractmethod
+    def get_dev_info(self):
+        """ API to get devices info from room"""
 
 
 class FunctionalModule(Device, ABC):
     def __init__(self, class_name, name, refid, individual_addr, default_status, input_type):
         super().__init__(class_name, name, refid, individual_addr, default_status, "functional_module")
-
+    # state is not for all functional module as it could be possible to implement a temperature controller with more complex state than button and dimmer
     @abstractmethod # must be implemented independantly for each particular functional module device
     def user_input(self):
         """ Interpret the user input (set button ON/OFF, set temperature,...)"""
@@ -87,6 +92,6 @@ class Actuator(Device, ABC):
         """ Update its state when receiving a telegram"""
 
 
-class SysDevice(Device, ABC):
-    def __init__(self, class_name,  name, refid, individual_addr, default_status):
-        super().__init__(class_name, name, refid, individual_addr, default_status, "sys_device")
+# class SysDevice(Device, ABC):
+#     def __init__(self, class_name,  name, refid, individual_addr, default_status):
+#         super().__init__(class_name, name, refid, individual_addr, default_status, "sys_device")

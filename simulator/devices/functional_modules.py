@@ -28,6 +28,11 @@ class Button(FunctionalModule):
         binary_payload = BinaryPayload(binary_state=self.state)
         # Send Telegram to the knxbus
         self.send_telegram(binary_payload, control_field = True)
+    
+    def get_dev_info(self):
+        dev_specific_dict = {"state":self.state}
+        dev_specific_dict.update(self.dev_basic_dict)
+        return dev_specific_dict
 
 
 class Dimmer(FunctionalModule):
@@ -56,6 +61,11 @@ class Dimmer(FunctionalModule):
         dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
         # Send Telegram to the knxbus
         self.send_telegram(dimmer_payload, control_field = True)
+    
+    def get_dev_info(self):
+        dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
+        dev_specific_dict.update(self.dev_basic_dict)
+        return dev_specific_dict
 
 
 # class Switch(FunctionalModule):
@@ -74,30 +84,30 @@ class Dimmer(FunctionalModule):
 #         self.send_telegram(payload, control_field = True)
 
 
-class TemperatureController(FunctionalModule):
-    def __init__(self, name, refid, individual_addr, default_status):
-        super().__init__('TemperatureController', name, refid, individual_addr, default_status, "thermostat")
-        self.state = 10
-        self.room_volume = 0
-        self.room_insulation = 'average'
-        #self.sensor = Thermometer() ##TODO: init sensor with default config
+# class TemperatureController(FunctionalModule):
+#     def __init__(self, name, refid, individual_addr, default_status):
+#         super().__init__('TemperatureController', name, refid, individual_addr, default_status, "thermostat")
+#         self.state = 10
+#         self.room_volume = 0
+#         self.room_insulation = 'average'
+#         #self.sensor = Thermometer() ##TODO: init sensor with default config
 
-##TODO:  when temp is set, send telegram to heat sources
+# ##TODO:  when temp is set, send telegram to heat sources
 
-    def user_input(self, wished_temp):
-        logging.info(f"User asked to reach {wished_temp} on controller {self.name}")
-        self.state = wished_temp
-        self.update_heaters() ## TODO update sources
+#     def user_input(self, wished_temp):
+#         logging.info(f"User asked to reach {wished_temp} on controller {self.name}")
+#         self.state = wished_temp
+#         self.update_heaters() ## TODO update sources
 
-        # payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
-        # control_field = 0 # to differentiate between data (temperature read) and control (set heater ON) telegrams
-        # # depends on the user input/request
-        # self.send_telegram(payload, control_field = True)
+#         # payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
+#         # control_field = 0 # to differentiate between data (temperature read) and control (set heater ON) telegrams
+#         # # depends on the user input/request
+#         # self.send_telegram(payload, control_field = True)
 
-    def update_heaters(self):
-        from system.tools import required_power
-        """Function to update the heaters' values to reach the desired temperature"""
-        required = required_power(self.state, self.room_volume, self.room_insulation)
-        logging.info(f"Sent required wattage to each heater linked to this controller.")
-        self.send_telegram(TempControllerPayload(required), True)
+#     def update_heaters(self):
+#         from system.tools import required_power
+#         """Function to update the heaters' values to reach the desired temperature"""
+#         required = required_power(self.state, self.room_volume, self.room_insulation)
+#         logging.info(f"Sent required wattage to each heater linked to this controller.")
+#         self.send_telegram(TempControllerPayload(required), True)
 

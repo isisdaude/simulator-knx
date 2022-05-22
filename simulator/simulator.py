@@ -52,10 +52,12 @@ async def async_main(loop, room):
 
 def launch_simulation():
     GUI_MODE = True
-    FILE_CONFIG_MODE = True
-    DEV_CONFIG = False
+    FILE_CONFIG_MODE = True # configuration from json file
+    DEV_CONFIG = False # configuration from python function
+    DEFAULT_CONFIG = True # configuration from default json file (~3devices)
+    EMPTY_CONFIG = True # configuration with no devices
     default_mode = False
-    DEFAULT_CONFIG = True
+    empty_mode = False
     SYSTEM_DT = 1
     logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
@@ -75,6 +77,11 @@ def launch_simulation():
     elif DEFAULT_CONFIG:
         default_mode = True
         rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH, SYSTEM_DT)
+    
+    # System configuration based on a default JSON config file
+    elif EMPTY_CONFIG:
+        empty_mode = True
+        rooms = system.configure_system_from_file(EMPTY_CONFIG_PATH, SYSTEM_DT)
 
     # System configuration based on a simple Room with no devices
     else:
@@ -87,16 +94,21 @@ def launch_simulation():
                 continue
         rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')]
 
-    # We save the config path to further reload the simulation
-    for room in rooms:
-        room.SAVED_CONFIG_PATH = SAVED_CONFIG_PATH
-    room1 = rooms[0] # for now only one room
+    # # We save the config path to further reload the simulation
+    # for room in rooms:
+    #     room.SAVED_CONFIG_PATH = SAVED_CONFIG_PATH
+    # room1 = rooms[0] # for now only one room
 
     # GUI interface with the user
     if GUI_MODE:
-        config_path = DEFAULT_CONFIG_PATH if default_mode else CONFIG_PATH
-        window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, rooms)###
-        window.initialize_system(SAVED_CONFIG_PATH, SYSTEM_DT) #system_dt is delta time for scheduling update_world
+        if default_mode:
+            config_path = DEFAULT_CONFIG_PATH
+        elif empty_mode:
+            config_path = EMPTY_CONFIG_PATH
+        else:
+            config_path = CONFIG_PATH
+        window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, rooms)###
+        window.initialize_system(save_config=True, system_dt=SYSTEM_DT) #system_dt is delta time for scheduling update_world
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time

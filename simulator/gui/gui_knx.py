@@ -17,7 +17,7 @@ from .gui_config import *
 
 class GUIWindow(pyglet.window.Window):
     ''' Class to define the GUI window, the widgets and text displayed in it and the functions reactign to the user actions (mouse click, input text,...) '''
-    def __init__(self, config_path, default_config_path, empty_config_path, rooms=None):
+    def __init__(self, config_path, default_config_path, empty_config_path, saved_config_path, rooms=None):
         super(GUIWindow, self).__init__(WIN_WIDTH, WIN_LENGTH, caption='KNX Simulation Window', resizable=False)
         from system import configure_system_from_file
         # Configure the window size
@@ -38,6 +38,7 @@ class GUIWindow(pyglet.window.Window):
         self.CONFIG_PATH = config_path
         self.DEFAULT_CONFIG_PATH = default_config_path
         self.EMPTY_CONFIG_PATH = empty_config_path
+        self.SAVED_CONFIG_PATH = saved_config_path + "saved_config_"
         # Room object to represent the KNX System
         try:
             self.room = rooms[0]
@@ -135,24 +136,24 @@ class GUIWindow(pyglet.window.Window):
         self.buttons.append(self.button_default)
 
 ## Method to initialize the gui system from room object
-    def initialize_system(self, saved_config_path=None, system_dt=1):
+    def initialize_system(self, save_config=False, config_path=None, system_dt=1):
         from devices import Button, LED, Brightness, Dimmer, Heater, AC, Thermometer, AirSensor # ,PresenceSensor
         self.room.window = self # same for the GUi window object, but to room1 object
-        if saved_config_path: # stor the saved config path only at first call, not when user reload the system
-            self.saved_config_path = saved_config_path + "saved_config_" # We will add the time when the simulation was saved
+        if save_config: # stor the saved config path only at first call, not when user reload the system
+            # Save the system also when reloading to default or empty system
             # We save the system dictionary from config file to update it as the user add devices
-            with open(self.CONFIG_PATH, "r") as config_file:
+            if config_path is None: # If system initialisation, we take the normal config path
+                config_path = self.CONFIG_PATH
+                self.SYSTEM_DT = system_dt # we store the system dt giuven from simulator
+            # else, teh congif path would either be default or empty config
+            with open(config_path, "r") as config_file:
                 self.system_config_dict = json.load(config_file)
-        # self.saved_config_path_temp = shutil.copyfile(self.CONFIG_PATH, self.saved_config_path+"temp.json")
-        # self.room.saved_config_path = self.saved_config_path
         pyglet.clock.schedule_interval(self.room.update_world, interval=system_dt, gui_mode=True) # update every 1seconds, corresponding to 1 * speed_factor real seconds
         # ratio to translate room physical (simulated) size in pixels to place correctly devices
         self.room_width_ratio = ROOM_WIDTH / self.room.width
         self.room_length_ratio = ROOM_LENGTH / self.room.length
 
-        # self.green_img = pyglet.image.load(GREEN_PATH)
-        # self.green_sprite = pyglet.sprite.Sprite(self.green_img, x=80, y=0, batch=self.batch, group=self.foreground)
-        print(" ------- Initialization of the KNX System's GUI representation -------")
+        print(" ------- Initialization of the KNX System's GUI representation ------- ")
         for in_room_device in self.room.devices:
             device = in_room_device.device
             if isinstance(device, Brightness):
@@ -247,7 +248,7 @@ class GUIWindow(pyglet.window.Window):
             room_dev_x = list_x
             room_dev_y = list_y - room_devices_counter*(OFFSET_LIST_DEVICE) # display device name below main label
             room_dev_ia_y = room_dev_y - OFFSET_INDIVIDUAL_ADDR_LABEL 
-            ia_label = room_device.in_room_device.device.individual_addr.ia_string
+            ia_label = room_device.in_room_device.device.individual_addr.ia_str
             room_dev_gas = room_device.in_room_device.device.group_addresses
             ga_text = ' -- (' + ', '.join([str(ga) for ga in room_dev_gas]) + ')'
             label_text = room_device.label.text + ga_text
@@ -366,13 +367,13 @@ class GUIWindow(pyglet.window.Window):
             # else:
             #     self.display_humidity_levels(hum_name, humidity=humidity)
         for co2 in co2_levels:
-            co2_name, co2_level = co2[0], co2[1]
+            co2_name, co2level = co2[0], co2[1]
             if 'air' in co2_name:
                 try:
-                    airsensor_dict[co2_name]["co2_level"] = co2_level
+                    airsensor_dict[co2_name]["co2level"] = co2level
                 except KeyError:
                     airsensor_dict[co2_name] = {}
-                    airsensor_dict[co2_name]["co2_level"] = co2_level
+                    airsensor_dict[co2_name]["co2level"] = co2level
         # Display all air quality sensors at once
         if len(airsensor_dict) > 0:
             self.display_airquality_levels(airsensor_dict)
@@ -392,8 +393,8 @@ class GUIWindow(pyglet.window.Window):
                         airquality_level_text += str(temp)+'/'
                     else:
                         airquality_level_text += '-/'
-                    if "co2_level" in airsensor_dict[airsensor]:
-                        co2 = airsensor_dict[airsensor]["co2_level"]
+                    if "co2level" in airsensor_dict[airsensor]:
+                        co2 = airsensor_dict[airsensor]["co2level"]
                         airquality_level_text += str(co2)+'/'
                     else:
                         airquality_level_text += '-/'
@@ -516,13 +517,14 @@ class GUIWindow(pyglet.window.Window):
         self.button_pause.update_image(reload=True)
         # Re configuration of the room and simulation time
         if default_config:
-            self.room = configure_system_from_file(self.DEFAULT_CONFIG_PATH)[0]
+            config_path = self.DEFAULT_CONFIG_PATH
         elif empty_config:
-            self.room = configure_system_from_file(self.EMPTY_CONFIG_PATH)[0]
+            config_path = self.EMPTY_CONFIG_PATH
         else:
-            self.room = configure_system_from_file(self.CONFIG_PATH)[0] # only one room for now
+            config_path = self.CONFIG_PATH
+        self.room = configure_system_from_file(config_path)[0] # only one room for now
         self.room.world.time.start_time = time()
-        self.initialize_system()
+        self.initialize_system(save_config=True, config_path = config_path, system_dt=self.SYSTEM_DT)
 
     def pause_simulation(self):
         self.room.simulation_status = not self.room.simulation_status
@@ -533,6 +535,7 @@ class GUIWindow(pyglet.window.Window):
             logging.info("The simulation is resumed")
             paused_time = time() - self.room.world.time.pause_time
             self.room.world.time.start_time += paused_time
+            delattr(self.room.world.time, 'pause_time')
 
 ## Methods to update devices position (in simulation) and/or location (physical location of device in room)
     def update_device_location(self, pos_x, pos_y):
@@ -797,11 +800,11 @@ class GUIWindow(pyglet.window.Window):
 
 
 
-def update_window(dt, window, speed_factor, start_time): # cannot be a class method because first argument must be dt, and thus cannot be self.
+def update_window(dt, window, current_str_simulation_time): # cannot be a class method because first argument must be dt, and thus cannot be self.
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
-    sim_time = str(timedelta(seconds=round(speed_factor*(time() - start_time), 2))) # 2 decimals
-    window.simtime_widget.simtime_valuelabel.text = f"{sim_time[:-5]}" #update simulation time  {timedelta(seconds=sim_time)}
+    sim_time = current_str_simulation_time
+    window.simtime_widget.simtime_valuelabel.text = f"{sim_time}" #update simulation time  {timedelta(seconds=sim_time)}
     print(f"doing simtime update at {sim_time[:-5]} \n")
 
 

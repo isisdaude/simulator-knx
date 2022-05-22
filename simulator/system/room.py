@@ -6,7 +6,6 @@ import logging, sys
 import numbers
 from typing import List
 
-import gui
 import simulation as sim
 from devices import Device
 
@@ -40,21 +39,33 @@ class InRoomDevice:
         def get_position(self):
             return self.location.pos
 
-        def get_x(self) -> float:
-            return self.location.x
+        # def get_x(self) -> float:
+        #     return self.location.x
 
-        def get_y(self) -> float:
-            return self.location.y
+        # def get_y(self) -> float:
+        #     return self.location.y
 
-        def get_z(self) -> float:
-            return self.location.z
+        # def get_z(self) -> float:
+        #     return self.location.z
+        
+        def get_irdev_info(self):
+            ir_device_dict = {"room_name":self.room.name, "device_name":self.device.name, "location":self.location.pos}
+            # print(f"ir_device_dict: '{ir_device_dict}'")
+            device_dict = self.device.get_dev_info()
+            # print(f"device_dict: '{device_dict}'")
+            ir_device_dict.update(device_dict) # concatenate 2 dict by uodating existing keys'value
+            # print(f"ir_device_dict(update): '{ir_device_dict}'")
+            return ir_device_dict
+            
+
 
 
 class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', out_temp=20.0, out_hum=50.0, out_co2=300): # system_dt is delta t in seconds between updates
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', out_temp=20.0, out_hum=50.0, out_co2=300, test_mode=False): # system_dt is delta t in seconds between updates
+        self.test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style, self.insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
@@ -128,23 +139,44 @@ class Room:
                 # remove from world
 
     def update_world(self, interval=1, gui_mode=False):
-        if self.simulation_status:
-            brightness_levels, temperature_levels, humidity_levels, co2_levels = self.world.update() #call the update function of all ambient modules in world
-            #brightness_levels = brightness_sensor_name, brightness
-            if gui_mode:
-                try: # attributes are created in main (proto_simulator)
-                    gui.update_window(interval, self.window, self.world.time.speed_factor, self.world.time.start_time)
-                except AttributeError:
-                    logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
-                except Exception:
-                    logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
-                try:
-                    self.window.update_sensors(brightness_levels, temperature_levels, humidity_levels, co2_levels) 
-                except Exception:
-                    logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
+        if self.test_mode == False:
+            import gui
+            if self.simulation_status:
+                brightness_levels, temperature_levels, humidity_levels, co2_levels = self.world.update() #call the update function of all ambient modules in world
+                #brightness_levels = brightness_sensor_name, brightness
+                if gui_mode:
+                    try: # attributes are created in main (proto_simulator)
+                        gui.update_window(interval, self.window, self.world.time.simulation_time(str_mode=True))
+                    except AttributeError:
+                        logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
+                    except Exception:
+                        logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
+                    try:
+                        self.window.update_sensors(brightness_levels, temperature_levels, humidity_levels, co2_levels) 
+                    except Exception:
+                        logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
+                elif gui_mode == False:
+                    print("not gui mode")
+                ## TODO update sensors without using the gui
+        elif self.test_mode:
+            print("test mode")
+            ## TODO update sensors without using the gui
 
+    def get_dim(self):
+        return (self.width, self.length, self.height)
 
+    def get_device_info(self, device_name:str):
+        for ir_device in self.devices:
+            if device_name == ir_device.name:
+                # print(f"ir_device {ir_device.name} found in rooms list")
+                ir_dev_dict = ir_device.get_irdev_info()
+                # print(f"ir_dev_dict: '{ir_dev_dict}'")
+                return ir_dev_dict
+        logging.warning(f" Device's name '{device_name}' not found in list of room '{self.name}' ")
+        return 0
 
+    def get_world_info(self, ambient=None):
+        return self.world.get_info(ambient, self) # if room (self) not provided, brightness is average of sensors
 
     # def __str__(self): # TODO: write str representation of room
         # str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"
@@ -158,6 +190,9 @@ class Room:
 
     def __repr__(self):
         return f"Room {self.name}"
+    
+
+
 
 
 # class System:

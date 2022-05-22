@@ -1,0 +1,115 @@
+{
+  "knx": {
+    "number_of_areas": 1,
+    "area0": {
+      "number_of_lines": 1,
+      "line0": {
+        "devices": {
+          "brightness1": {
+            "class": "Brightness",
+            "refid": "M-O_X100",
+            "knx_location": "0.0.100",
+            "status": "enabled"
+          },
+          "airsensor1": {
+            "class": "AirSensor",
+            "refid": "M-O_X101",
+            "knx_location": "0.0.101",
+            "status": "enabled"
+          },
+          "button1": {
+            "class": "Button",
+            "refid": "M-O_X102",
+            "knx_location": "0.0.102",
+            "status": "enabled"
+          },
+          "heater1": {
+            "class": "Heater",
+            "refid": "M-O_X103",
+            "knx_location": "0.0.103",
+            "status": "enabled"
+          },
+          "dimmer1": {
+            "class": "Dimmer",
+            "refid": "M-O_X104",
+            "knx_location": "0.0.104",
+            "status": "enabled"
+          },
+          "led1": {
+            "class": "LED",
+            "refid": "M-O_X105",
+            "knx_location": "0.0.105",
+            "status": "enabled"
+          }
+        }
+      }
+    },
+    "group_address_style": "3-levels",
+    "group_addresses": [
+      {
+        "address": "1/1/1",
+        "group_devices": [
+          "button1",
+          "heater1"
+        ]
+      },
+      {
+        "address": "1/1/2",
+        "group_devices": [
+          "dimmer1",
+          "led1"
+        ]
+      }
+    ]
+  },
+  "world": {
+    "simulation_speed_factor": 180,
+    "outside_temperature": 20.0,
+    "outside_relativehumidity": 50.0,
+    "outside_co2": 300,
+    "number_of_rooms": 1,
+    "rooms": {
+      "room1": {
+        "name": "bedroom1",
+        "dimensions": [
+          12.5,
+          10,
+          3
+        ],
+        "insulation": "average",
+        "room_devices": {
+          "brightness1": [
+            12.0625,
+            5.8375,
+            1
+          ],
+          "airsensor1": [
+            0.475,
+            5.525,
+            1
+          ],
+          "button1": [
+            1.4125,
+            5.6375,
+            1
+          ],
+          "heater1": [
+            4.1375,
+            9.6375,
+            1
+          ],
+          "dimmer1": [
+            11.5125,
+            9.5375,
+            1
+          ],
+          "led1": [
+            12.1875,
+            9.5875,
+            1
+          ]
+        }
+      }
+    }
+  }
+}

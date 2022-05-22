@@ -2,6 +2,7 @@
 import pytest
 import logging
 
+import system
 import simulation as sim
 
 
@@ -38,12 +39,18 @@ def test_correct_world_creation():
     assert world.ambient_humidity.vapor_pressure == vapor_pressure
     assert world.ambient_humidity.update_rule_ratio == update_rule_ratio
     assert hasattr(world, 'ambient_co2')
-    assert world.ambient_co2.co2_level == 800 # NOTE: to change if co2 init is provided
+    assert world.ambient_co2.co2level == 800 # NOTE: to change if co2 init is provided
     assert world.ambient_co2.outside_co2 == out_co2
     assert world.ambient_co2.room_insulation == insulation
     assert world.ambient_co2.update_rule_ratio == update_rule_ratio
     assert hasattr(world, 'ambient_world')
 
+
+CONFIG_PATH = "./docs/config/config_test_update_world.json"
 def test_correct_world_update():
+    room1 = system.configure_system_from_file(CONFIG_PATH, test_mode=True)[0]
+
+
     # TODO: Must test with a config file
     assert True
+

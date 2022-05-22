@@ -20,7 +20,7 @@ false_locations = [[2,'six',1.5], ['0x12', None, 2], [10, 10, '']]
 def test_correct_location():
     # Creation of Location object and placement of devices in room
     for loc in correct_locations:
-        room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+        room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
         loc_object = system.Location(room1, loc[0], loc[1], loc[2])
         # Assert good creation of location object
         assert list(loc_object.pos) == loc
@@ -30,7 +30,7 @@ def test_correct_location():
                 assert ir_device.location.pos is not None
                 assert ir_device.location.pos == loc_object.pos
     # Update of the location
-    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     room1.add_device(led1, 1, 1, 1)
     for loc in correct_locations:
         loc_object = system.Location(room1, loc[0], loc[1], loc[2])
@@ -46,7 +46,7 @@ def test_wrong_location():
     for l in range(len(wrong_locations)):
         wrong_loc = wrong_locations[l]
         expected_loc = wrong_locations_expected[l]
-        room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+        room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
         wrong_loc_object = system.Location(room1, wrong_loc[0], wrong_loc[1], wrong_loc[2])
         expected_loc_object = system.Location(room1, expected_loc[0], expected_loc[1], expected_loc[2])
         # Assert wrong Location object is replaced inside the room
@@ -58,7 +58,7 @@ def test_wrong_location():
                 assert ir_device.location.pos == expected_loc_object.pos
 
     # Update with a wrong location
-    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     room1.add_device(led1, 1, 1, 1)
     for l in range(len(wrong_locations)):
         wrong_loc = wrong_locations[l]
@@ -72,7 +72,7 @@ def test_wrong_location():
 def test_false_location():
     # Creation of Location object and placement of devices in room
     for false_loc in false_locations:
-        room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+        room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
         with pytest.raises(SystemExit) as pytest_wrapped_error:
             false_loc_object = system.Location(room1, false_loc[0], false_loc[1], false_loc[2])
         assert pytest_wrapped_error.type == SystemExit
@@ -80,7 +80,7 @@ def test_false_location():
             room1.add_device(led1, false_loc[0], false_loc[1], false_loc[2])
         assert pytest_wrapped_error.type == SystemExit
     # Update with a false location
-    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels')
+    room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     room1.add_device(led1, 1, 1, 1)
     for false_loc in false_locations:
         for ir_device in room1.devices:

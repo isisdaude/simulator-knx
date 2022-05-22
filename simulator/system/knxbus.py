@@ -98,7 +98,7 @@ class KNXBus:
 
     def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
         # TODO: Heater does not send telegrams for the moment
-        from devices.functional_modules import Button, TemperatureController
+        from devices.functional_modules import Button #, TemperatureController
         from system.telegrams import ButtonPayload #, TempControllerPayload
 
         # TODO: can add other devices here
