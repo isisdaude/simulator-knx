@@ -155,3 +155,8 @@ class Switch(Actuator):
             self.state = telegram.payload.binary_state
         if isinstance(telegram.payload, DimmerPayload):
             self.state = telegram.payload.binary_state # do not consider the state_ratio
+
+    def get_dev_info(self):
+        dev_specific_dict = {"state":self.state}
+        dev_specific_dict.update(self.dev_basic_dict)
+        return dev_specific_dict

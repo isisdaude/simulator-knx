@@ -1,5 +1,5 @@
 from itertools import tee
-from telegram_parser import *
+from .telegram_parser import *
 import xknx.telegram.telegram as knx_t
 import system.telegrams as sim_t
 
