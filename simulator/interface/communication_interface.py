@@ -1,5 +1,5 @@
 from itertools import tee
-from .telegram_parser import *
+from telegram_parser import *
 import xknx.telegram.telegram as knx_t
 import system.telegrams as sim_t
 
@@ -38,6 +38,8 @@ class CommunicationInterface:
             gateway_ip=self.knx_address,
             gateway_port=self.knx_port,
         )
+
+        
 
         xknx_for_listening = XKNX(
             daemon_mode=True, connection_config=connection_config)
