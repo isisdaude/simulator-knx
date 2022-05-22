@@ -46,11 +46,11 @@ def test_correct_world_creation():
     assert hasattr(world, 'ambient_world')
 
 
-CONFIG_PATH = "./docs/config/config_test_update_world.json"
-def test_correct_world_update():
-    room1 = system.configure_system_from_file(CONFIG_PATH, test_mode=True)[0]
+# CONFIG_PATH = "./docs/config/config_test_update_world.json"
+# def test_correct_world_update():
+#     room1 = system.configure_system_from_file(CONFIG_PATH, test_mode=True)[0]
 
 
-    # TODO: Must test with a config file
-    assert True
+#     # TODO: Must test with a config file
+#     assert True
 
