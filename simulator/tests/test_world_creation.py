@@ -22,7 +22,7 @@ def test_correct_world_creation():
     assert hasattr(world, 'room_insulation')
     assert world.room_insulation == insulation
     assert (world.temp_out, world.hum_out, world.co2_out) == (temp_out, hum_out, co2_out)
-    assert hasattr(world, 'update_rule_ratio')
+    assert hasattr(world.time, 'update_rule_ratio')
     assert world.time.update_rule_ratio == update_rule_ratio
     assert hasattr(world, 'ambient_temperature')
     assert world.ambient_temperature.update_rule_ratio == update_rule_ratio
