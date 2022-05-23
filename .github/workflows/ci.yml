@@ -29,7 +29,7 @@ jobs:
         working-directory: ./requirements  ### from where does the CI is run? 'simulator-knx' is needed or nothing?
       - name: Test with pytest
         run: |
-          pytest --cov-config=.coveragerc --cov=. --cov-report=xml
+          pytest --cov-config=.coveragerc --cov=. --cov-report=xml --cov-branch
         working-directory: ./simulator  ### from where does the CI is run? 'simulator-knx' is needed or simply simulator?
       - name: Upload code coverage to Codecov 
         uses: codecov/codecov-action@v3 ### what is this command?
