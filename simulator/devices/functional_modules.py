@@ -45,12 +45,12 @@ class Dimmer(FunctionalModule):
 
     def user_input(self, state_ratio=100, switch_state=False, keep_on=False):
         # logging.info(f"The {self.name} has been pressed")
-        if switch_state: # if user turn ON/OFF dimmer
-            self.state = not self.state
-            self.str_state = "ON" if self.state else "OFF" #switch the state of the button
-        if keep_on:
+        if keep_on: # If switch state but we want the dimmer to be on anyway
             self.state = True
             self.str_state = "ON"
+        else: # if user turn ON/OFF dimmer, no need for switch_state flag
+            self.state = not self.state
+            self.str_state = "ON" if self.state else "OFF" #switch the state of the button
         
         if self.state:
             self.state_ratio = state_ratio

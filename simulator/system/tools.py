@@ -1,5 +1,6 @@
 
 import logging, sys
+import asyncio
 import math
 import json
 import devices as dev
@@ -8,7 +9,12 @@ pp=pprint.PrettyPrinter(compact=True)
 
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 #from .room import InRoomDevice not useful, but if used, put it on the class / function directly # to avoid circular import room <-> tools
-COMMAND_HELP = "enter command: \n -FunctionalModules: 'set '+name to act on it\n -Sensors: 'get '+name to read sensor value\nAPI: 'getinfo' + device_name or 'getinfo world' + ambient \n>'q' to exit the simulation, 'h' for help<\n"
+COMMAND_HELP = "Command Syntax: \n"\
+                "- switch state: 'set [device_name]'\n"\
+                "- read state: 'get [device_name]'\n"\
+                "- API: 'getinfo [device_name]' or 'getinfo world [ambient]'\n"\
+                "- exit: 'q'\n"\
+                "- help: 'h' for help"
 # dict to link string to devices constructor object
 DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch,
                 "Button": dev.Button, "Dimmer": dev.Dimmer, #"TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
@@ -184,12 +190,12 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False):
     bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
 
     outside_temperature = 20.0
-    outside_humidity = 50.0
+    humidity_out = 50.0
     outside_co2 = 300
     room_insulation = 'good'
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
-                room_insulation, outside_temperature, outside_humidity, outside_co2, test_mode=test_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+                room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
     # room1.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -232,7 +238,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         sys.exit()
     
     outside_temperature = world_config["outside_temperature"]
-    outside_humidity = world_config["outside_relativehumidity"]
+    humidity_out = world_config["outside_relativehumidity"]
     outside_co2 = world_config["outside_co2"]
 
     rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
@@ -250,13 +256,13 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         room_insulation = room_config["insulation"]
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
-                    room_insulation, outside_temperature, outside_humidity, outside_co2, test_mode=test_mode)
+                    room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode)
         # room.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
         room_devices_config = room_config["room_devices"]
-        print(" ------- Room config dict -------")
-        print(room_devices_config)
+        # print(" ------- Room config dict -------")
+        # print(room_devices_config)
         # Store temporarily the room object with devices and their physical position
         rooms_builders.append([room, room_devices_config])
     # Parsing of devices to add in the room
@@ -301,9 +307,10 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
                     else:
                         logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected")
                         continue # get out of the for loop iteration
+    print(" ----------------------------------------------------")
     # Parsing of group addresses to connect devices together
     #TODO: link GAs to interface IP SVSHI
-    print(" ------- KNX System Configuration -------")
+    # print(" ------- KNX System Configuration -------")
     ga_style =  knx_config["group_address_style"]
     ga_builders = knx_config["group_addresses"]
     if len(ga_builders):
@@ -327,13 +334,16 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
 def user_command_parser(command, room):
     if command[:3] == 'set': #FunctionalModule
         name = command[4:]
+        # print(f"name: {name}")
         for in_room_device in room.devices:
+            # print(f"name:'{name}', ir_name:'{in_room_device.name}'")
             if in_room_device.name in name:
                 if not isinstance(in_room_device.device, dev.FunctionalModule):
                     logging.warning("Users can only interact with a Functional Module")
-                    break
-                print("user_input()")
+                    return 1
+                # print("user_input()")
                 in_room_device.device.user_input()
+                return 1
     elif command[:7] == 'getinfo':
         print("getinfo:> ", command[8:])
         if 'world' in command[8:13]: # user asks for world info
@@ -356,29 +366,98 @@ def user_command_parser(command, room):
                 world_dict = room.get_world_info('all')
             ## TODO check some stuff with info, write some kind of API
             pp.pprint(world_dict)
-        
-        elif 'dev' in command[8:11]: # user ask for info on a device
-            name = command[12:].strip() # strip to remove spaces
+            return world_dict
+        elif 'room' in command[8:12]: # user asks for info on the room
+            room_dict = room.get_room_info()
+            pp.pprint(room_dict)
+            return room_dict
+        elif 'bus' in command[8:11]:
+            bus_dict = room.get_bus_info()
+            pp.pprint(bus_dict)
+            return bus_dict
         else:
-            name = command[8:].strip()
-        device_dict = room.get_device_info(name)
-        ## TODO check some stuff with info, write some kind of API
-        pp.pprint(device_dict)
-
+            if 'dev' in command[8:11]: # user ask for info on a device
+                name = command[12:].strip() # strip to remove spaces
+            else:
+                name = command[8:].strip() # user ask for info on a device without using the dev keyword
+            device_dict = room.get_device_info(name)
+            ## TODO check some stuff with info, write some kind of API
+            pp.pprint(device_dict)
+            return device_dict
+            
     elif command[:3] == 'get': #Sensor
         name = command[4:]
         if "bright" in name: # brightness sensor
             for in_room_device in room.devices:
                 if in_room_device.name in name:
                     print("=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room.world.ambient_light.read_brightness(in_room_device)))
+                    return 1
     elif command in ('h', 'H','help','HELP'):
         print(COMMAND_HELP)
+        return 1
     elif command in ('q','Q','quit','QUIT'):
-        return False
+        return None
     else:
         logging.warning("Unknown input")
         print(COMMAND_HELP)
-    return True
+    return 1
+
+
+class VerifParser():
+    def __init__(self):
+        self.stored_values = {}
+    
+    async def verif_command_parser(self, room, command):
+        command_split = command.split(' ')
+        if command.startswith('wait'):
+            sleep_time = int(command_split[1])
+            logging.info(f"[VERIF] Wait for {sleep_time} sec")
+            await asyncio.sleep(sleep_time)
+            return 1
+        elif command.startswith('store'):
+            if command_split[1] == 'world':
+                if len(command_split) > 2: # ambient to store is precised by the user
+                    for ambient in command_split[2:]:
+                        self.stored_values[ambient] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
+                        logging.info(f"[VERIF] The world {ambient} is stored.")
+                        return 1
+                else: # No ambient precised, we store all
+                    for ambient in ['simtime', 'brightness', 'temperature', 'humidity', 'co2']:
+                        self.stored_values[ambient] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
+                        logging.info(f"[VERIF] The world {ambient} is stored.")
+                        return 1
+
+        elif command.startswith('assert'):
+            if command_split[1] == 'world':
+                if len(command_split) >= 4: # assert, world, ambient, up/down/=
+                    ambient = command_split[2]
+                    if ambient in self.stored_values:
+                        old_ambient = self.stored_values[ambient]
+                        new_ambient = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
+                        if command_split[3] == 'up':
+                            assert new_ambient > old_ambient
+                            logging.info(f"[VERIF] The {ambient} has increased.")
+                            print(f"Assertion True")
+                            return 1
+                        elif command_split[3] == 'down':
+                            assert new_ambient < old_ambient
+                            logging.info(f"[VERIF] The {ambient} has decreased.")
+                            print(f"Assertion True")
+                            return 1
+                        elif command_split[3] == '=':
+                            assert new_ambient == old_ambient
+                            logging.info(f"[VERIF] The {ambient} didn't change.")
+                            print(f"Assertion True")
+                            return 1
+        elif command.startswith('end'):
+            print("End of verification")
+            print(COMMAND_HELP)
+            return None
+
+        else:
+            print(f"command parser with '{command}'")
+            return user_command_parser(command, room) 
+  
 
 
 

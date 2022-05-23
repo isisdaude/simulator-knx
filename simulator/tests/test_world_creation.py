@@ -13,26 +13,26 @@ def test_correct_world_creation():
     system_dt = 1
     update_rule_ratio = 0.1
     insulation = 'good'
-    out_temp, out_hum, out_co2 = 20.0, 55, 300
+    temp_out, hum_out, co2_out = 20.0, 55, 300
     p_sat = 2339.32074966 # NOTE: to change if temp init ≠ 20.0
     vapor_pressure = 818.76226238 # NOTE: to change if temp init ≠ 20.0 and hum inti ≠ 35
-    world = sim.World(width, length, height, speed_factor, system_dt, insulation, out_temp, out_hum, out_co2)
+    world = sim.World(width, length, height, speed_factor, system_dt, insulation, temp_out, hum_out, co2_out)
     assert hasattr(world, 'time')
     assert world.time.speed_factor == speed_factor
     assert hasattr(world, 'room_insulation')
     assert world.room_insulation == insulation
-    assert (world.out_temp, world.out_hum, world.out_co2) == (out_temp, out_hum, out_co2)
+    assert (world.temp_out, world.hum_out, world.co2_out) == (temp_out, hum_out, co2_out)
     assert hasattr(world, 'update_rule_ratio')
-    assert world.update_rule_ratio == update_rule_ratio
+    assert world.time.update_rule_ratio == update_rule_ratio
     assert hasattr(world, 'ambient_temperature')
     assert world.ambient_temperature.update_rule_ratio == update_rule_ratio
-    assert world.ambient_temperature.temperature == world.ambient_temperature.outside_temperature == out_temp # NOTE: to change if temp init ≠ out_temp in room
+    assert world.ambient_temperature.temperature == world.ambient_temperature.outside_temperature == temp_out # NOTE: to change if temp init ≠ temp_out in room
     assert world.ambient_temperature.room_insulation == insulation
     assert world.ambient_temperature.room_volume == room_volume
     assert hasattr(world, 'ambient_light')
     assert hasattr(world, 'ambient_humidity')
-    assert world.ambient_humidity.temp == out_temp # NOTE: to change if temp init ≠ out_temp in room
-    assert world.ambient_humidity.outside_humidity == out_hum
+    assert world.ambient_humidity.temp == temp_out # NOTE: to change if temp init ≠ temp_out in room
+    assert world.ambient_humidity.humidity_out == hum_out
     assert world.ambient_humidity.room_insulation == insulation
     assert world.ambient_humidity.saturation_vapour_pressure == p_sat
     assert world.ambient_humidity.humidity == 35 # NOTE: to change if humidity init is provided
@@ -40,7 +40,7 @@ def test_correct_world_creation():
     assert world.ambient_humidity.update_rule_ratio == update_rule_ratio
     assert hasattr(world, 'ambient_co2')
     assert world.ambient_co2.co2level == 800 # NOTE: to change if co2 init is provided
-    assert world.ambient_co2.outside_co2 == out_co2
+    assert world.ambient_co2.outside_co2 == co2_out
     assert world.ambient_co2.room_insulation == insulation
     assert world.ambient_co2.update_rule_ratio == update_rule_ratio
     assert hasattr(world, 'ambient_world')

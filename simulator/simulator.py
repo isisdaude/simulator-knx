@@ -6,7 +6,7 @@ Simple simulator prototype.
 # Standard library imports
 #sys, os, io, time, datetime, ast, abc, dataclasses, json, copy, typing, math, logging, shutil, itertools, functools, numbers, collections, enum
 import functools
-import asyncio, aioconsole
+import asyncio, aioconsole, signal
 import time, datetime, sys, os
 import pyglet
 import json
@@ -16,8 +16,12 @@ import aioreactive as rx
 # Third party imports
 from pathlib import Path
 from pynput import keyboard
-# from contextlib import suppress
+from contextlib import suppress
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from sanic import Sanic
+from sanic.response import json
+
 
 # Local application imports
 # import devices as dev
@@ -34,24 +38,16 @@ CONFIG_PATH = "./docs/config/sim_config_bedroom.json"
 # CONFIG_PATH = "./docs/config/saved_config_09052022_042903"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
+
+VERIF_FILE_PATH = "./docs/app_verification/Light.txt" #"./docs/app_verification/Light.txt"
 # Configure logging messages format
-LOGGING_LEVEL = logging.INFO
+LOGGING_LEVEL = logging.WARNING
 
-
-
-async def user_input_loop(room):
-    while True:
-        command = await aioconsole.ainput(">>> What do you want to do?\n")
-        if not (system.user_command_parser(command, room)):
-            break
-
-async def async_main(loop, room):
-    ui_task = loop.create_task(user_input_loop(room))
-    await asyncio.wait([ui_task])
-
+verif_mode = True
+UI_MODE = True
 
 def launch_simulation():
-    GUI_MODE = True
+    GUI_MODE = False
     FILE_CONFIG_MODE = True # configuration from json file
     DEV_CONFIG = False # configuration from python function
     DEFAULT_CONFIG = True # configuration from default json file (~3devices)
@@ -134,12 +130,91 @@ def launch_simulation():
 
         try:
             loop = asyncio.get_event_loop()
+            # signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+            # for s in signals:
+            #     loop.add_signal_handler(s, lambda s=s: asyncio.create_task(shutdown(s, loop)))
             #app = ui.GraphicalUserInterface(loop)
             #app.mainloop()
             # TODO: implement for multiple rooms
             loop.run_until_complete(async_main(loop, room1))
         except (KeyboardInterrupt, SystemExit):
+            loop.run_until_complete(kill_tasks())
+        finally:
+            loop.run_until_complete(kill_tasks())
+            loop.close()
+            logging.info("Simulation Terminated")
             print("\nThe simulation program has been ended.")
+            sys.exit(1)
+
+
+
+async def user_input_loop(room):
+    while True:
+        global verif_mode
+        # if verif_mode:
+        #     message = ''
+        # else:
+        message = ">>> What do you want to do?\n"
+        command = await aioconsole.ainput(message)
+        if system.user_command_parser(command, room) is None:
+            # await kill_tasks()
+            return None
+            # sys.exit(1)
+
+async def simulator_verif_loop(room, file_path):
+    verif_parser = system.VerifParser()
+    global verif_mode
+    with open(file_path, "r") as f:
+        commands = f.readlines()
+        for command in commands:
+            if verif_mode:
+                print("\n>>> Next command?")
+            command = command.strip().lower() # remove new line symbol and put in lower case
+            print(f"Command >>> '{command}' <<<")
+            verif_state = await verif_parser.verif_command_parser(room, command)
+            if verif_state is None:
+                # await kill_tasks()
+                verif_mode = False
+                return None
+                # sys.exit(1)
+
+async def kill_tasks():
+    try:
+        pending = asyncio.Task.all_tasks()
+        for task in pending:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task 
+    except AttributeError:
+        return None
+
+# async def shutdown(signal, loop):
+#     """Cleanup tasks tied to the service's shutdown."""
+#     logging.info(f"Received exit signal {signal.name}...")
+#     tasks = [t for t in asyncio.all_tasks() if t is not
+#              asyncio.current_task()]
+
+#     [task.cancel() for task in tasks]
+
+#     logging.info(f"Cancelling {len(tasks)} outstanding tasks")
+#     await asyncio.gather(*taskss, return_exceptions=True)
+#     logging.info(f"Flushing metrics")
+#     loop.stop()
+#     print("\nThe simulation program has been ended.")
+#     sys.exit(1)
+        
+
+
+async def async_main(loop, room):
+    tasks = []
+    if UI_MODE:
+        ui_task = loop.create_task(user_input_loop(room))
+        tasks.append(ui_task) 
+    if verif_mode:
+        verif_task = loop.create_task(simulator_verif_loop(room, VERIF_FILE_PATH))
+        tasks.append(verif_task) 
+
+    await asyncio.wait(tasks)
 
 
 if __name__ == "__main__":

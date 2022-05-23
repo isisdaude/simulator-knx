@@ -1,0 +1,9 @@
+wait 3
+store world brightness
+set button1
+wait 1
+assert world brightness up
+wait 1
+getinfo world
+wait 1
+end

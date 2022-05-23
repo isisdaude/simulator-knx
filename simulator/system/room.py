@@ -64,12 +64,12 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', out_temp=20.0, out_hum=50.0, out_co2=300, test_mode=False): # system_dt is delta t in seconds between updates
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, test_mode=False): # system_dt is delta t in seconds between updates
         self.test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style, self.insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
-        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt, self.insulation, out_temp, out_hum, out_co2)
+        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt, self.insulation, temp_out, hum_out, co2_out)
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
         """List of all devices in the room"""
@@ -156,10 +156,12 @@ class Room:
                     except Exception:
                         logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
                 elif gui_mode == False:
-                    print("not gui mode")
+                    True
+                    # print("not gui mode")
                 ## TODO update sensors without using the gui
         elif self.test_mode:
-            print("test mode")
+            True
+            # print("test mode")
             ## TODO update sensors without using the gui
 
     def get_dim(self):
@@ -175,8 +177,20 @@ class Room:
         logging.warning(f" Device's name '{device_name}' not found in list of room '{self.name}' ")
         return 0
 
-    def get_world_info(self, ambient=None):
-        return self.world.get_info(ambient, self) # if room (self) not provided, brightness is average of sensors
+    def get_world_info(self, ambient=None, str_mode=True):
+        return self.world.get_info(ambient, self, str_mode=str_mode) # if room (self) not provided, brightness is average of sensors
+    
+    def get_bus_info(self):
+        bus_dict = {"group address encoding style":self.group_address_style}
+        bus_dict.update(self.knxbus.get_info())
+        return bus_dict
+        #TODO number of group addresses and their devices
+    
+    def get_room_info(self):
+        room_dict = {"name":self.name, "width": self.width, "length":self.length, "height":self.height, "volume": self.width*self.length*self.height, "insulation":self.insulation, "devices":[]}
+        for ir_dev in self.devices:
+            room_dict['devices'].append(ir_dev.name)
+        return room_dict
 
     # def __str__(self): # TODO: write str representation of room
         # str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"

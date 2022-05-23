@@ -111,6 +111,32 @@ class KNXBus:
 
         # TODO: to be added when async things handled correctly
         # self.communication_interface.group_address_to_payload = self.group_address_to_payload_type
+    
+    def get_info(self):
+        bus_dict = {"name": self.name, "group_addresses":{}}
+        for ga_bus in self.ga_buses:
+            str_ga = ga_bus.group_address.name
+            ga_dict = {str_ga: {}}
+            sensor_names = []
+            for sensor in ga_bus.sensors:
+                sensor_names.append(sensor.name)
+            if len(sensor_names):
+                ga_dict[str_ga]['Sensors'] = sensor_names
+            actuator_names = []
+            for actuator in ga_bus.actuators:
+                actuator_names.append(actuator.name)
+            if len(actuator_names):
+                ga_dict[str_ga]['Actuators'] = actuator_names
+            functional_module_names = []
+            for functional_module in ga_bus.functional_modules:
+                functional_module_names.append(functional_module.name)
+            if len(functional_module_names):
+                ga_dict[str_ga]['Functional Modules'] = functional_module_names
+
+            bus_dict["group_addresses"].update(ga_dict)
+        return bus_dict
+
+
 
 
 class GroupAddressBus:
