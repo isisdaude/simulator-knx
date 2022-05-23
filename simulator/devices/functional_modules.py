@@ -17,22 +17,22 @@ class Button(FunctionalModule):
         super().__init__('Button', name, refid, location, default_status, "button")
         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
         self.state = False
-        self.str_state = "OFF"
+        self.__str_state = "OFF"
 
     def user_input(self):
         # logging.info(f"The {self.name} has been pressed")
         self.state = not self.state
-        self.str_state = "ON" if self.state else "OFF" #switch the state of the button
-        logging.info(f"The {self.name} has been turned {self.str_state}")
+        self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
+        logging.info(f"The {self.name} has been turned {self.__str_state}")
         # button_payload = ButtonPayload(state=self.state)
-        binary_payload = BinaryPayload(binary_state=self.state)
+        __binary_payload = BinaryPayload(binary_state=self.state)
         # Send Telegram to the knxbus
-        self.send_telegram(binary_payload, control_field = True)
+        self.send_telegram(__binary_payload, control_field = True)
     
     def get_dev_info(self):
-        dev_specific_dict = {"state":self.state}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"state":self.state}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 
 class Dimmer(FunctionalModule):
@@ -40,32 +40,32 @@ class Dimmer(FunctionalModule):
         super().__init__('Dimmer', name, refid, location, default_status, "dimmer")
         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
         self.state = False
-        self.str_state = "OFF"
+        self.__str_state = "OFF"
         self.state_ratio = 100
 
     def user_input(self, state_ratio=100, switch_state=False, keep_on=False):
         # logging.info(f"The {self.name} has been pressed")
         if keep_on: # If switch state but we want the dimmer to be on anyway
             self.state = True
-            self.str_state = "ON"
+            self.__str_state = "ON"
         else: # if user turn ON/OFF dimmer, no need for switch_state flag
             self.state = not self.state
-            self.str_state = "ON" if self.state else "OFF" #switch the state of the button
+            self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
         
         if self.state:
             self.state_ratio = state_ratio
-            logging.info(f"The {self.name} has been turned {self.str_state} at {self.state_ratio}%")
+            logging.info(f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}%")
         else:
-            logging.info(f"The {self.name} has been turned {self.str_state}")
+            logging.info(f"The {self.name} has been turned {self.__str_state}")
 
-        dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
+        __dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
         # Send Telegram to the knxbus
-        self.send_telegram(dimmer_payload, control_field = True)
+        self.send_telegram(__dimmer_payload, control_field = True)
     
     def get_dev_info(self):
-        dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 
 # class Switch(FunctionalModule):
@@ -73,12 +73,12 @@ class Dimmer(FunctionalModule):
 #         super().__init__('Switch', name, refid, location, default_status, "switch")
 #         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
 #         self.state = False
-#         self.str_state = "OFF"
+#         self.__str_state = "OFF"
 
 #     def user_input(self):
 #         self.state = not self.state
-#         self.str_state = "ON" if self.str_state=="OFF" else "OFF" #switch the state of the switch
-#         logging.info(f"The {self.name} has been switched {self.str_state}")
+#         self.__str_state = "ON" if self.__str_state=="OFF" else "OFF" #switch the state of the switch
+#         logging.info(f"The {self.name} has been switched {self.__str_state}")
 #         payload = SwitchPayload(switched=True)
 #         # Send Telegram to the knxbus giving itself as argument
 #         self.send_telegram(payload, control_field = True)

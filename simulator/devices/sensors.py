@@ -24,9 +24,9 @@ class Brightness(Sensor):
         self.brightness = 0
     
     def get_dev_info(self):
-        dev_specific_dict = {"brightness":self.brightness}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"brightness":self.brightness}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 class Thermometer(Sensor):
     """Concrete class to represent a thermometer"""
@@ -35,9 +35,9 @@ class Thermometer(Sensor):
         # DTP
         self.temperature = 0
     def get_dev_info(self):
-        dev_specific_dict = {"temperature":self.temperature}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"temperature":self.temperature}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 class HumiditySensor(Sensor):
     """Concrete class to represent a Humidity sensor"""
@@ -45,9 +45,9 @@ class HumiditySensor(Sensor):
         super().__init__('HumiditySensor', name, refid, location, default_status, "humidity")
         self.humidity = 0
     def get_dev_info(self):
-        dev_specific_dict = {"humidity":self.humidity}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"humidity":self.humidity}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 class CO2Sensor(Sensor):
     """Concrete class to represent a CO2 Sensor"""
@@ -55,9 +55,9 @@ class CO2Sensor(Sensor):
         super().__init__('CO2Sensor', name, refid, location, default_status, "co2")
         self.co2level = 0
     def get_dev_info(self):
-        dev_specific_dict = {"co2level":self.co2level}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"co2level":self.co2level}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 class AirSensor(Sensor):
     """Concrete class to represent am Air Sensor: CO2, Humidity and/or Temperature"""
@@ -70,9 +70,9 @@ class AirSensor(Sensor):
         if co2_supported:
             self.co2level = None
     def get_dev_info(self):
-        dev_specific_dict = {"temperature":self.temperature, "humidity":self.humidity, "co2level":self.co2level}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"temperature":self.temperature, "humidity":self.humidity, "co2level":self.co2level}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 class PresenceSensor(Sensor):
     """Concrete class to represent a Presence Detector"""
@@ -80,9 +80,9 @@ class PresenceSensor(Sensor):
         super().__init__('PresenceSensor', name, refid, location, default_status, "presence")
         self.presence = False
     def get_dev_info(self):
-        dev_specific_dict = {"presence":self.presence}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"presence":self.presence}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 # class MovementDetector(Sensor):
 #     """Concrete class to represent a CO2 Sensor"""

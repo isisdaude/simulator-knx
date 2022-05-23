@@ -10,7 +10,7 @@ from .gui_config import *
 
 class DeviceListWidget(object):
     def __init__(self, x, y, batch, group_label, group_box):
-        self.batch = batch
+        self.__batch = batch
         self.group_box = group_box
         self.topleft_y = y+OFFSET_DEVICELIST_BOX_TOP
         self.length = OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
@@ -30,7 +30,7 @@ class DeviceListWidget(object):
         self.box_shape.delete()
         self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, height=self.length, border=WIN_BORDER/2,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
-                                            batch=self.batch, group=self.group_box)
+                                            batch=self.__batch, group=self.group_box)
     
     def hit_test(self, x, y): # to check if mouse click is on the Device list widget
         # print(f"x: {self.box_shape.x} < {x} < {(self.box_shape.x + DEVICE_LIST_BOX_WIDTH)}")
@@ -60,19 +60,19 @@ class SimTimeWidget(object):
 class ButtonWidget(object):
     def __init__(self, x, y, batch, button_file, group, label_text=''):
         self.img = pyglet.image.load(button_file)
-        self.width, self.length = self.img.width, self.img.height
+        self.__width, self.__length = self.img.width, self.img.height
         self.pos_x, self.pos_y = x, y
-        self.batch, self.group = batch, group
-        self.sprite = pyglet.sprite.Sprite(self.img, self.pos_x, self.pos_y, batch=self.batch, group=self.group)
+        self.__batch, self.group = batch, group
+        self.sprite = pyglet.sprite.Sprite(self.img, self.pos_x, self.pos_y, batch=self.__batch, group=self.group)
         self.label = pyglet.text.Label(label_text,
                                     font_name=FONT_BUTTON, font_size=10,
-                                    x=(self.pos_x+self.width//2), y=(self.pos_y-OFFSET_LABEL_BUTTON),
+                                    x=(self.pos_x+self.__width//2), y=(self.pos_y-OFFSET_LABEL_BUTTON),
                                     anchor_x='center', anchor_y='center',
-                                    batch=self.batch, group=self.group)
+                                    batch=self.__batch, group=self.group)
 
     def hit_test(self, x, y): # to check if mouse click is on the Button widget
-        return (self.pos_x < x < (self.pos_x + self.width) and
-                self.pos_y < y < (self.pos_y + self.length))
+        return (self.pos_x < x < (self.pos_x + self.__width) and
+                self.pos_y < y < (self.pos_y + self.__length))
 
 class ButtonPause(object):
     def __init__(self, x, y, batch, button_pause_file, button_play_file, group):
@@ -190,14 +190,14 @@ class DeviceWidget(object):
             self.origin_x, self.origin_y = self.pos_x, self.pos_y
         else:
             self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
-        self.batch = batch
+        self.__batch = batch
         self.group = group
-        self.sprite = pyglet.sprite.Sprite(self.img_OFF, x=self.origin_x, y=self.origin_y, batch=self.batch, group=self.group) # x,y of sprite is bottom left of image
+        self.sprite = pyglet.sprite.Sprite(self.img_OFF, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.group) # x,y of sprite is bottom left of image
         self.label = pyglet.text.Label(self.label_name,
                                     font_name=FONT_DEVICE, font_size=10,
                                     x=(self.origin_x+self.width//2), y=(self.origin_y-OFFSET_LABEL_DEVICE),
                                     anchor_x='center', anchor_y='center',
-                                    batch=self.batch, group=self.group)
+                                    batch=self.__batch, group=self.group)
 
     def __eq__(self, device_to_compare):
         return self.label_name == device_to_compare.label_name
@@ -285,17 +285,17 @@ class RoomWidget(object):
         self.length = length
         self.name = label
         self.img = pyglet.image.load(ROOM_BACKGROUND_PATH)
-        self.batch = batch
+        self.__batch = batch
         self.shape = pyglet.shapes.BorderedRectangle(self.origin_x_shape, self.origin_y_shape, width+2*ROOM_BORDER, length+2*ROOM_BORDER, border=ROOM_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
-                                            batch=self.batch, group=group_bg)#, group = group
+                                            batch=self.__batch, group=group_bg)#, group = group
         self.shape.opacity = OPACITY_ROOM
-        self.sprite = pyglet.sprite.Sprite(self.img, self.origin_x, self.origin_y, batch=self.batch, group=group_mg)
+        self.sprite = pyglet.sprite.Sprite(self.img, self.origin_x, self.origin_y, batch=self.__batch, group=group_mg)
         self.label = pyglet.text.Label(self.name,
                                     font_name=FONT_SYSTEM_INFO, font_size=75,
                                     x=(self.origin_x + self.width/2), y=(self.origin_y + self.length/2),
                                     anchor_x='center', anchor_y='center',
-                                    batch=self.batch, group=label_group)
+                                    batch=self.__batch, group=label_group)
         self.label.opacity = OPACITY_ROOM_LABEL
         self.sprite.opacity = OPACITY_ROOM
 

@@ -115,9 +115,6 @@ def launch_simulation():
             interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
             interface_thread.start()
             interface_task = asyncio.run_coroutine_threadsafe(interface.main(room1), loop)
-            # x = threading.Thread(target=asyncio.run, args=(interface.main()), daemon=True)
-            # x.start()
-            # interface_task = await asyncio.create_task(asyncio.run(interface.main()))
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
@@ -139,6 +136,9 @@ def launch_simulation():
 
         try:
             loop = asyncio.get_event_loop()
+            interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
+            interface_thread.start()
+            interface_task = asyncio.run_coroutine_threadsafe(interface.main(room1), loop)
             # signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
             # for s in signals:
             #     loop.add_signal_handler(s, lambda s=s: asyncio.create_task(shutdown(s, loop)))

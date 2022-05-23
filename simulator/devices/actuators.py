@@ -44,13 +44,13 @@ class LED(LightActuator):
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
 
-            self.str_state = 'ON' if self.state else 'OFF'
-            logging.info(f"{self.name} has been turned {self.str_state} by device '{telegram.source}'.")
+            self.__str_state = 'ON' if self.state else 'OFF'
+            logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
 
     def get_dev_info(self):
-        dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "state_ratio":self.state_ratio}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "state_ratio":self.state_ratio}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 
 class TemperatureActuator(Actuator, ABC):
@@ -66,10 +66,10 @@ class TemperatureActuator(Actuator, ABC):
         """Power really used, max by default"""
     
     def get_dev_info(self):
-        self.str_state = "ON" if self.state else "OFF"
-        dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "power":self.power}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        self.__str_state = "ON" if self.state else "OFF"
+        __dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "power":self.power}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
 
 
 
@@ -157,6 +157,6 @@ class Switch(Actuator):
             self.state = telegram.payload.binary_state # do not consider the state_ratio
 
     def get_dev_info(self):
-        dev_specific_dict = {"state":self.state}
-        dev_specific_dict.update(self.dev_basic_dict)
-        return dev_specific_dict
+        __dev_specific_dict = {"state":self.state}
+        __dev_specific_dict.update(self._dev_basic_dict)
+        return __dev_specific_dict
