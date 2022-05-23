@@ -1,0 +1,56 @@
+{
+  "knx": {
+    "number_of_areas": 1,
+    "area0": {
+      "number_of_lines": 1,
+      "line0": {
+        "devices": {
+          "dimmer1": {
+            "class": "Dimmer",
+            "refid": "M-O_X100",
+            "knx_location": "0.0.100",
+            "status": "enabled"
+          },
+          "brightness1": {
+            "class": "Brightness",
+            "refid": "M-O_X101",
+            "knx_location": "0.0.101",
+            "status": "enabled"
+          }
+        }
+      }
+    },
+    "group_address_style": "3-levels",
+    "group_addresses": []
+  },
+  "world": {
+    "simulation_speed_factor": 180,
+    "outside_temperature": 20.0,
+    "outside_relativehumidity": 50.0,
+    "outside_co2": 300,
+    "number_of_rooms": 1,
+    "rooms": {
+      "room1": {
+        "name": "bedroom1",
+        "dimensions": [
+          12.5,
+          10,
+          3
+        ],
+        "insulation": "average",
+        "room_devices": {
+          "dimmer1": [
+            5.6125,
+            9.475,
+            1
+          ],
+          "brightness1": [
+            2.425,
+            5.1375,
+            1
+          ]
+        }
+      }
+    }
+  }
+}

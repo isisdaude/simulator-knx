@@ -11,12 +11,12 @@ from .gui_config import *
 class DeviceListWidget(object):
     def __init__(self, x, y, batch, group_label, group_box):
         self.__batch = batch
-        self.group_box = group_box
+        self.__group_box = group_box
         self.topleft_y = y+OFFSET_DEVICELIST_BOX_TOP
         self.length = OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
         self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, self.length, border=WIN_BORDER/2,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
-                                            batch=batch, group=group_box)
+                                            batch=batch, group=self.__group_box)
 
         self.deviceslist_title = pyglet.text.Label("Devices in the Room:",
                                     font_name=FONT_SYSTEM_TITLE, font_size=15, bold=True,
@@ -30,7 +30,7 @@ class DeviceListWidget(object):
         self.box_shape.delete()
         self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, height=self.length, border=WIN_BORDER/2,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
-                                            batch=self.__batch, group=self.group_box)
+                                            batch=self.__batch, group=self.__group_box)
     
     def hit_test(self, x, y): # to check if mouse click is on the Device list widget
         # print(f"x: {self.box_shape.x} < {x} < {(self.box_shape.x + DEVICE_LIST_BOX_WIDTH)}")
@@ -87,6 +87,7 @@ class ButtonPause(object):
             self.file_to_use = self.pause_file
         elif not gui_window.room.simulation_status: # Play button if simulation paused
             self.file_to_use = self.play_file
+        self.clicked = True
 
     def update_image(self, reload=False):
         if reload:
@@ -127,9 +128,6 @@ class ButtonDefault(object):
 
     def activate(self, gui_window):
         gui_window.reload_simulation(default_config = True)
-    
-    # def empty_config(self, gui_window):
-    #     gui_window.reload_simulation(empty_config = True)
 
 
 class DimmerSetterWidget(object):
@@ -141,10 +139,8 @@ class DimmerSetterWidget(object):
         self.center_x, self.center_y = room_device_widget.pos_x, room_device_widget.pos_y
         self.state_label_x = self.center_x + room_device_widget.width//2
         self.state_label_y = self.center_y - room_device_widget.length//2
-        
         self.being_set = False
-        # self.state_ratio_label.color = color_from_state_ratio(self.init_state_ratio)
-        # Update sprite of dimmer when mouse released
+
 
     def start_setting_dimmer(self, batch, group):
         self.being_set = True
@@ -177,7 +173,6 @@ class DeviceWidget(object):
         # self.name = label_name
         self.device_type = device_type
         self.in_motion = False # Temporary flag to inform that the device widget is being moved
-        self.linking_group_address = False # Temporary flag to establish a group address connection between two devices
         self.sprite_state = False # devices turned ON/OFF
         self.sprite_state_ratio = 100
         # self.group_addresses = [] # will store the group addresses, can control the number e.g. for sensors

@@ -30,9 +30,9 @@ class Button(FunctionalModule):
         self.send_telegram(__binary_payload, control_field = True)
     
     def get_dev_info(self):
-        __dev_specific_dict = {"state":self.state}
-        __dev_specific_dict.update(self._dev_basic_dict)
-        return __dev_specific_dict
+        dev_specific_dict = {"state":self.state}
+        dev_specific_dict.update(self._dev_basic_dict)
+        return dev_specific_dict
 
 
 class Dimmer(FunctionalModule):
@@ -63,9 +63,9 @@ class Dimmer(FunctionalModule):
         self.send_telegram(__dimmer_payload, control_field = True)
     
     def get_dev_info(self):
-        __dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
-        __dev_specific_dict.update(self._dev_basic_dict)
-        return __dev_specific_dict
+        dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
+        dev_specific_dict.update(self._dev_basic_dict)
+        return dev_specific_dict
 
 
 # class Switch(FunctionalModule):
