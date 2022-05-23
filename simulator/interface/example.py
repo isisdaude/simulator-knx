@@ -22,10 +22,10 @@ async def main():
     connection_config = ConnectionConfig(
             route_back=True,  # To enable connection through the docker
             connection_type=ConnectionType.TUNNELING,
-            gateway_ip="192.168.1.10",
+            gateway_ip="128.179.196.182",
             gateway_port=3671,
         )
-    xknx = XKNX( connection_config=connection_config)
+    xknx = XKNX( connection_config=connection_config, daemon_mode=True)
     xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
 
     telegram = Telegram(

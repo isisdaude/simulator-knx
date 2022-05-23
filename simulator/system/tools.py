@@ -455,7 +455,7 @@ class VerifParser():
             return None
 
         else:
-            print(f"command parser with '{command}'")
+            # print(f"command parser with '{command}'")
             return user_command_parser(command, room) 
   
 

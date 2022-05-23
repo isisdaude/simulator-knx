@@ -83,7 +83,7 @@ class KNXBus:
     def transmit_telegram(self, telegram):
         '''Transmits a telegram through the bus'''
         #print("telegram in transmission")
-        print(telegram)
+        # print(telegram)
         for ga_bus in self.ga_buses:
             if telegram.destination == ga_bus.group_address:
                 # Sending to external applications

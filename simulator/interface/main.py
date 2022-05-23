@@ -53,18 +53,18 @@ from xknx.io.transport import *
 from xknx.io.knxip_interface import *
 from xknx.io.request_response import *
 
-async def main():
+async def main(room):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
-	server_address = ('192.168.1.10', 3671)
+	server_address = ('128.179.196.182', 3671)
 	sock.bind(server_address)
 
 	print("waiting on port:", 3671)
 	connection_config = ConnectionConfig(
 				route_back=True,  # To enable connection through the docker
 				connection_type=ConnectionType.TUNNELING,
-				gateway_ip="192.168.1.10",
+				gateway_ip="128.179.196.182",
 				gateway_port=3671,
 			)
 	xknx = XKNX(connection_config=connection_config)
@@ -87,8 +87,8 @@ async def main():
 	
 	while True:
 		data, addr = sock.recvfrom(1024)
-
+		# room.knxbus.transmot_telegram
 		print(data)
 		
-			
-asyncio.run(main())
+if __name__ == '__main__':
+	asyncio.run(main())

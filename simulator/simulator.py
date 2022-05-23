@@ -10,7 +10,7 @@ import asyncio, aioconsole, signal
 import time, datetime, sys, os
 import pyglet
 import json
-import logging
+import logging, threading
 import aioreactive as rx
 
 # Third party imports
@@ -19,8 +19,7 @@ from pynput import keyboard
 from contextlib import suppress
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from sanic import Sanic
-from sanic.response import json
+
 
 
 # Local application imports
@@ -28,6 +27,7 @@ from sanic.response import json
 # import simulation as sim
 import gui
 import system
+import interface
 
 # SCRIPT_DIR = os.path.dirname(__file__)
 # SAVED_CONFIG_PATH = os.path.join(SCRIPT_DIR,"/docs/config/")
@@ -39,7 +39,7 @@ CONFIG_PATH = "./docs/config/sim_config_bedroom.json"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
 
-VERIF_FILE_PATH = "./docs/app_verification/Light.txt" #"./docs/app_verification/Light.txt"
+VERIF_FILE_PATH = "./docs/app_verification/LightTemp.txt" #"./docs/app_verification/Light.txt"
 # Configure logging messages format
 LOGGING_LEVEL = logging.WARNING
 
@@ -47,7 +47,7 @@ verif_mode = True
 UI_MODE = True
 
 def launch_simulation():
-    GUI_MODE = False
+    GUI_MODE = True
     FILE_CONFIG_MODE = True # configuration from json file
     DEV_CONFIG = False # configuration from python function
     DEFAULT_CONFIG = True # configuration from default json file (~3devices)
@@ -108,11 +108,20 @@ def launch_simulation():
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time
+        room1 = rooms[0]
         # TODO: implement for multiple rooms
         try:
+            loop = asyncio.new_event_loop()
+            interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
+            interface_thread.start()
+            interface_task = asyncio.run_coroutine_threadsafe(interface.main(room1), loop)
+            # x = threading.Thread(target=asyncio.run, args=(interface.main()), daemon=True)
+            # x.start()
+            # interface_task = await asyncio.create_task(asyncio.run(interface.main()))
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
+            interface_task.cancel()
             sys.exit()
         print("The GUI window has been closed and the simulation terminated.")
 
@@ -147,6 +156,9 @@ def launch_simulation():
             sys.exit(1)
 
 
+def background_loop(loop: asyncio.AbstractEventLoop) -> None:
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
 
 async def user_input_loop(room):
     while True:
