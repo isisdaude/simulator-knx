@@ -45,7 +45,7 @@ async def main(): # TODO: Put room as argument
 		data, addr = sock.recvfrom(1024)
 		
 		frame.from_knx(data)
-		print(frame)
+		print(frame.body.cemi.telegram) # The telegram to be sent to simulator after parsed!
 		# room.knxbus.transmot_telegram, should aprse it to a simulated telegram
 		frame.init(KNXIPServiceType.TUNNELLING_ACK)
 		frame.header.set_length(frame.body)
