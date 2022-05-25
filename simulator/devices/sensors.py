@@ -39,10 +39,20 @@ class Thermometer(Sensor):
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
-class HumiditySensor(Sensor):
+class HumiditySoil(Sensor):
     """Concrete class to represent a Humidity sensor"""
     def __init__(self, name, refid, location, default_status):
-        super().__init__('HumiditySensor', name, refid, location, default_status, "humidity")
+        super().__init__('HumiditySoil', name, refid, location, default_status, "humiditysoil")
+        self.humiditysoil = 10 # arbitrary init of soil humidity
+    def get_dev_info(self):
+        dev_specific_dict = {"humiditysoil":self.humiditysoil}
+        dev_specific_dict.update(self._dev_basic_dict)
+        return dev_specific_dict
+
+class HumidityAir(Sensor):
+    """Concrete class to represent a Humidity sensor"""
+    def __init__(self, name, refid, location, default_status):
+        super().__init__('HumidityAir', name, refid, location, default_status, "humidity")
         self.humidity = 0
     def get_dev_info(self):
         dev_specific_dict = {"humidity":self.humidity}
@@ -78,7 +88,8 @@ class PresenceSensor(Sensor):
     """Concrete class to represent a Presence Detector"""
     def __init__(self, name, refid, location, default_status):
         super().__init__('PresenceSensor', name, refid, location, default_status, "presence")
-        self.presence = False
+        # self.presence = False
+        self.state = False
     def get_dev_info(self):
         dev_specific_dict = {"presence":self.presence}
         dev_specific_dict.update(self._dev_basic_dict)

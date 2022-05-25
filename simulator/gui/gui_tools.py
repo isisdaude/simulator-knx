@@ -14,6 +14,8 @@ class DeviceListWidget(object):
         self.__group_box = group_box
         self.topleft_y = y+OFFSET_DEVICELIST_BOX_TOP
         self.length = OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
+        # Max number of devices to display in list, int div length (from start of list, below title 'y') by offset between devices
+        self.MAX_SIZE_DEVICES_LIST = (y - OFFSET_LIST_DEVICE)//OFFSET_LIST_DEVICE
         self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, self.length, border=WIN_BORDER/2,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=batch, group=self.__group_box)
@@ -25,7 +27,8 @@ class DeviceListWidget(object):
                                     batch=batch, group=group_label)
     
     def update_box(self, new_length):
-        new_length = new_length if new_length>0 else OFFSET_DEVICELIST_BOX_TOP
+        # update devices list box, new_length is simply number of devices * offset between them
+        new_length = new_length if new_length>0 else OFFSET_DEVICELIST_BOX_TOP # length depend if there are devices or not
         self.length = new_length + OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
         self.box_shape.delete()
         self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, height=self.length, border=WIN_BORDER/2,
@@ -87,7 +90,7 @@ class ButtonPause(object):
             self.file_to_use = self.pause_file
         elif not gui_window.room.simulation_status: # Play button if simulation paused
             self.file_to_use = self.play_file
-        self.clicked = True
+        self.clicked = True  ## NOTE cannot be private as we call hasattr() from GUI class
 
     def update_image(self, reload=False):
         if reload:
@@ -145,7 +148,7 @@ class DimmerSetterWidget(object):
     def start_setting_dimmer(self, batch, group):
         self.being_set = True
         self.state_ratio_label = pyglet.text.Label(str(self.init_state_ratio),
-                                    font_name=FONT_DIMMER_RATIO, font_size=30,
+                                    font_name=FONT_INTERACTIVE, font_size=FONT_SIZE_INTERACTIVE,
                                     x=(self.state_label_x+OFFSET_DIMMER_RATIO), y=self.state_label_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=batch, group=group,
@@ -168,6 +171,7 @@ class DimmerSetterWidget(object):
 class DeviceWidget(object):
     def __init__(self, pos_x, pos_y, batch, img_file_ON, img_file_OFF, group, device_type, device_class, device_number, available_device=False):
         ''' docstring'''
+        # in room device attribute set during initialization
         self.device_class = device_class
         self.label_name = self.device_class.lower()+device_number
         # self.name = label_name
@@ -181,12 +185,32 @@ class DeviceWidget(object):
         self.pos_x, self.pos_y = pos_x, pos_y # Center of the image, simulated position on room
         self.img_ON, self.img_OFF = pyglet.image.load(self.file_ON), pyglet.image.load(self.file_OFF)
         self.width, self.length = self.img_ON.width, self.img_ON.height #ON/OFF images have the same width, height of image is called length in this program
+        self.__batch = batch
+        self.group = group
+
         if available_device: # available devices for a manual import (displayed outside of the GUI)
             self.origin_x, self.origin_y = self.pos_x, self.pos_y
         else:
             self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
-        self.__batch = batch
-        self.group = group
+            if "humiditysoil" in self.label_name: 
+                self.humiditysoil = 10 # arbitrary init of soil humidity
+                # https://www.acurite.com/blog/soil-moisture-guide-for-plants-and-vegetables.html
+                self.drop_red = pyglet.image.load(DROP_RED_PATH)
+                self.drop_yellow = pyglet.image.load(DROP_YELLOW_PATH)
+                self.drop_green = pyglet.image.load(DROP_GREEN_PATH)
+                self.drop_blue = pyglet.image.load(DROP_BLUE_PATH)
+                self.drop_pos_x = self.pos_x + self.width//2
+                self.drop_pos_y = self.pos_y
+                self.drop_label_pos_x = self.drop_pos_x
+                self.drop_label_pos_y = self.pos_y - 1.5*OFFSET_LABEL_DEVICE  ####NOTE
+                self.drop_sprite = pyglet.sprite.Sprite(self.drop_red, x=self.drop_pos_x, y=self.drop_pos_y, batch=self.__batch, group=self.group) # x,y of sprite is bottom left of image
+                self.drop_label = pyglet.text.Label('10%',
+                                    font_name=FONT_INTERACTIVE, font_size=FONT_SIZE_INTERACTIVE,
+                                    x=self.drop_label_pos_x, y=self.drop_label_pos_y,
+                                    anchor_x='left', anchor_y='center',
+                                    batch=self.__batch, group=self.group)
+                self.drop_label.color = color_from_humiditysoil(self.humiditysoil)
+        
         self.sprite = pyglet.sprite.Sprite(self.img_OFF, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.group) # x,y of sprite is bottom left of image
         self.label = pyglet.text.Label(self.label_name,
                                     font_name=FONT_DEVICE, font_size=10,
@@ -199,7 +223,14 @@ class DeviceWidget(object):
 
 
     def hit_test(self, x, y): # to check if mouse click is on a device image
-        return (self.sprite.x < x < self.sprite.x+self.width and
+        # if "humiditysoil" in self.label_name and self.device_class == 'HumiditySoil':
+        if hasattr(self, "humiditysoil"):
+            return ((self.sprite.x < x < self.sprite.x+self.width and
+                    self.sprite.y < y < self.sprite.y+self.length) or 
+                    (self.drop_sprite.x < x < self.drop_sprite.x+self.drop_sprite.width and 
+                    self.drop_sprite.y < y < self.drop_sprite.y+self.drop_sprite.height))
+        else:
+            return (self.sprite.x < x < self.sprite.x+self.width and
                 self.sprite.y < y < self.sprite.y+self.length)
 
     def update_position(self, new_x, new_y, loc_x=0, loc_y=0, update_loc=False):
@@ -216,6 +247,31 @@ class DeviceWidget(object):
     def delete(self):
         self.sprite.delete()
         self.label.delete()
+        if "humiditysoil" in self.label_name:
+            self.drop_sprite.delete()
+            self.drop_label.delete()
+    
+    def update_drop(self):
+        if hasattr(self, 'humiditysoil'):
+            # https://www.acurite.com/media/magpleasure/mpblog/upload/5/2/523755c20577be6c9f5ee5a27003abf6.jpg
+            if self.humiditysoil <= 20.0:
+                drop = self.drop_red
+            elif self.humiditysoil <= 40.0:
+                drop = self.drop_yellow
+            elif self.humiditysoil <= 60.0:
+                drop = self.drop_green
+            else:
+                drop = self.drop_blue
+            self.drop_sprite.delete()
+            self.drop_label.delete()
+            self.drop_sprite = pyglet.sprite.Sprite(drop, x=self.drop_pos_x, y=self.drop_pos_y, batch=self.__batch, group=self.group) # x,y of sprite is bottom left of image
+            self.drop_label = pyglet.text.Label(str(self.humiditysoil)+'%',
+                                    font_name=FONT_INTERACTIVE, font_size=FONT_SIZE_INTERACTIVE,
+                                    x=self.drop_label_pos_x, y=self.drop_label_pos_y,
+                                    anchor_x='left', anchor_y='center',
+                                    batch=self.__batch, group=self.group)
+            self.drop_label.color = color_from_humiditysoil(self.humiditysoil)
+
 
 
 class AvailableDevices(object): # library of devices availables, presented on the left side on the GUI
@@ -223,7 +279,7 @@ class AvailableDevices(object): # library of devices availables, presented on th
         self.in_motion = False
         self.devices = []
 
-        self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_AVAILABLEDEVICES_LINE2-OFFSET_AVAILABLE_DEVICES-WIN_BORDER/2, AVAILABLE_DEVICES_BOX_WIDTH, AVAILABLE_DEVICES_BOX_LENGTH, border=WIN_BORDER/2,
+        self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_AVAILABLEDEVICES_LINE3-OFFSET_AVAILABLE_DEVICES-WIN_BORDER/2, AVAILABLE_DEVICES_BOX_WIDTH, AVAILABLE_DEVICES_BOX_LENGTH, border=WIN_BORDER/2,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=batch, group=group_box)
 
@@ -231,32 +287,46 @@ class AvailableDevices(object): # library of devices availables, presented on th
         self.led = DeviceWidget(WIN_BORDER, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_LED_ON_PATH, DEVICE_LED_OFF_PATH, group_dev, "actuator", "LED", '', available_device=True)
         self.devices.append(self.led)
         next_image_offset_x = self.led.pos_x + self.led.width + OFFSET_AVAILABLE_DEVICES
-        self.button = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_BUTTON_ON_PATH, DEVICE_BUTTON_OFF_PATH, group_dev, "functional_module", "Button", '', available_device=True)
-        self.devices.append(self.button)
-        next_image_offset_x = self.button.pos_x + self.button.width + OFFSET_AVAILABLE_DEVICES
-        self.dimmer = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_DIMMER_ON_PATH, DEVICE_DIMMER_OFF_PATH, group_dev, "functional_module", "Dimmer", '', available_device=True)
-        self.devices.append(self.dimmer)
-        next_image_offset_x = self.dimmer.pos_x + self.dimmer.width + OFFSET_AVAILABLE_DEVICES
-        self.brightness = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_BRIGHT_SENSOR_PATH, DEVICE_BRIGHT_SENSOR_PATH, group_dev, "sensor", "Brightness", '', available_device=True)
-        self.devices.append(self.brightness)
-        next_image_offset_x = self.brightness.pos_x + self.brightness.width + OFFSET_AVAILABLE_DEVICES
-        self.thermometer = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_THERMO_COLD_PATH, DEVICE_THERMO_HOT_PATH, group_dev, "sensor", "Thermometer", '', available_device=True)
-        self.devices.append(self.thermometer)
-        # Line 2
-        self.heater = DeviceWidget(WIN_BORDER, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_HEATER_ON_PATH, DEVICE_HEATER_OFF_PATH, group_dev, "actuator", "Heater", '',  available_device=True)
+        self.heater = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_HEATER_ON_PATH, DEVICE_HEATER_OFF_PATH, group_dev, "actuator", "Heater", '',  available_device=True)
         self.devices.append(self.heater)
-        next_image_offset_x = self.heater.pos_x + self.heater.width + 0.5*OFFSET_AVAILABLE_DEVICES
-        self.ac = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_AC_ON_PATH, DEVICE_AC_OFF_PATH, group_dev, "actuator", "AC", '',  available_device=True)
+        next_image_offset_x = self.heater.pos_x + self.heater.width + OFFSET_AVAILABLE_DEVICES
+        self.ac = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_AC_ON_PATH, DEVICE_AC_OFF_PATH, group_dev, "actuator", "AC", '',  available_device=True)
         self.devices.append(self.ac)
         next_image_offset_x = self.ac.pos_x + self.ac.width + OFFSET_AVAILABLE_DEVICES
-        self.presence = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_PRESENCE_ON_PATH, DEVICE_PRESENCE_OFF_PATH, group_dev, "sensor", "PresenceSensor", '',  available_device=True)
-        self.devices.append(self.presence)
-        next_image_offset_x = self.presence.pos_x + self.presence.width + OFFSET_AVAILABLE_DEVICES
-        self.switch = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_SWITCH_ON_PATH, DEVICE_SWITCH_OFF_PATH, group_dev, "actuator", "Switch", '', available_device=True)
+        self.switch = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE1, batch, DEVICE_SWITCH_ON_PATH, DEVICE_SWITCH_OFF_PATH, group_dev, "actuator", "Switch", '', available_device=True)
         self.devices.append(self.switch)
-        next_image_offset_x = self.switch.pos_x + self.switch.width + 0.2*OFFSET_AVAILABLE_DEVICES
-        self.airsensor = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_AIRSENSOR_PATH, DEVICE_AIRSENSOR_PATH, group_dev, "actuator", "AirSensor", '', available_device=True)
+        # next_image_offset_x = self.switch.pos_x + self.switch.width + OFFSET_AVAILABLE_DEVICES
+
+        # Line 2
+        self.button = DeviceWidget(WIN_BORDER, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_BUTTON_ON_PATH, DEVICE_BUTTON_OFF_PATH, group_dev, "functional_module", "Button", '', available_device=True)
+        self.devices.append(self.button)
+        next_image_offset_x = self.button.pos_x + self.button.width + OFFSET_AVAILABLE_DEVICES
+        self.dimmer = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_DIMMER_ON_PATH, DEVICE_DIMMER_OFF_PATH, group_dev, "functional_module", "Dimmer", '', available_device=True)
+        self.devices.append(self.dimmer)
+        next_image_offset_x = self.dimmer.pos_x + self.dimmer.width + 1.2*OFFSET_AVAILABLE_DEVICES
+        self.presencesensor = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2, batch, DEVICE_PRESENCE_ON_PATH, DEVICE_PRESENCE_OFF_PATH, group_dev, "sensor", "PresenceSensor", '',  available_device=True)
+        self.devices.append(self.presencesensor)
+        next_image_offset_x = self.presencesensor.pos_x + self.presencesensor.width + 5*OFFSET_AVAILABLE_DEVICES
+        self.thermometer = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE2+OFFSET_AVAILABLE_DEVICES, batch, DEVICE_THERMO_COLD_PATH, DEVICE_THERMO_HOT_PATH, group_dev, "sensor", "Thermometer", '', available_device=True)
+        self.devices.append(self.thermometer)
+        # next_image_offset_x = self.thermometer.pos_x + self.thermometer.width + 2*OFFSET_AVAILABLE_DEVICES
+
+        # Line 3
+        self.brightness = DeviceWidget(WIN_BORDER, OFFSET_AVAILABLEDEVICES_LINE3, batch, DEVICE_BRIGHT_SENSOR_PATH, DEVICE_BRIGHT_SENSOR_PATH, group_dev, "sensor", "Brightness", '', available_device=True)
+        self.devices.append(self.brightness)
+        next_image_offset_x = self.brightness.pos_x + self.brightness.width + 0.1*OFFSET_AVAILABLE_DEVICES
+        self.airsensor = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE3, batch, DEVICE_AIRSENSOR_PATH, DEVICE_AIRSENSOR_PATH, group_dev, "actuator", "AirSensor", '', available_device=True)
         self.devices.append(self.airsensor)
+        next_image_offset_x = self.airsensor.pos_x + self.airsensor.width + 0.4*OFFSET_AVAILABLE_DEVICES
+        self.co2sensor = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE3, batch, DEVICE_CO2_PATH, DEVICE_CO2_PATH, group_dev, "sensor", "CO2Sensor", '',  available_device=True)
+        self.devices.append(self.co2sensor)
+        next_image_offset_x = self.co2sensor.pos_x + self.co2sensor.width + OFFSET_AVAILABLE_DEVICES
+        self.humidityair = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE3, batch, DEVICE_HUMIDITYAIR_PATH, DEVICE_HUMIDITYAIR_PATH, group_dev, "sensor", "HumidityAir", '',  available_device=True)
+        self.devices.append(self.humidityair)
+        next_image_offset_x = self.humidityair.pos_x + self.humidityair.width + 1.85*OFFSET_AVAILABLE_DEVICES
+        self.humiditysoil = DeviceWidget(next_image_offset_x, OFFSET_AVAILABLEDEVICES_LINE3, batch, DEVICE_HUMIDITYSOIL_PATH, DEVICE_HUMIDITYSOIL_PATH, group_dev, "sensor", "HumiditySoil", '',  available_device=True)
+        self.devices.append(self.humiditysoil)
+        # next_image_offset_x = self.humiditysoil.pos_x + self.humiditysoil.width + OFFSET_AVAILABLE_DEVICES
         
         
 
@@ -299,6 +369,31 @@ class RoomWidget(object):
                 self.origin_y < y < (self.origin_y + self.length))
 
 
+class PersonWidget(object):
+    def __init__(self, img_path, x, y, batch, group):
+        self.moving = True
+        self.__batch, self.__group = batch, group
+        self.pos_x, self.pos_y = x, y
+        self.img = pyglet.image.load(img_path)
+        self.width, self.length = self.img.width, self.img.height
+        self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
+        self.sprite = pyglet.sprite.Sprite(self.img, self.origin_x, self.origin_y, batch=self.__batch, group=self.__group)
+    
+    def hit_test(self, x, y): # to check if mouse click is on the Room widget
+        return (self.origin_x < x < (self.origin_x + self.width) and
+                self.origin_y < y < (self.origin_y + self.length))
+    
+    def update_position(self, new_x, new_y):
+        """ Doct string"""
+        self.pos_x, self.pos_y = new_x, new_y
+        self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
+        self.sprite.update(x=self.origin_x, y=self.origin_y)
+    
+    def delete(self):
+        self.sprite.delete()
+
+   
+
 # Useful functions
 def gui_pos_to_system_loc( pos_x, pos_y, width_ratio, length_ratio, room_x, room_y):
     try:
@@ -326,6 +421,18 @@ def color_from_state_ratio(state_ratio): #state_ratio in 0-100
             return COLOR_MEDIUM_HIGH
         elif state_ratio <= 100 :
             return COLOR_HIGH
+
+def color_from_humiditysoil(humiditysoil):
+    if 0 <= humiditysoil:
+        if humiditysoil <= 20.0:
+            return COLOR_RED
+        elif humiditysoil <= 40.0:
+            return COLOR_YELLOW
+        elif humiditysoil <= 60.0:
+            return COLOR_GREEN
+        elif humiditysoil <= 100 :
+            return COLOR_BLUE
+
 def dimmer_ratio_from_mouse_pos(mouse_y, dimmer_center_y):
     # We check distance from mouse to center on vertical y axis only
     relative_distance = mouse_y - dimmer_center_y 

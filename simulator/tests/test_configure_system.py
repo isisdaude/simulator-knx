@@ -14,6 +14,8 @@ ac1 = dev.AC("ac1", "M-0_C1", system.IndividualAddress(0,0,12), "enabled", 400)
 switch1 = dev.Switch("switch1", "M-0_S1", system.IndividualAddress(0,0,44), "enabled")
 brightness1 = dev.Brightness("brightness1", "M-0_L3", system.IndividualAddress(0,0,5), "enabled")
 thermometer1 = dev.Thermometer("thermometer1", "M-0_T1", system.IndividualAddress(0,0,33), "enabled")
+humiditysoil1 = dev.HumiditySoil("humiditysoil1", "M-0_HU1", system.IndividualAddress(0,0,34), "enabled")
+co2sensor1 = dev.CO2Sensor("co2sensor1", "M-0_CO2", system.IndividualAddress(0,0,35), "enabled")
 airsensor1 = dev.AirSensor("airsensor1", "M-0_A1", system.IndividualAddress(0,0,55), "enabled")
 presencesensor1 = dev.PresenceSensor("presencesensor1", "M-0_A1", system.IndividualAddress(0,0,66), "enabled")
 
@@ -29,14 +31,16 @@ ir_ac1 = system.InRoomDevice(ac1, room1, 0, 1, 3)
 ir_switch1 = system.InRoomDevice(switch1, room1, 0, 1, 4)
 ir_brightness1 = system.InRoomDevice(brightness1, room1, 1, 1, 1)
 ir_thermometer1 = system.InRoomDevice(thermometer1, room1, 1, 1, 2)
-ir_airsensor1 = system.InRoomDevice(airsensor1, room1, 1, 1, 3)
-ir_presencesensor1 = system.InRoomDevice(presencesensor1, room1, 1, 1, 4)
+ir_humiditysoil1 = system.InRoomDevice(humiditysoil1, room1, 1, 1, 3)
+ir_co2sensor1 = system.InRoomDevice(co2sensor1, room1, 1, 1, 4)
+ir_airsensor1 = system.InRoomDevice(airsensor1, room1, 1, 1, 5)
+ir_presencesensor1 = system.InRoomDevice(presencesensor1, room1, 1, 1, 6)
 
-devices = [button1, dimmer1, led1, heater1, ac1, switch1, brightness1, thermometer1, airsensor1, presencesensor1]
-ir_devices = [ir_button1, ir_dimmer1, ir_led1, ir_heater1, ir_ac1, ir_switch1, ir_brightness1, ir_thermometer1, ir_airsensor1, ir_presencesensor1]
-devices_name = ["button1", "dimmer1", "led1", "heater1", "ac1", "switch1", "brightness1", "thermometer1", "airsensor1", "presencesensor1"]
-devices_class = [dev.Button, dev.Dimmer, dev.LED, dev.Heater, dev.AC, dev.Switch, dev.Brightness, dev.Thermometer, dev.AirSensor, dev.PresenceSensor]
-devices_loc = [(0, 0, 1), (0, 0, 2), (0, 1, 1), (0, 1, 2), (0, 1, 3), (0, 1, 4), (1, 1, 1), (1, 1, 2), (1, 1, 3), (1, 1, 4)]
+devices = [button1, dimmer1, led1, heater1, ac1, switch1, brightness1, thermometer1, humiditysoil1, co2sensor1, airsensor1, presencesensor1]
+ir_devices = [ir_button1, ir_dimmer1, ir_led1, ir_heater1, ir_ac1, ir_switch1, ir_brightness1, ir_thermometer1, ir_humiditysoil1, ir_co2sensor1, ir_airsensor1, ir_presencesensor1]
+devices_name = ["button1", "dimmer1", "led1", "heater1", "ac1", "switch1", "brightness1", "thermometer1", "humiditysoil1", "co2sensor1", "airsensor1", "presencesensor1"]
+devices_class = [dev.Button, dev.Dimmer, dev.LED, dev.Heater, dev.AC, dev.Switch, dev.Brightness, dev.Thermometer, dev.HumiditySoil, dev.CO2Sensor, dev.AirSensor, dev.PresenceSensor]
+devices_loc = [(0, 0, 1), (0, 0, 2), (0, 1, 1), (0, 1, 2), (0, 1, 3), (0, 1, 4), (1, 1, 1), (1, 1, 2), (1, 1, 3), (1, 1, 4), (1, 1, 5), (1, 1, 6)]
 
 def test_correct_device_addition():
     room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
@@ -57,6 +61,10 @@ def test_correct_device_addition():
                 assert ir_devices[d] in room1.world.ambient_light.light_sensors
             elif isinstance(devices[d], dev.Thermometer):
                 assert ir_devices[d] in room1.world.ambient_temperature.temp_sensors
+            elif isinstance(devices[d], dev.HumiditySoil): # Arbitrary init of soil humidity 
+                assert devices[d].humidity == room1.world.ambient_humidity.humidity
+            elif isinstance(devices[d], dev.CO2Sensor):
+                assert ir_devices[d] in room1.world.ambient_co2.co2_sensors
             elif isinstance(devices[d], dev.AirSensor):
                 assert ir_devices[d] in room1.world.ambient_temperature.temp_sensors
                 assert ir_devices[d] in room1.world.ambient_humidity.humidity_sensors

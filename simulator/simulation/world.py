@@ -23,21 +23,12 @@ class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
 
     def __init__(self, simulation_speed_factor:float, system_dt):
-        # Real world simulated time = system_dt * simulation_speed_factor seconds (1 for now)
+        # Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 for now)
         self.speed_factor = simulation_speed_factor
         self.system_dt = system_dt
         # ratio for physical state update, pro rata per hour
         self.update_rule_ratio = (self.system_dt * self.speed_factor)/3600
-        # self.physical_interval = 3600
-        # Amount of time (in seconds) between two software clock ticks
-        # self.virtual_interval = self.physical_interval/self.speed_factor
 
-    # def set_simulation_speed_factor(self, speed_factor):
-    #     self.virtual_interval = self.physical_interval/speed_factor
-
-    # def set_virtual_interval(self, interval:float):
-    #     # seconds of software simulation corresponding to a simulated 'real-world' hour
-    #     self.virtual_interval = interval
 
     # Scheduler management, if not in GUI mode
     def scheduler_init(self):
@@ -95,15 +86,17 @@ class AmbientTemperature:
         self.max_power_heater = 0
         self.max_power_ac = 0
 
-    def add_source(self, source ): # source is an InRoomDevice # Heatsource is an object that heats the room
+    def add_source(self, tempsource): # Heatsource is an object that heats the room
+        """ tempsource: InRoomDevice """
         from devices import Heater, AC
-        self.temp_sources.append(source) #add check on source
-        if isinstance(source.device, Heater):
-            self.max_power_heater += source.device.max_power
-        if isinstance(source.device, AC):
-            self.max_power_ac += source.device.max_power
+        self.temp_sources.append(tempsource) #add check on source
+        if isinstance(tempsource.device, Heater):
+            self.max_power_heater += tempsource.device.max_power
+        if isinstance(tempsource.device, AC):
+            self.max_power_ac += tempsource.device.max_power
 
-    def add_sensor(self, tempsensor):
+    def add_sensor(self, tempsensor): 
+        """ tempsensor: InRoomDevice """
         self.temp_sensors.append(tempsensor) #add check on sensor
 
     # def add_temp_controllers(self, temp_controllers):
@@ -178,27 +171,49 @@ class AmbientLight:
     '''Class that implements Light in a room'''
     def __init__(self):
         self.light_sources: List = []
-        """List of all devices that emit light"""
         self.light_sensors: List = []
-        """List of all devices that measure brightness"""
-
-    def add_source(self, lightsource):
-        self.light_sources.append(lightsource) #lightsource is an object of type
+        # values fo global brightness # https://www.fuzionlighting.com.au/technical/room-index, considering light on 3m ceiling 
+        self.utilization_factor = 0.52 
+        self.light_loss_factor = 0.8  # TODO magic number 
+    def add_source(self, lightsource): 
+        """ lightsource: InRoomDevice """
+        self.light_sources.append(lightsource) 
 
     def add_sensor(self, lightsensor):
+        """ lightsensor: InRoomDevice """
         self.light_sensors.append(lightsensor)
 
-    def read_brightness(self, brightness_sensor): #Read brightness at a particular sensor
+    
+    def lux_from_lightsource(self, source, distance):
+        """ source: InRoomDevice """
+        lux_area = 1 # Lux consider lumen per square meter (1 m^2)
+        # Total surface of sphere reached by light around lightsource
+        # https://en.wikipedia.org/wiki/Solid_angle and 
+        solid_angle = 4 * math.pi * (math.sin(source.device.beam_angle/4))**2
+        total_beam_cone_surface = solid_angle * distance**2
+        # Fraction of lumen reaching a 1m^2 area at a specific distance from source
+        lumen_ratio = lux_area / total_beam_cone_surface
+        # Lumen reaching the 1m^2 area at distance from source
+        resulting_lumen = source.device.effective_lumen() * lumen_ratio # result in lumen [lm]
+        return resulting_lumen / lux_area # result in [lm/m^2]
+        
+
+    def compute_sensor_brightness(self, brightness_sensor): # Read brightness at a particular sensor
+        """ brightness_sensor: InRoomDevice """
         brightness = 0
         for source in self.light_sources:
             # If the light is on and enabled on the bus
             if source.device.is_enabled() and source.device.state:
                 # Compute distance between sensor and each source
-                dist = system.compute_distance(source, brightness_sensor)
-                # Compute the new brightness
-                residual_lumen = (1/dist)*source.device.max_lumen*(source.device.state_ratio/100) # we suppose proportionality between state ratio and lumen 
-                brightness += residual_lumen
+                distance = system.compute_distance(source, brightness_sensor)  
+                # Compute the new brightness (illuminance in lux=[lm/m^2])
+                partial_illuminance = self.lux_from_lightsource(source, distance)
+                # We can linearly add lux values
+                brightness += partial_illuminance
+                ## TODO:  add extra code to this specific case of window light
+                # in fact, ww consider outside bright in lux and consider it 
                 ## TODO: add here if there is ambient light
+                # TODO TODO create a window class with sane attributes than light actuators (Location for compute_distance() and beam_angle, max lumen, state ratio(blinds) for lux computation, effetive lumen method)
         return brightness
     
     def update(self): #Updates all brightness sensors of the world (the room)
@@ -206,45 +221,37 @@ class AmbientLight:
         brightness_levels = []
         for sensor in self.light_sensors:
             # Update the sensor's brightness
-            sensor.device.brightness = self.read_brightness(sensor) # set the newly calculated sensor brightness
+            sensor.device.brightness = self.compute_sensor_brightness(sensor) # set the newly calculated sensor brightness
             brightness_levels.append((sensor.device.name, sensor.device.brightness))
         return brightness_levels
 
     # API functions    
-    def read_global_brightness(self, room):
-        from devices import Brightness
-        from system import IndividualAddress, InRoomDevice, Location
-        w, l, height = room.get_dim()
-        h = height/2 # mid height to simplify and reduce edge cases to 5
-        edge_locations = [(0,0,h), (w,0,h), (0,l,h), (w,l,h), (w/2,l/2,h)]
-        brightness_sensor = Brightness("brightness", "M-0_L3", IndividualAddress(0,0,5), "enabled")
-        brightness_levels = []
-        for loc in edge_locations:
-            brightness = 0
-            x, y, z = loc[0], loc[1], loc[2]
-            brightness_sensor.location = Location(room, x, y, z)
-            for source in self.light_sources:
-                if source.device.is_enabled() and source.device.state:
-                    dist = system.compute_distance(source, brightness_sensor)
-                    residual_lumen = (1/dist)*source.device.max_lumen*(source.device.state_ratio/100) # we suppose proportionality between state ratio and lumen 
-                    brightness += residual_lumen
-            brightness_levels.append(brightness)
-            ## TODO: add here if there is ambient light
-        if len(brightness_levels):
-            return mean(brightness_levels)
-        else:
-            return 0
+    def compute_global_brightness(self, room):
+        # There is no fraction of lumen as all lumen reach the room's ground
+        # We don't consider light getting out through the window
+        # https://www.engineeringtoolbox.com/light-level-rooms-d_708.html
+        source_lumen = 0
+        for source in self.light_sources: # InRoomDevice
+            source_lumen += source.device.effective_lumen()
+        N = len(self.light_sources)
+        avg_lumen = source_lumen / N
+        room_area = room.width * room.length
+        UF, LLF = self.utilization_factor, self.light_loss_factor
+        global_brightness = N * avg_lumen * UF * LLF / room_area
+        return global_brightness
+
 
     def get_global_brightness(self, room = None, str_mode=False):
-        if room is None: # simply make an average of all sensors
+        if room is None: # simply make an average of all sensors' brightness
             brightness_levels = []
             for sensor in self.light_sensors:
-                brightness_levels.append(self.read_brightness(sensor))
+                brightness_levels.append(self.compute_sensor_brightness(sensor)) # We recompute to have the latest value
             bright = mean(brightness_levels) if len(brightness_levels) else 0
         else:
-            bright = self.read_global_brightness(room)
+            bright = self.compute_global_brightness(room)
+        
         if str_mode:
-            bright = str(round(bright, 2)) + " lumens"
+            bright = str(round(bright, 2)) + " lux"
             return bright
         else:
             return bright
@@ -274,9 +281,11 @@ class AmbientHumidity:
 
     
     def add_source(self, humiditysource):
+        """ humiditysource: InRoomDevice """
         self.humidity_sources.append(humiditysource)
-    def add_sensor(self, humiditysensor):
-        self.humidity_sensors.append(humiditysensor)
+    def add_sensor(self, humiditysoil):
+        """ humiditysoil: InRoomDevice """
+        self.humidity_sensors.append(humiditysoil)
     
     def compute_saturation_vapor_pressure_water(self, temperature):
         if temperature > 0:
@@ -340,9 +349,10 @@ class AmbientCO2:
         self.update_rule_ratio = update_rule_ratio
     
     def add_sensor(self, co2sensor):
+        """ co2sensor: InRoomDevice """
         self.co2_sensors.append(co2sensor)
     
-    def update(self, temperature, humidity):
+    def update(self, temperature, humidity):  ### TODO remove temp et humif not used
         from system import INSULATION_TO_CO2_FACTOR
         logging.info("CO2 update")
         # self.co2level = compute_co2level(temperature, humidity) # totally wrong values...
@@ -364,6 +374,73 @@ class AmbientCO2:
         return co2
 
 
+class SoilMoisture:
+    def __init__(self, update_rule_ratio):
+        self.humiditysoil_sensors = []
+        self.update_rule_ratio = update_rule_ratio
+        self.update_rule = -0.5 # -0.5% of soil moisture per hour, limited to ambient humidity
+        self.update_rule_up = 0.1 # if lower than humidity in, the moisture increase very slowly
+    
+    def add_sensor(self, humiditysoilsensor):
+        """ humiditysoilsensor: InRoomDevice """
+        self.humiditysoil_sensors.append(humiditysoilsensor)
+
+    def update(self, humidity_in):
+        logging.info("Soil Moisture update")
+        moisture_levels = []
+        for sensor in self.humiditysoil_sensors:
+            if sensor.device.humiditysoil > humidity_in:
+                moisture_delta = self.update_rule * self.update_rule_ratio 
+                if (sensor.device.humiditysoil+moisture_delta) < humidity_in: 
+                    sensor.device.humiditysoil = humidity_in
+            elif sensor.device.humiditysoil <= humidity_in:
+                moisture_delta = self.update_rule_up * self.update_rule_ratio 
+                if (sensor.device.humiditysoil+moisture_delta) > humidity_in: 
+                    sensor.device.humiditysoil = humidity_in
+            if sensor.device.humiditysoil != humidity_in:
+                sensor.device.humiditysoil += moisture_delta
+            moisture_levels.append((sensor.device.name, round(sensor.device.humiditysoil,2)))
+        return moisture_levels
+
+
+class Presence:
+    def __init__(self):
+        self.presence = False
+        self.entities = [] # person or object detectable by presence sensor
+        self.presence_sensors = []
+    
+    def add_entity(self, entity:str):
+        self.entities.append(entity)
+        self.presence = True
+        self.update()
+    def add_sensor(self, presencesensor):
+        """ presencesensor: InRoomDevice """
+        self.presence_sensors.append(presencesensor)
+
+    def remove_entity(self, entity:str):
+        if entity in self.entities:
+            self.entities.remove(entity)
+            self.presence = True if len(self.entities) else False
+            self.update()
+        else:
+            logging.warning(f"The entity {entity} is not present in the simulation.")
+    
+    # def remove_sensor(self, presencesensor): ## TODO, device removal
+    #     """ presencesensor: InRoomDevice """
+    #     if presencesensor in self.presence_sensors:
+    #         self.presence_sensors.remove(presencesensor)
+    
+    def update(self):
+        presence_sensors_states = []
+        for sensor in self.presence_sensors:
+            sensor.device.state = self.presence
+            presence_sensors_states.append((sensor.device.name, sensor.device.state))
+        return presence_sensors_states
+    
+    ## TODO: implement set for world states
+    # def set_presence(self):
+        # self.presence = True
+
 
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
@@ -377,7 +454,9 @@ class World:
         self.ambient_light = AmbientLight() #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
         self.ambient_humidity = AmbientHumidity(self.temp_out, self.hum_out, self.room_insulation, self.time.update_rule_ratio)
         self.ambient_co2 = AmbientCO2(self.co2_out, self.room_insulation, self.time.update_rule_ratio)
-        self.ambient_world = [self.ambient_temperature, self.ambient_light, self.ambient_humidity, self.ambient_co2]
+        self.soil_moisture = SoilMoisture(self.time.update_rule_ratio)
+        self.presence = Presence()
+        self.ambient_world = [self.ambient_temperature, self.ambient_light, self.ambient_humidity, self.ambient_co2, self.soil_moisture]
 
     def update(self):
         # co2 and humidity update need temperature update to be done before
@@ -385,8 +464,10 @@ class World:
         temperature_levels = self.ambient_temperature.update()
         humidity_levels = self.ambient_humidity.update(self.ambient_temperature.temperature)
         co2_levels = self.ambient_co2.update(self.ambient_temperature.temperature, self.ambient_humidity.humidity)
+        humiditysoil_levels = self.soil_moisture.update(self.ambient_humidity.humidity)
+        presence_sensors_states = self.presence.update()
         # humidity_levels = self.ambient_humidity.update()
-        return brightness_levels, temperature_levels, humidity_levels, co2_levels
+        return brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states
 
     def get_world_state(self): # one world per room, so status of the room
         print("+---------- STATUS ----------+")

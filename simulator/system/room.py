@@ -80,7 +80,7 @@ class Room:
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
-        from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor
+        from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor, HumiditySoil, HumidityAir, CO2Sensor, PresenceSensor
         """Adds a device to the room at the given position"""
 
         in_room_device = InRoomDevice(device, self, x, y, z) #self is for the room, important if we want to find the room of a certain device
@@ -88,29 +88,34 @@ class Room:
 
         if isinstance(device, Actuator):
             if isinstance(device, LightActuator):
-                #self.knxbus.attach(device) # Actuator subscribes to KNX Bus
                 self.world.ambient_light.add_source(in_room_device)
-                #print(f"A light source was added at {x} : {y}.")
             elif isinstance(device, TemperatureActuator):
                 self.world.ambient_temperature.add_source(in_room_device)
-                #print(f"A device acting on temperature was added at {x} : {y}.")
         elif isinstance(device, Sensor):
             if isinstance(device, Brightness):
                 self.world.ambient_light.add_sensor(in_room_device)
-                #print(f"A brightness sensor was added at {x} : {y}.")
             elif isinstance(device, Thermometer):
                 self.world.ambient_temperature.add_sensor(in_room_device)
+            elif isinstance(device, HumiditySoil): 
+                self.world.soil_moisture.add_sensor(in_room_device)
+            elif isinstance(device, HumidityAir): 
+                self.world.ambient_humidity.add_sensor(in_room_device) 
+            elif isinstance(device, CO2Sensor):
+                self.world.ambient_co2.add_sensor(in_room_device)
             elif isinstance(device, AirSensor):
                 self.world.ambient_temperature.add_sensor(in_room_device)
                 self.world.ambient_humidity.add_sensor(in_room_device)
                 self.world.ambient_co2.add_sensor(in_room_device)
+            elif isinstance(device, PresenceSensor):
+                self.world.presence.add_sensor(in_room_device)
+
         elif isinstance(device, FunctionalModule):
             device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             # if isinstance(device, Button):
             #     device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             # elif isinstance(device, Dimmer):
             #     device.connect_to(self.knxbus)
-        return in_room_device # return for gui
+        return in_room_device # Return for gui
 
     ### TODO: implement removal of devices
     # def remove_device(self, in_room_device):
@@ -142,7 +147,8 @@ class Room:
         if self.test_mode == False:
             import gui
             if self.simulation_status:
-                brightness_levels, temperature_levels, humidity_levels, co2_levels = self.world.update() #call the update function of all ambient modules in world
+                # world.update updates value of all sensors system instances 
+                brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
                 #brightness_levels = brightness_sensor_name, brightness
                 if gui_mode:
                     try: # attributes are created in main (proto_simulator)
@@ -151,8 +157,8 @@ class Room:
                         logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
                     except Exception:
                         logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
-                    try:
-                        self.window.update_sensors(brightness_levels, temperature_levels, humidity_levels, co2_levels) 
+                    try: # update gui devices instances
+                        self.window.update_sensors(brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
                     except Exception:
                         logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
                 elif gui_mode == False:

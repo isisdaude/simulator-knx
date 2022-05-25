@@ -12,17 +12,10 @@ sys.path.append("core")
 class LightActuator(Actuator, ABC):
     """Abstract class to represent light devices"""
 
-    def __init__(self, class_name, name, refid, individual_addr, default_status, state, lumen):
+    def __init__(self, class_name, name, refid, individual_addr, default_status, state, lumen, beam_angle):
         super().__init__(class_name, name, refid, individual_addr, default_status, "light", state)
-        self.max_lumen = lumen
-
-    # def lumen_to_Lux(self, lumen, area):
-    #     ''' The conversion from Lumens to Lux given the surface area in squared meters '''
-    #     return lumen/area
-
-    # def lux_to_Lumen(self, lux, area):
-    #     ''' The conversion from Lux to Lumen given the surface area in squared meters '''
-    #     return area*lux
+        self.max_lumen = lumen # Luminous flux of device = quantity of visible light emitted from a source per unit of time
+        self.beam_angle = beam_angle # angle at which the light is emitted (e.g. 180° for a LED bulb)
 
 
 class LED(LightActuator):
@@ -30,7 +23,7 @@ class LED(LightActuator):
 
     # state is ON/OFF=True/False
     def __init__(self, name, refid, individual_addr, default_status, state=False):
-        super().__init__('LED', name, refid, individual_addr, default_status, state, lumen=800)
+        super().__init__('LED', name, refid, individual_addr, default_status, state, lumen=800, beam_angle=180)
         self.state_ratio = 100 # Percentage of 'amplitude'
 
     def update_state(self, telegram):
@@ -46,9 +39,13 @@ class LED(LightActuator):
 
             self.__str_state = 'ON' if self.state else 'OFF'
             logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
+    
+    def effective_lumen(self):
+        # Lumen quantity rationized with the state ratio (% of source's max lumens)
+        return self.max_lumen*(self.state_ratio/100)
 
     def get_dev_info(self):
-        dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "state_ratio":self.state_ratio}
+        dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "beam_angle":self.beam_angle, "state_ratio":self.state_ratio}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 

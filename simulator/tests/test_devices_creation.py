@@ -12,14 +12,16 @@ devices_config = ['led1', 'led2', 'button1', 'bright1', 'heater1']
 button1_config = {"name":"button1", "refid":"M-0_S1", "indiv_addr":[0,0,20], "status":"enabled", "location":[0,0,1], "group_addresses":['1/1/1']}
 dimmer1_config = {"name":"dimmer1", "refid":"M-0_D1", "indiv_addr":[0,0,22], "status":"enabled", "location":[8,5,1], "group_addresses":['1/1/1']}
 # Actuators
-led1_config = {"name":"led1", "refid":"M-0_L1", "indiv_addr":[0,0,1], "status":"enabled", "location":[5,5,1], "group_addresses":['1/1/1']}
-heater1_config = {"name":"heater1", "refid":"M-0_H1", "indiv_addr":[0,0,11], "status":"enabled", "max_power":400, "location":[11,2,1], "group_addresses":['1/1/1']}
-ac1_config = {"name":"ac1", "refid":"M-0_C1", "indiv_addr":[0,0,12], "status":"enabled", "max_power":400, "location":[11,5,1], "group_addresses":['1/1/1']}
+led1_config = {"name":"led1", "refid":"M-0_L1", "indiv_addr":[0,0,1], "status":"enabled", "location":[5,5,1], "group_addresses":['1/1/1'], "max_lumen":800, "state_ratio":100, "beam_angle":180, "state_ratio":100, "effective_lumen":800}
+heater1_config = {"name":"heater1", "refid":"M-0_H1", "indiv_addr":[0,0,11], "status":"enabled", "max_power":400, "location":[11,2,1], "group_addresses":['1/1/1'], "state_ratio":100, "power":400}
+ac1_config = {"name":"ac1", "refid":"M-0_C1", "indiv_addr":[0,0,12], "status":"enabled", "max_power":400, "location":[11,5,1], "group_addresses":['1/1/1'], "state_ratio":100, "power":400}
 switch1_config = {"name":"switch1", "refid":"M-0_S3", "indiv_addr":[0,0,44], "status":"enabled", "location":[8,10,1], "group_addresses":['1/1/1']}
 # Sensors
 bright1_config = {"name":"brightness1", "refid":"M-0_L3", "indiv_addr":[0,0,5], "status":"enabled", "location":[10,10,1], "group_addresses":['1/1/1']}
 thermometer1_config = {"name":"thermometer1", "refid":"M-0_T1", "indiv_addr":[0,0,33], "status":"enabled", "location":[8,9,1], "group_addresses":['1/1/1']}
-airsensor1_config = {"name":"airsensor1", "refid":"M-0_A1", "indiv_addr":[0,0,55], "status":"enabled", "location":[8,1,1], "group_addresses":['1/1/1']}
+humidity_config = {"name":"humiditysoil1", "refid":"M-0_HU1", "indiv_addr":[0,0,34], "status":"enabled", "location":[8,9,1], "group_addresses":['1/1/1']}
+co2sensor1_config = {"name":"co2sensor1", "refid":"M-0_CO2", "indiv_addr":[0,0,35], "status":"enabled", "location":[8,9,2], "group_addresses":['1/1/1']}
+airsensor1_config = {"name":"airsensor1", "refid":"M-0_A1", "indiv_addr":[0,0,55], "status":"enabled", "location":[8,9,3], "group_addresses":['1/1/1']}
 presencesensor1_config = {"name":"presencesensor1", "refid":"M-0_P1", "indiv_addr":[0,0,66], "status":"enabled", "location":[8,2,1], "group_addresses":['1/1/1']}
 
 
@@ -44,10 +46,14 @@ def test_correct_devices_creation():
     led1 = dev.LED("led1", "M-0_L1", system.IndividualAddress(0,0,1), "enabled") 
     assert led1.name == led1_config["name"]
     assert led1.refid == led1_config["refid"]
+    assert led1.max_lumen == led1_config["max_lumen"]
+    assert led1.beam_angle == led1_config["beam_angle"]
     assert led1.individual_addr.area == led1_config["indiv_addr"][0]
     assert led1.individual_addr.line == led1_config["indiv_addr"][1]
     assert led1.individual_addr.device == led1_config["indiv_addr"][2]
     assert led1.status == led1_config["status"]
+    assert led1.state_ratio == led1_config["state_ratio"]
+    assert led1.effective_lumen() == led1_config["effective_lumen"]
     # Test correct Heater
     heater1 = dev.Heater("heater1", "M-0_H1", system.IndividualAddress(0,0,11), "enabled", 400) #400W max power
     assert heater1.name == heater1_config["name"]
@@ -57,6 +63,8 @@ def test_correct_devices_creation():
     assert heater1.individual_addr.device == heater1_config["indiv_addr"][2]
     assert heater1.status == heater1_config["status"]
     assert heater1.max_power == heater1_config["max_power"]
+    assert heater1.state_ratio == heater1_config["state_ratio"]
+    assert heater1.power == heater1_config["power"]
     # Test correct AC
     ac1 = dev.AC("ac1", "M-0_C1", system.IndividualAddress(0,0,12), "enabled", 400)
     assert ac1.name == ac1_config["name"]
@@ -66,6 +74,8 @@ def test_correct_devices_creation():
     assert ac1.individual_addr.device == ac1_config["indiv_addr"][2]
     assert ac1.status == ac1_config["status"]
     assert ac1.max_power == ac1_config["max_power"]
+    assert ac1.state_ratio == ac1_config["state_ratio"]
+    assert ac1.power == ac1_config["power"]
     # Test correct switch
     switch1 = dev.Switch("switch1", "M-0_S3", system.IndividualAddress(0,0,44), "enabled")
     assert switch1.name == switch1_config["name"]
@@ -90,6 +100,22 @@ def test_correct_devices_creation():
     assert thermometer1.individual_addr.line == thermometer1_config["indiv_addr"][1]
     assert thermometer1.individual_addr.device == thermometer1_config["indiv_addr"][2]
     assert thermometer1.status == thermometer1_config["status"]
+    # Test correct HumiditySoil
+    humiditysoil1 = dev.HumiditySoil("humiditysoil1", "M-0_HU1", system.IndividualAddress(0,0,34), "enabled")
+    assert humiditysoil1.name == humidity_config["name"]
+    assert humiditysoil1.refid == humidity_config["refid"]
+    assert humiditysoil1.individual_addr.area == humidity_config["indiv_addr"][0]
+    assert humiditysoil1.individual_addr.line == humidity_config["indiv_addr"][1]
+    assert humiditysoil1.individual_addr.device == humidity_config["indiv_addr"][2]
+    assert humiditysoil1.status == humidity_config["status"]
+    # Test correct CO2Sensor
+    co2sensor1 = dev.CO2Sensor("co2sensor1", "M-0_CO2", system.IndividualAddress(0,0,35), "enabled")
+    assert co2sensor1.name == co2sensor1_config["name"]
+    assert co2sensor1.refid == co2sensor1_config["refid"]
+    assert co2sensor1.individual_addr.area == co2sensor1_config["indiv_addr"][0]
+    assert co2sensor1.individual_addr.line == co2sensor1_config["indiv_addr"][1]
+    assert co2sensor1.individual_addr.device == co2sensor1_config["indiv_addr"][2]
+    assert co2sensor1.status == co2sensor1_config["status"]
     # Test correct AirSensor
     airsensor1 = dev.AirSensor("airsensor1", "M-0_A1", system.IndividualAddress(0,0,55), "enabled")
     assert airsensor1.name == airsensor1_config["name"]
@@ -108,7 +134,7 @@ def test_correct_devices_creation():
     assert presencesensor1.status == presencesensor1_config["status"]
 
 
-devices_classes = { "Button": dev.Button, "Dimmer": dev.Dimmer , "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch, "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "AirSensor": dev.AirSensor, "PresenceSensor": dev.PresenceSensor}
+devices_classes = { "Button": dev.Button, "Dimmer": dev.Dimmer , "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch, "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySoil":dev.HumiditySoil, "CO2Sensor":dev.CO2Sensor, "AirSensor": dev.AirSensor, "PresenceSensor": dev.PresenceSensor}
 false_device_names = ["", "device_4*", 420]
 wrong_device_names = {  "Button":["BUTTON1", "button 1", "button_1", "switch4"],
                         "Dimmer":["DIMMER1", "dimmer 1", "dimmer_1", "led3"],
@@ -118,6 +144,8 @@ wrong_device_names = {  "Button":["BUTTON1", "button 1", "button_1", "switch4"],
                         "Switch":["SWITCH1", "switch 1", "switch_1", "ac4"],
                         "Brightness":["BRIGHT1", "bright 1", "bright_1", "heater4"],
                         "Thermometer":["THERMOMETER1", "thermometer 1", "thermometer_1", "bright2"],
+                        "HumiditySoil":["HUMIDITYSENSOR1", "humidity sensor 1", "humiditysoil_1", "thermometer1"],
+                        "CO2Sensor":["CO2SENSOR1", "co2 sensor 1", "co2sensor_1", "humiditysoil1"],
                         "AirSensor":["AIRSENSOR1", "air sensor 1", "airsensor_1", "thermometer2"],
                         "PresenceSensor":["PRESENCESENSOR1", "presence sensor 1", "presencesensor_1", "button2"]
                         } 

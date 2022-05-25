@@ -18,7 +18,7 @@ COMMAND_HELP = "Command Syntax: \n"\
 # dict to link string to devices constructor object
 DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch,
                 "Button": dev.Button, "Dimmer": dev.Dimmer, #"TemperatureController": dev.TemperatureController,  #"Switch": dev.Switch,
-                "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySensor":dev.HumiditySensor,
+                "Brightness": dev.Brightness, "Thermometer": dev.Thermometer, "HumiditySoil":dev.HumiditySoil, "HumidityAir":dev.HumidityAir,
                 "CO2Sensor": dev.CO2Sensor, "PresenceSensor": dev.PresenceSensor, "AirSensor": dev.AirSensor}
 # Situation of the insulation of the room associated to the correction factor for the heating
 # INSULATION_TO_CORRECTION_FACTOR = {"average": 0, "good": -10/100, "bad": 15/100}
@@ -28,6 +28,7 @@ INSULATION_TO_TEMPERATURE_FACTOR = {"perfect": 0, "good": 10/100, "average": 20/
 INSULATION_TO_HUMIDITY_FACTOR = {"perfect": 0, "good": 20/100, "average": 45/100, "bad":75/100}
 # Influence of outdoor co2
 INSULATION_TO_CO2_FACTOR = {"perfect": 0, "good": 10/100, "average": 25/100, "bad":50/100}
+
 
 # TODO: should check that in the right boundaries!!!
 MAX_MAIN = 31
@@ -89,7 +90,7 @@ class IndividualAddress:
 
     def __repr__(self) -> str:
         '''Following XKNX handling of individual addresses'''
-        return f"{self.area}.{self.device}.{self.line}"
+        return f"{self.area}.{self.line}.{self.device}"
 
 
 class GroupAddress:

@@ -112,24 +112,6 @@
             "refid": "M-O_X100",
             "knx_location": "0.0.20",
             "status": "enabled"
-          },
-          "humidityair1": {
-            "class": "HumidityAir",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.21",
-            "status": "enabled"
-          },
-          "switch1": {
-            "class": "Switch",
-            "refid": "M-O_X101",
-            "knx_location": "0.0.22",
-            "status": "enabled"
-          },
-          "presencesensor1": {
-            "class": "PresenceSensor",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.23",
-            "status": "enabled"
           }
         }
       }
@@ -184,13 +166,13 @@
   "world": {
     "simulation_speed_factor": 360,
     "outside_temperature": 20.0,
-    "inside_temperature": 25.0,
+    "inside_temperature":25.0,
     "outside_relativehumidity": 50.0,
-    "inside_relativehumidity": 35.0,
+    "inside_relativehumidity":35.0,
     "outside_co2": 300,
     "inside_co2": 800.0,
     "time_of_day": "now",
-    "date": "today",
+    "date":"today",
     "weather": "sunny",
     "number_of_rooms": 1,
     "rooms": {
@@ -204,8 +186,8 @@
         "insulation": "good",
         "room_devices": {
           "led1": [
-            0.3625,
-            0.65,
+            0.375,
+            1.5125,
             1
           ],
           "led2": [
@@ -219,18 +201,18 @@
             1
           ],
           "button1": [
-            1.4125,
-            7.975,
+            1.35,
+            5.7875,
             1
           ],
           "button2": [
-            1.425,
-            7.025,
+            1.3625,
+            7.35,
             1
           ],
           "brightness1": [
-            0.525,
-            7.85,
+            0.5,
+            5.9375,
             1
           ],
           "brightness2": [
@@ -249,8 +231,8 @@
             1
           ],
           "thermometer1": [
-            0.525,
-            6.725,
+            0.5,
+            7.025,
             1
           ],
           "led4": [
@@ -264,8 +246,8 @@
             1
           ],
           "button3": [
-            0.4875,
-            1.75,
+            0.4125,
+            2.4125,
             1
           ],
           "ac1": [
@@ -274,13 +256,13 @@
             1
           ],
           "button4": [
-            1.425,
-            6.4,
+            1.35,
+            6.7125,
             1
           ],
           "airsensor1": [
-            0.5375,
-            5.525,
+            0.4625,
+            4.7125,
             1
           ],
           "humiditysoil1": [
@@ -289,23 +271,8 @@
             1
           ],
           "co2sensor1": [
-            0.5375,
-            4.625,
-            1
-          ],
-          "humidityair1": [
-            0.55,
-            3.725,
-            1
-          ],
-          "switch1": [
-            1.7875,
-            0.625,
-            1
-          ],
-          "presencesensor1": [
-            6.1625,
-            5.8625,
+            0.5,
+            3.75,
             1
           ]
         }

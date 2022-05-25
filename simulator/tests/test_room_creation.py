@@ -3,6 +3,7 @@ import pytest
 import logging
 
 import system
+from devices import Button
 
 
 ## Test unit configuration functions (add_device, constructors,...)
@@ -18,6 +19,17 @@ def test_correct_room_creation():
     assert room1.height == room1_config["dimensions"][2]
     assert room1.group_address_style == group_address_style
     assert room1.insulation in system.INSULATION_TO_TEMPERATURE_FACTOR
+
+def test_correct_InRoomDevice_creation():
+    button1_config = {"name":"button1", "refid":"M-0_S1", "indiv_addr":[0,0,20], "status":"enabled", "location":(0,0,1), "group_addresses":['1/1/1']}
+    button1 = Button("button1", "M-0_S1", system.IndividualAddress(0,0,20), "enabled")
+    room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation='good', test_mode=True)
+    ir_button1 = system.InRoomDevice(button1, room1, 0, 0, 1)
+    assert ir_button1.name == button1_config["name"]
+    assert ir_button1.device == button1
+    assert ir_button1.room == room1
+    assert ir_button1.location.pos == button1_config["location"]
+
 wrong_room_names = ["", "room_4*", 420]
 wrong_room_dimensions = [[-1, 20, 3], [10, 0, 0], [5, '5', 'a']]
 

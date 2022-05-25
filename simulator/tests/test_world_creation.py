@@ -16,6 +16,8 @@ def test_correct_world_creation():
     temp_out, hum_out, co2_out = 20.0, 55, 300
     p_sat = 2339.32074966 # NOTE: to change if temp init ≠ 20.0
     vapor_pressure = 818.76226238 # NOTE: to change if temp init ≠ 20.0 and hum inti ≠ 35
+    utilization_factor = 0.52
+    light_loss_factor = 0.8
     world = sim.World(width, length, height, speed_factor, system_dt, insulation, temp_out, hum_out, co2_out)
     assert hasattr(world, 'time')
     assert world.time.speed_factor == speed_factor
@@ -30,6 +32,8 @@ def test_correct_world_creation():
     assert world.ambient_temperature.room_insulation == insulation
     assert world.ambient_temperature.room_volume == room_volume
     assert hasattr(world, 'ambient_light')
+    assert world.ambient_light.utilization_factor == utilization_factor
+    assert world.ambient_light.light_loss_factor == light_loss_factor
     assert hasattr(world, 'ambient_humidity')
     assert world.ambient_humidity.temp == temp_out # NOTE: to change if temp init ≠ temp_out in room
     assert world.ambient_humidity.humidity_out == hum_out
