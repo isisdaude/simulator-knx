@@ -11,6 +11,7 @@ from xknx.xknx import XKNX
 from xknx.telegram.telegram import Telegram
 import asyncio
 import time
+import socket
 
 async def telegram_received_cb(telegram: Telegram):
         """
@@ -19,10 +20,12 @@ async def telegram_received_cb(telegram: Telegram):
         print(telegram)
 
 async def main():
+    hostname = socket.gethostname()
+    IPAddr = socket.gethostbyname(hostname)  
     connection_config = ConnectionConfig(
             route_back=True,  # To enable connection through the docker
             connection_type=ConnectionType.TUNNELING,
-            gateway_ip="128.179.196.182",
+            gateway_ip=IPAddr,
             gateway_port=3671,
         )
     xknx = XKNX( connection_config=connection_config, daemon_mode=True)
@@ -37,13 +40,5 @@ async def main():
     await xknx.start()
     print("Connected!")
     print("sending telegram")
-    # async with xknx as xknx:
-    #         # Read from KNX the current value
-    #         value_reader = ValueReader(
-    #             xknx,
-    #             GroupAddress("0/0/5"),
-    #             timeout_in_seconds=5,
-    #         )
-    #         telegram = await value_reader.read()
-    #         print(telegram)
+    
 asyncio.run(main())
