@@ -1,6 +1,7 @@
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 
 import logging, sys
+import datetime as dt
 import numbers
 
 
@@ -289,3 +290,49 @@ def check_location(bounds, x, y, z):
         return new_x, new_y, new_z
     else:
         return x, y, z
+
+def check_wheater_date(date_time, weather):
+    TIME_OF_DAY = ["today", "yesterday", "one_week_ago", "one_month_ago", "YYYY/MM/DD/HH/MM"]
+    WEATHER = ["clear", "overcast", "dark"]
+    # datetime
+    date_time = date_time.lower()
+    try:
+        assert date_time in TIME_OF_DAY # today or yesterday
+        if date_time == 'today':
+            sim_datetime = dt.datetime.today()
+        if date_time == 'yesterday':
+            sim_datetime = dt.datetime.today() - dt.timedelta(days=1)
+        if  date_time == 'one_week_ago':
+            sim_datetime = dt.datetime.today() - dt.timedelta(days=7)
+        if date_time == 'one_month_ago': # 4 weeks ago in reality
+            sim_datetime = dt.datetime.today() - dt.timedelta(weeks=4)
+    except AssertionError:
+        try:
+            dt_split = date_time.split('/')
+            if len(dt_split) > 3:
+                assert len(dt_split) == 5 # hour and minute
+                try:
+                    sim_datetime = dt.datetime(year=dt_split[0],month=dt_split[1],day=dt_split[2], hour=dt_split[3], minute=dt_split[4])
+                except ValueError as msg:
+                    logging.error(f" The time_of_day '{date_time}' given is incorrect: '{msg}'")
+            else:
+                assert len(dt_split) == 3 # only date
+                try:
+                    sim_datetime = dt.datetime(year=dt_split[0],month=dt_split[1],day=dt_split[2])
+                except ValueError as msg:
+                    logging.error(f" The time_of_day '{date_time}' given is incorrect: '{msg}'")
+        except AssertionError:
+            logging.error(f"'date_time format should be 'YYYY/MM/DD/HH/MM' or 'YYYY/MM/DD', but '{date_time}' was given, today is considered as datetime simulation")
+            sim_datetime = dt.datetime.today()
+    # weather
+    try:
+        weather = weather.lower()
+        assert weather in WEATHER
+        sim_weather = weather
+    except AssertionError:
+        logging.error(f"'weather should be 'clear', 'overcast' or 'dark', but '{weather}' was given, 'sunny' is considered as simulation outside weather ")
+        sim_weather = 'clear'
+    return sim_datetime, sim_weather
+
+
+    

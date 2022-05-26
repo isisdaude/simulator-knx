@@ -6,13 +6,13 @@ import shutil
 from typing import List
 import json
 from time import time
-from datetime import timedelta
+from datetime import timedelta, datetime
 import numpy as np
 
 
 
 from system.tools import configure_system_from_file, DEV_CLASSES, GroupAddress, Location
-from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget
+from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget, DayTimeWeatherWidget
 from .gui_config import *
 
 
@@ -65,7 +65,6 @@ class GUIWindow(pyglet.window.Window):
                                     x=COMMANDLABEL_POS[0], y=COMMANDLABEL_POS[1],
                                     anchor_x='right', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
-        self.simtime_widget = SimTimeWidget(SIMLABEL_POS[0], SIMLABEL_POS[1], self.__batch, group_label=self.__foreground, group_box=self.__background)
         self.__text_box = pyglet.shapes.Rectangle(TEXTBOX_POS[0], TEXTBOX_POS[1], WIN_WIDTH-TEXTBOX_POS[0]-WIN_BORDER, 40, color=(255, 255, 255),
                                     batch=self.__batch, group=self.__background)
         # Initialize the text box label to display the user input in the textbox
@@ -75,6 +74,8 @@ class GUIWindow(pyglet.window.Window):
                                     x=(self.__text_box.x+10), y=(self.__text_box.y+20),
                                     anchor_x='left', anchor_y='center',
                                     batch=self.__batch, group=self.__foreground)
+        self.simtime_widget = SimTimeWidget(SIMTIME_POS[0], SIMTIME_POS[1], self.__batch, group_box=self.__background, group_label=self.__foreground)
+        self.daytimeweather_widget = DayTimeWeatherWidget(TIMEWEATHER_POS[0], TIMEWEATHER_POS[1], self.__batch, group_box=self.__background, group_daytime=self.__middleground, group_weather=self.__foreground, temp_out=self.room.world.ambient_temperature.temperature_out, hum_out=self.room.world.ambient_humidity.humidity_out, co2_out=self.room.world.ambient_co2.co2_out )
         # Initialize the list of devices in the room
         self.__devicelist_widget = DeviceListWidget(DEVICELIST_POS[0], DEVICELIST_POS[1], self.__batch, group_label=self.__foreground, group_box=self.__background)
         self.__sensors_box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_SENSOR_LEVELS_BOX_Y_BOTTOM, SENSOR_LEVELS_BOX_WIDTH, SENSOR_LEVELS_BOX_LENGTH, border=WIN_BORDER/2,
@@ -483,7 +484,11 @@ class GUIWindow(pyglet.window.Window):
             gui_device = getattr(self.__available_devices, in_room_device.device.class_name.lower())
             pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.__room_width_ratio, self.__room_length_ratio, self.__room_widget.origin_x, self.__room_widget.origin_y)
             print(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
-            device_widget = DeviceWidget(pos_x, pos_y, self.__batch, gui_device.file_ON, gui_device.file_OFF, group=self.__foreground, device_type='sensor', device_class=in_room_device.name[:-1], device_number=in_room_device.name[-1])
+            if 'thermometer' in gui_device.label_name:
+                img_neutral = DEVICE_THERMO_NEUTRAL_PATH
+            else: 
+                img_neutral = None
+            device_widget = DeviceWidget(pos_x, pos_y, self.__batch, gui_device.file_ON, gui_device.file_OFF, group=self.__foreground, device_type='sensor', device_class=in_room_device.name[:-1], device_number=in_room_device.name[-1], img_neutral=img_neutral)
             device_widget.in_room_device = in_room_device
             self.__room_devices.append(device_widget)
         self.__display_devices_list()
@@ -492,7 +497,7 @@ class GUIWindow(pyglet.window.Window):
         self.__display_airsensor_labels()
     
 
-    def update_sensors(self, brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states):
+    def update_sensors(self, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states):
         """ Re-Initialisation of the room sensors list with new values"""
         for room_brightness_level in self.__room_brightness_levels:
             room_brightness_level.delete()
@@ -511,6 +516,9 @@ class GUIWindow(pyglet.window.Window):
         for temp in temperature_levels:
             temp_name, temperature = temp[0], round(temp[1],2)
             self.__display_temperature_level(temp_name, temperature)
+            for room_device in self.__room_devices:
+                if 'thermometer' in room_device.label_name: # set img to blue or red depending on if temp is decreasing or rising
+                    room_device.update_thermometer_sprite(rising_temp)
             if 'air' in temp_name: 
                 try:
                     airsensor_dict[temp_name]["temperature"] = temperature # for compact airsensor
@@ -867,13 +875,16 @@ class GUIWindow(pyglet.window.Window):
 
 
 # Cannot be a class method because first argument must be dt, and thus cannot be self.
-def update_window(dt, window, current_str_simulation_time): 
+def update_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out): 
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
     sim_time = current_str_simulation_time
-    window.simtime_widget.simtime_valuelabel.text = f"{sim_time}" 
+    datetime_str = date_time.strftime("%Y-%m-%d %H:%M:%S")
+    window.simtime_widget.simtime_label.text = f"SimTime: {sim_time}" 
+    window.simtime_widget.date_label.text = f"Date: {datetime_str}"
+    window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
     print(f"doing simtime update at {sim_time[:-5]} \n")
-
+    ## TODO print out lux at top left of window
 
 # if __name__ == '__main__':
 #     speed_factor = 180

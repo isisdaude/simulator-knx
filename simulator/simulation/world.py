@@ -6,7 +6,7 @@ Some class definitions for the simulation of the physical world
 from typing import List
 import time, math, schedule
 import sys, logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from numpy import mean
 
 #from soupsieve import escape
@@ -22,10 +22,12 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
 
-    def __init__(self, simulation_speed_factor:float, system_dt):
+    def __init__(self, simulation_speed_factor:float, system_dt, date_time):
         # Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 for now)
         self.speed_factor = simulation_speed_factor
         self.system_dt = system_dt
+        self.datetime_init = date_time
+        self.date_time = date_time
         # ratio for physical state update, pro rata per hour
         self.update_rule_ratio = (self.system_dt * self.speed_factor)/3600
 
@@ -63,17 +65,22 @@ class Time:
                 return elapsed_time # in seconds
         except AttributeError:
             logging.warning("The Simulation time is not initialized")
+    
+    def update_datetime(self):
+        self.date_time = self.datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
+        print(self.date_time.strftime("%Y-%m-%d %H:%M:%S"))
+        return self.date_time
 
 
 class AmbientTemperature:
     '''Class that implements temperature in a system'''
 
-    def __init__(self, room_volume, update_rule_ratio, temp_out:float, room_insulation):
+    def __init__(self, room_volume, update_rule_ratio, temp_out:float, temp_in:float, room_insulation):
         # self.simulation_speed_factor = simulation_speed_factor
         # self.simulated_dt = system_dt * simulation_speed_factor # e.g., update called every 1*180seconds = 3min
         self.update_rule_ratio = update_rule_ratio # update rules are per hour, ratio translate it to the system dt
-        self.temperature = temp_out # Will be obsolete when we introduce gradient of temperature
-        self.outside_temperature = temp_out
+        self.temperature_in = temp_in # Will be obsolete when we introduce gradient of temperature
+        self.temperature_out = temp_out
         self.room_insulation = room_insulation
         self.room_volume = room_volume
         """Describes room volume in m3"""
@@ -116,8 +123,9 @@ class AmbientTemperature:
         from system import INSULATION_TO_TEMPERATURE_FACTOR
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         logging.info("Temperature update")
+        previous_temp = self.temperature_in
         if(not self.temp_sources):
-            self.temperature = (self.temperature + self.outside_temperature)//2 # Decreases by the average of temp and outside_temp, is a softer slope
+            self.temperature_in += (self.temperature_out - self.temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.room_insulation] 
         else:
             self.total_max_power = self.max_power_heater + self.max_power_ac
             #### actual power would allow to compute concrete max temp
@@ -129,52 +137,58 @@ class AmbientTemperature:
                 if source.device.status and source.device.state: # if source enabled
                     if isinstance(source.device, Heater):
                         source.device.update_rule = source.device.power/self.total_max_power 
-                        self.temperature += source.device.update_rule*self.update_rule_ratio
+                        self.temperature_in += source.device.update_rule*self.update_rule_ratio
                     if isinstance(source.device, AC):
                         source.device.update_rule = - source.device.power/self.total_max_power
-                        self.temperature += source.device.update_rule*self.update_rule_ratio # The ac update rule is <0
+                        self.temperature_in += source.device.update_rule*self.update_rule_ratio # The ac update rule is <0
             # Compute max temp
             #relative_max_power = self.max_power_heater - self.max_power_ac
             # Apply temp factor from outside temp and insulation
-            self.temperature += (self.outside_temperature - self.temperature) * INSULATION_TO_TEMPERATURE_FACTOR[self.room_insulation]
+            self.temperature_in += (self.temperature_out - self.temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.room_insulation]
             #TODO: compute max and min temp!!!
             max_temp = 30.0 #self.max_temperature_in_room(self.room_volume, self.max_power_heater, "good") ##mean(max_temps)
             min_temp = 10.0
-            self.temperature = max(min_temp, min(max_temp, self.temperature)) # temperature cannot exceed max temp
+            self.temperature = max(min_temp, min(max_temp, self.temperature_in)) # temperature cannot exceed max temp
             # print(f"system temp= {round(self.temperature, 2)}")
             # self.temperature = max(min_temp, self.temperature)
                 # self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
         temperature_levels = []
         for sensor in self.temp_sensors: # temp sensors are in room devices
             # print(f"sensor {sensor.device.name} temp= {round(self.temperature, 2)}")
-            sensor.device.temperature = self.temperature
+            sensor.device.temperature = self.temperature_in
             temperature_levels.append((sensor.name, sensor.device.temperature))
         # for controller in self.temp_controllers:#
         #     controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources
-        return temperature_levels
+        rising_temp = self.temperature_in > previous_temp
+        if round(self.temperature_in,2) == round(previous_temp,2):
+            rising_temp = None
+        return temperature_levels, rising_temp
 
     def __repr__(self):
-        return f"{self.temperature} °C"
+        return f"{self.temperature_in} °C"
 
     def __str__(self):
-        return f"{self.temperature} °C"
+        return f"{self.temperature_in} °C"
     
     def get_temperature(self, str_mode=False):
         if str_mode:
-            temp = str(round(self.temperature, 2)) + " °C"
+            temp = str(round(self.temperature_in, 2)) + " °C"
         else:
-            temp = self.temperature
+            temp = self.temperature_in
         return temp
 
 
 class AmbientLight:
     '''Class that implements Light in a room'''
-    def __init__(self):
+    def __init__(self, date_time, weather):
         self.light_sources: List = []
         self.light_sensors: List = []
         # values fo global brightness # https://www.fuzionlighting.com.au/technical/room-index, considering light on 3m ceiling 
         self.utilization_factor = 0.52 
         self.light_loss_factor = 0.8  # TODO magic number 
+        self.weather = weather
+        # self.date_time_init = date_time
+        self.lux_out, self.time_of_day = system.outdoor_light(date_time, weather)
     def add_source(self, lightsource): 
         """ lightsource: InRoomDevice """
         self.light_sources.append(lightsource) 
@@ -216,14 +230,17 @@ class AmbientLight:
                 # TODO TODO create a window class with sane attributes than light actuators (Location for compute_distance() and beam_angle, max lumen, state ratio(blinds) for lux computation, effetive lumen method)
         return brightness
     
-    def update(self): #Updates all brightness sensors of the world (the room)
+    def update(self, date_time): # Updates all brightness sensors of the world (the room)
         logging.info("Brightness update")
         brightness_levels = []
+        self.lux_out, self.time_of_day = system.outdoor_light(date_time, self.weather)
+        ## TODO window and blinds with out_lux
         for sensor in self.light_sensors:
             # Update the sensor's brightness
             sensor.device.brightness = self.compute_sensor_brightness(sensor) # set the newly calculated sensor brightness
             brightness_levels.append((sensor.device.name, sensor.device.brightness))
-        return brightness_levels
+
+        return brightness_levels, self.weather, self.time_of_day, self.lux_out
 
     # API functions    
     def compute_global_brightness(self, room):
@@ -265,7 +282,7 @@ class AmbientHumidity:
     # - windows
     # - heater/cooler
     # - insulation
-    def __init__(self, temp_out, hum_out, room_insulation, update_rule_ratio):
+    def __init__(self, temp_out, hum_out, hum_in, room_insulation, update_rule_ratio):
         self.temp = temp_out
         self.humidity_out = hum_out
         self.out_saturation_vapour_pressure = self.compute_saturation_vapor_pressure_water(self.humidity_out)
@@ -275,7 +292,7 @@ class AmbientHumidity:
         # https://journals.ametsoc.org/view/journals/apme/57/6/jamc-d-17-0334.1.xml
         # https://www.weather.gov/lmk/humidity
         self.saturation_vapour_pressure = self.compute_saturation_vapor_pressure_water(self.temp)
-        self.humidity = 35 # default Relative Humidity in %, same in the whole room
+        self.humidity = hum_in # default initial Relative Humidity in %, same in the whole room
         self.vapor_pressure = round(self.saturation_vapour_pressure * self.humidity/100, 8) # Absolut vapor pressure in room
         self.update_rule_ratio = update_rule_ratio
 
@@ -341,9 +358,9 @@ class AmbientCO2:
     # 5,000	Workplace exposure limit (as 8-hour TWA) in most jurisdictions.
     # >40,000 ppm	Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
 
-    def __init__(self, co2_out, room_insulation, update_rule_ratio):
-        self.co2level = 800 # ppm
-        self.outside_co2 = co2_out
+    def __init__(self, co2_out, co2_in, room_insulation, update_rule_ratio):
+        self.co2level = co2_in # ppm
+        self.co2_out = co2_out
         self.room_insulation = room_insulation
         self.co2_sensors: List = []
         self.update_rule_ratio = update_rule_ratio
@@ -359,7 +376,7 @@ class AmbientCO2:
         ## TODO : change CO2 if window opened, co2 rise until window is opened
         ## TODO: check of presence 
         # Apply humidity factor from outside temp and insulation
-        self.co2level += (self.outside_co2 - self.co2level) * INSULATION_TO_CO2_FACTOR[self.room_insulation] * self.update_rule_ratio
+        self.co2level += (self.co2_out - self.co2level) * INSULATION_TO_CO2_FACTOR[self.room_insulation] * self.update_rule_ratio
         co2_levels = []
         for sensor in self.co2_sensors:
             sensor.device.co2level = int(self.co2level)
@@ -445,29 +462,31 @@ class Presence:
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
-    def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt, room_insulation, temp_out, hum_out, co2_out):
-        self.time = Time(simulation_speed_factor, system_dt) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
+    def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt, room_insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather): #date_time is simply a string keyword from config file at this point
+        self.date_time, self.weather = system.check_wheater_date(date_time, weather) # self.date_time is a datetime.datetime instance, self.weather is a string
+        self.time = Time(simulation_speed_factor, system_dt, self.date_time) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.room_insulation = room_insulation
         self.temp_out, self.hum_out, self.co2_out = temp_out, hum_out, co2_out
         self.speed_factor = simulation_speed_factor
-        self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, self.time.update_rule_ratio, temp_out, room_insulation)
-        self.ambient_light = AmbientLight() #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
-        self.ambient_humidity = AmbientHumidity(self.temp_out, self.hum_out, self.room_insulation, self.time.update_rule_ratio)
-        self.ambient_co2 = AmbientCO2(self.co2_out, self.room_insulation, self.time.update_rule_ratio)
+        self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, self.time.update_rule_ratio, temp_out, temp_in, room_insulation)
+        self.ambient_light = AmbientLight(self.date_time, self.weather) #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
+        self.ambient_humidity = AmbientHumidity(self.temp_out, self.hum_out, hum_in,  self.room_insulation, self.time.update_rule_ratio)
+        self.ambient_co2 = AmbientCO2(self.co2_out, co2_in, self.room_insulation, self.time.update_rule_ratio)
         self.soil_moisture = SoilMoisture(self.time.update_rule_ratio)
         self.presence = Presence()
         self.ambient_world = [self.ambient_temperature, self.ambient_light, self.ambient_humidity, self.ambient_co2, self.soil_moisture]
 
     def update(self):
         # co2 and humidity update need temperature update to be done before
-        brightness_levels = self.ambient_light.update()
-        temperature_levels = self.ambient_temperature.update()
+        date_time = self.time.update_datetime()
+        brightness_levels, weather, time_of_day, out_lux = self.ambient_light.update(date_time)
+        temperature_levels, rising_temp = self.ambient_temperature.update()
         humidity_levels = self.ambient_humidity.update(self.ambient_temperature.temperature)
         co2_levels = self.ambient_co2.update(self.ambient_temperature.temperature, self.ambient_humidity.humidity)
         humiditysoil_levels = self.soil_moisture.update(self.ambient_humidity.humidity)
         presence_sensors_states = self.presence.update()
         # humidity_levels = self.ambient_humidity.update()
-        return brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states
+        return date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states
 
     def get_world_state(self): # one world per room, so status of the room
         print("+---------- STATUS ----------+")

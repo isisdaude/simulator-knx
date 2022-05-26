@@ -16,3 +16,5 @@ pytest==7.1.1
 pytest-asyncio==0.18.2
 pytest-mock==3.7.0
 pytest-cov==3.0.0
+
+astral==2.2

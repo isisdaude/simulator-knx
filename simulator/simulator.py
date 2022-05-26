@@ -39,11 +39,11 @@ CONFIG_PATH = "./docs/config/sim_config_bedroom.json"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
 
-VERIF_FILE_PATH = "./docs/app_verification/LightTemp.txt" #"./docs/app_verification/Light.txt"
+SCRIPT_FILE_PATH = "./docs/app_verification/LightTemp.txt" #"./docs/app_verification/Light.txt"
 # Configure logging messages format
 LOGGING_LEVEL = logging.WARNING
 
-verif_mode = True
+script_mode = True
 UI_MODE = True
 
 def launch_simulation():
@@ -162,7 +162,7 @@ def background_loop(loop: asyncio.AbstractEventLoop) -> None:
 
 async def user_input_loop(room):
     while True:
-        global verif_mode
+        global script_mode
         # if verif_mode:
         #     message = ''
         # else:
@@ -173,20 +173,20 @@ async def user_input_loop(room):
             return None
             # sys.exit(1)
 
-async def simulator_verif_loop(room, file_path):
-    verif_parser = system.VerifParser()
-    global verif_mode
+async def simulator_script_loop(room, file_path):
+    script_parser = system.ScriptParser()
+    global script_mode
     with open(file_path, "r") as f:
         commands = f.readlines()
         for command in commands:
-            if verif_mode:
+            if script_mode:
                 print("\n>>> Next command?")
             command = command.strip().lower() # remove new line symbol and put in lower case
             print(f"Command >>> '{command}' <<<")
-            verif_state = await verif_parser.verif_command_parser(room, command)
-            if verif_state is None:
+            script_state = await script_parser.script_command_parser(room, command)
+            if script_state is None:
                 # await kill_tasks()
-                verif_mode = False
+                script_mode = False
                 return None
                 # sys.exit(1)
 
@@ -222,9 +222,9 @@ async def async_main(loop, room):
     if UI_MODE:
         ui_task = loop.create_task(user_input_loop(room))
         tasks.append(ui_task) 
-    if verif_mode:
-        verif_task = loop.create_task(simulator_verif_loop(room, VERIF_FILE_PATH))
-        tasks.append(verif_task) 
+    if script_mode:
+        script_task = loop.create_task(simulator_script_loop(room, SCRIPT_FILE_PATH))
+        tasks.append(script_task) 
 
     await asyncio.wait(tasks)
 

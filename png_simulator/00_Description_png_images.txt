@@ -22,6 +22,11 @@ drop 40x61
 	color green = (0, 79, 17, 255)
 	color blue=(3, 97, 190)
 	
+Sun 60x60
+Sunrise/sunset 60x42
+Moon 60x50
+coud_dark 100x50
+cloud_overcast 57x40
 
 Room background 1000x800 (as defined in gui_config)
 

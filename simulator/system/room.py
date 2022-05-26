@@ -64,19 +64,18 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, test_mode=False): # system_dt is delta t in seconds between updates
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False): # system_dt is delta t in seconds between updates
         self.test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style, self.insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
-        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt, self.insulation, temp_out, hum_out, co2_out)
+        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt, self.insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
         """List of all devices in the room"""
         self.devices: List[InRoomDevice] = []
         """Simulation status to pause/resume"""
         self.simulation_status = True
-        
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
@@ -148,17 +147,17 @@ class Room:
             import gui
             if self.simulation_status:
                 # world.update updates value of all sensors system instances 
-                brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
+                date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
                 #brightness_levels = brightness_sensor_name, brightness
                 if gui_mode:
                     try: # attributes are created in main (proto_simulator)
-                        gui.update_window(interval, self.window, self.world.time.simulation_time(str_mode=True))
+                        gui.update_window(interval, self.window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux)
                     except AttributeError:
                         logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
                     except Exception:
                         logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
                     try: # update gui devices instances
-                        self.window.update_sensors(brightness_levels, temperature_levels, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
+                        self.window.update_sensors(brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
                     except Exception:
                         logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
                 elif gui_mode == False:

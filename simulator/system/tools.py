@@ -1,5 +1,9 @@
 
 import logging, sys
+from  datetime import datetime, timezone, timedelta
+# import astral
+from astral import LocationInfo
+from astral.sun import sun
 import asyncio
 import math
 import json
@@ -238,9 +242,16 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         logging.error("Incorrect simulation speed factor, review the config file before launching the simulator")
         sys.exit()
     
-    outside_temperature = world_config["outside_temperature"]
+    # Physical initial states indoor/outdoor
+    temperature_out = world_config["outside_temperature"]
+    temperature_in = world_config["inside_temperature"]
     humidity_out = world_config["outside_relativehumidity"]
-    outside_co2 = world_config["outside_co2"]
+    humidity_in = world_config["inside_relativehumidity"]
+    co2_out = world_config["outside_co2"]
+    co2_in = world_config["inside_co2"]
+    datetime = world_config["datetime"]
+    weather = world_config["weather"]
+
 
     rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
     rooms = []
@@ -257,7 +268,8 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         room_insulation = room_config["insulation"]
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
-                    room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode)
+                    room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
+                    datetime, weather,test_mode=test_mode)
         # room.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
@@ -404,11 +416,11 @@ def user_command_parser(command, room):
     return 1
 
 
-class VerifParser():
+class ScriptParser():
     def __init__(self):
         self.stored_values = {}
     
-    async def verif_command_parser(self, room, command):
+    async def script_command_parser(self, room, command):
         command_split = command.split(' ')
         if command.startswith('wait'):
             sleep_time = int(command_split[1])
@@ -470,6 +482,60 @@ def compute_distance(source, sensor) -> float:
     delta_z = abs(source.location.z - sensor.location.z)
     dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
     return dist
+
+DATE_WEATHER_TO_LUX = {"clear_day":10752, "overcast_day":1075, "dark_day":107, "clear_sunrise_sunset":300, "overcast_sunrise_sunset":100, "dark_sunrise_sunset":10,  "clear_twilight":10.8, "overcast_twilight":1, "clear_night":0.108, "overcast_night":0.0001, "dark_night":0}
+def outdoor_light(date_time:datetime, weather:str):
+    city = LocationInfo("Lausanne", "Switzerland", "Europe", 46.516, 6.63282)
+    date = date_time.date()
+    date_time = date_time.replace(tzinfo=timezone.utc)
+    sun_time = sun(city.observer, date=date)
+    dawn_datetime, sunrise_datetime, noon_datetime, sunset_datetime, dusk_datetime = sun_time["dawn"], sun_time["sunrise"], sun_time["noon"], sun_time["sunset"], sun_time["dusk"]
+    # Night
+    if date_time < dawn_datetime or dusk_datetime < date_time:
+        time_of_day = 'moon' # for gui time of day symbol
+        if weather == "clear":
+            lux_out = DATE_WEATHER_TO_LUX["clear_night"]
+        elif weather == "overcast":
+            lux_out = DATE_WEATHER_TO_LUX["overcast_night"]
+        elif weather == "dark":
+            lux_out = DATE_WEATHER_TO_LUX["dark_night"]
+    # Day
+    elif sunrise_datetime < date_time and date_time < sunset_datetime:
+        time_of_day = 'sun' # for gui time of day symbol
+        if date_time < noon_datetime: # ratio of how close we are to ;id_morning/mid_afternoon, 1 if mid_morning < date_time < mid_afternoon
+            mid_morning_offset = (noon_datetime - sunrise_datetime) / 2
+            mid_morning_datetime = sunrise_datetime + mid_morning_offset
+            ratio = min((date_time - sunrise_datetime) / (mid_morning_datetime - sunrise_datetime), 1)
+        elif noon_datetime < date_time:
+            mid_afternoon_offset = (sunset_datetime - noon_datetime) / 2
+            mid_afternoon_datetime = sunset_datetime - mid_afternoon_offset
+            ratio = min((sunset_datetime - date_time ) / (sunset_datetime - mid_afternoon_datetime), 1)
+        if weather == "clear":
+            lux_out = max(ratio * DATE_WEATHER_TO_LUX["clear_day"], DATE_WEATHER_TO_LUX["clear_sunrise_sunset"])
+        elif weather == "overcast":
+            lux_out = max(ratio * DATE_WEATHER_TO_LUX["overcast_day"], DATE_WEATHER_TO_LUX["overcast_sunrise_sunset"])
+        elif weather == "dark":
+            lux_out = max(ratio * DATE_WEATHER_TO_LUX["dark_day"], DATE_WEATHER_TO_LUX["dark_sunrise_sunset"])
+    # Twilight
+    else: # ratio of how close we are to sunrise/sunset with regards to twilight
+        if dawn_datetime < date_time and date_time < sunrise_datetime:
+            time_of_day = 'sunrise' # for gui time of day symbol
+            ratio = (date_time - dawn_datetime) / (sunrise_datetime - dawn_datetime) 
+        elif sunset_datetime < date_time and date_time < dusk_datetime:
+            time_of_day = 'sunset' # for gui time of day symbol
+            ratio = (dusk_datetime - date_time) / (dusk_datetime - sunset_datetime)
+            
+        if weather == "clear":
+            lux_out = ratio * (DATE_WEATHER_TO_LUX["clear_sunrise_sunset"] - DATE_WEATHER_TO_LUX["clear_twilight"])
+        elif weather == "overcast":
+            lux_out = ratio * (DATE_WEATHER_TO_LUX["overcast_sunrise_sunset"] - DATE_WEATHER_TO_LUX["overcast_twilight"])
+        elif weather == "dark":
+            lux_out = ratio * (DATE_WEATHER_TO_LUX["dark_sunrise_sunset"] - DATE_WEATHER_TO_LUX["overcast_twilight"])
+    # print(f"-- lux_out : {lux_out}")
+    # print(f" ------ {date_time}")
+    # print(f"{dawn_datetime}:dawn_datetime, \n{sunrise_datetime}:sunrise_datetime, \n{noon_datetime}:noon_datetime, \n{sunset_datetime}:sunset_datetime, \n{dusk_datetime}:dusk_datetime")
+    return lux_out, time_of_day
+
 
 
 """Tools used by the devices to perform update calculations"""
