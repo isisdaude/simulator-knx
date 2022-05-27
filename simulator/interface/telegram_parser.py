@@ -69,7 +69,7 @@ class TelegramParser:
                 if dpt == None:
                     return None
                 if dpt == DPTBinary:
-                    payload = self.group_address_to_payload.get(str(address))(switched=True if v.value == self.__TRUE else False)
+                    payload = self.group_address_to_payload.get(str(address))(binary_state=True if v.value == self.__TRUE else False)
                     output = sim_t.Telegram(0, source, address,payload)
                 else:
                     decoder = DPT2ByteFloat()
@@ -124,18 +124,18 @@ class TelegramParser:
             return None
 
 def main():
-    from system.telegrams import ButtonPayload, HeaterPayload
+    from system.telegrams import ButtonPayload, HeaterPayload, BinaryPayload
     from system.tools import GroupAddress, IndividualAddress
 
     group_address_to_payload_example = {
         '0/0/0': ButtonPayload,
-        '0/0': HeaterPayload,
+        '0/0': BinaryPayload,
     }
 
     parser = TelegramParser(group_address_to_payload_example)
     ga = GroupAddress('2-levels', 0,0)
     ia = IndividualAddress(0,0,1)
-    test_sim = sim_t.Telegram(0, ia, ga, sim_t.HeaterPayload(19.1))
+    test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
     print(test_sim)
     knx_t = parser.from_simulator_telegram(test_sim)
 

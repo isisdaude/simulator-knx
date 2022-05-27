@@ -1,5 +1,4 @@
 import asyncio
-import time
 from xknx.core.value_reader import ValueReader
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
 from xknx.telegram.apci import GroupValueWrite
