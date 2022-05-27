@@ -1,5 +1,6 @@
 import sys
-sys.path.append("./simulator-knx/simulator")
+# sys.path.append("./simulator-knx/simulator")
+sys.path.append("./simulator")
 from simulator import launch_simulation #simulator.
 
 

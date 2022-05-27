@@ -1,26 +1,15 @@
-
-import dataclasses
-import asyncio
-import datetime
-from asyncio.tasks import Task
-from io import TextIOWrapper
-import os
 import sys
 
 sys.path.append('.')
 sys.path.append('..')
-from typing import Any, Callable, Dict, Final, List, Optional, Tuple, Union, cast
-from itertools import groupby
-from collections import defaultdict
-from enum import Enum
-from xknx.core.value_reader import ValueReader
-from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
+from typing import Dict, Final, Union, List
+from xknx.dpt.dpt import DPTArray, DPTBinary, DPTNumeric
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress, IndividualAddress, GroupAddressType
-from xknx.xknx import XKNX
 import system.telegrams as sim_t
-
+from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
+from xknx.xknx import XKNX
 
 #TODO: we do not handle floats for the moment, but useful when describing temperature!!!
 
@@ -79,15 +68,12 @@ class TelegramParser:
                 
                 if dpt == None:
                     return None
-                
-                # TODO: what control field?
                 if dpt == DPTBinary:
                     payload = self.group_address_to_payload.get(str(address))(switched=True if v.value == self.__TRUE else False)
                     output = sim_t.Telegram(0, source, address,payload)
-                    
                 else:
-                    
-                    conv_v = v.value[0]
+                    decoder = DPT2ByteFloat()
+                    conv_v = decoder.from_knx(v.value)
                     payload = self.group_address_to_payload.get(str(address))(conv_v)
                     output = sim_t.Telegram(0, source, address,payload)
         return output
@@ -110,9 +96,10 @@ class TelegramParser:
             dpt = self.payload_to_dpt.get(sim_t.ButtonPayload)
             value = payload.state
 
-        # elif isinstance(payload, sim_t.HeaterPayload):
-        #     dpt = self.payload_to_dpt.get(sim_t.HeaterPayload)
-        #     value = payload.max_power
+        elif isinstance(payload, sim_t.HeaterPayload):
+            dpt = self.payload_to_dpt.get(sim_t.HeaterPayload)
+            decoder = DPT2ByteFloat()
+            value = decoder.to_knx(payload.max_power)
 
 
         if dpt != None and value != None:
@@ -148,14 +135,15 @@ def main():
     parser = TelegramParser(group_address_to_payload_example)
     ga = GroupAddress('2-levels', 0,0)
     ia = IndividualAddress(0,0,1)
-    test_sim = sim_t.Telegram(0, ia, ga, sim_t.HeaterPayload(19))
+    test_sim = sim_t.Telegram(0, ia, ga, sim_t.HeaterPayload(19.1))
     print(test_sim)
     knx_t = parser.from_simulator_telegram(test_sim)
 
     back = parser.from_knx_telegram(knx_t)
+    print(str(back))
     print(str(back) == str(test_sim))
 
-# if __name__=="__main__":
-#     main()
+if __name__=="__main__":
+    main()
 
 

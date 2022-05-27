@@ -113,10 +113,10 @@ class Location:
 class IndividualAddress:
     """Class to represent individual addresses (virtual location on the KNX Bus)"""
     ## Magic Number
-    def __init__(self, area, line, device): # area[4bits], line[4bits], device[8bits]
+    def __init__(self, area, main, line): # area[4bits], line[4bits], device[8bits]
         from .check_tools import check_individual_address
-        self.area, self.line, self.device = check_individual_address(area, line, device)
-        self.ia_str = '.'.join([str(self.area), str(self.line), str(self.device)])
+        self.area, self.line, self.device = check_individual_address(area, line, main)
+        self.ia_str = '.'.join([str(self.area), str(self.device), str(self.line)])
 
     def __eq__(self, other):
         return (self.area == other.area and
