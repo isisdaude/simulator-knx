@@ -113,21 +113,20 @@ class Location:
 class IndividualAddress:
     """Class to represent individual addresses (virtual location on the KNX Bus)"""
     ## Magic Number
-    def __init__(self, area, main, line): # area[4bits], line[4bits], device[8bits]
+    def __init__(self, area, line, main): # area[4bits],  device[8bits], line[4bits]
         from .check_tools import check_individual_address
         self.area, self.line, self.device = check_individual_address(area, line, main)
-        self.ia_str = '.'.join([str(self.area), str(self.device), str(self.line)])
+        self.ia_str = '.'.join([str(self.area), str(self.line), str(self.device)])
 
     def __eq__(self, other):
         return (self.area == other.area and
                 self.line == other.line and
                 self.device == self.device)
 
-    def __str__(self): # syntax when instance is called with print()
+    def __str__(self): 
         return self.ia_str
-        # return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
-    
-    def __repr__(self): # syntax when instance is called in python interpreter
+
+    def __repr__(self):
         return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
 
     def __repr__(self) -> str:
@@ -142,54 +141,28 @@ class GroupAddress:
     def __init__(self, encoding_style, main, middle=0, sub=0):
         self.encoding_style = encoding_style
         if self.encoding_style == '3-levels': # main[5bits], middle[3bits], sub[8bits]
-            # try: # test if the group address has the correct format
-            #     assert (main >= 0 and main <= 31 and middle >= 0 and middle <= 7 and sub >= 0 and sub <= 255)
-            # except AssertionError:
-            #     logging.warning("'3-levels' group address is out of bounds")
+            
             self.main = main
             self.middle = middle
             self.sub = sub
             self.name = "/".join((str(main), str(middle), str(sub)))
         elif self.encoding_style == '2-levels': # main[5bits], sub[11bits]
-            # try: # test if the group address has the correct format
-            #     assert (main >= 0 and main <= 31 and sub >= 0 and sub <= 2047)
-            # except AssertionError:
-            #     logging.warning("'2-levels' group address is out of bounds")
+            
             self.main = main
             self.sub = sub
             self.name = "/".join((str(main), str(sub)))
         elif self.encoding_style == 'free': # main[16bits]
-            # try: # test if the group address has the correct format
-            #     assert (main >= 0 and main <= 65535)
-            # except AssertionError:
-            #     logging.warning("'free' group address is out of bounds")
+            
             self.main = main
             self.name = str(main)
 
-    def __str__(self): # syntax when instance is called with print()
+    def __str__(self): 
         return self.name
-        # if self.encoding_style == '3-levels':
-        #     return f"({self.main}/{self.middle}/{self.sub})"
-        # elif self.encoding_style == '2-levels':
-        #     return f"({self.main}/{self.sub})"
-        # elif self.encoding_style == 'free':
-        #     return f"({self.main})"
+        
 
-        # if self.encoding_style == '3-levels':
-        #     return f" Group Address(main:{self.main}, middle:{self.middle}, sub:{self.sub})"
-        # elif self.encoding_style == '2-levels':
-        #     return f" Group Address(main:{self.main}, sub:{self.sub})"
-        # elif self.encoding_style == 'free':
-        #     return f" Group Address(main:{self.main}) "
-
-    def __repr__(self): # syntax when instance is called with print()
+    def __repr__(self): 
         return self.name
-        # if self.encoding_style == '3-levels':
-        #     return f"({self.main}/{self.middle}/{self.sub})"
-        # elif self.encoding_style == '2-levels':
-        #     return f"({self.main}/{self.sub})"
-        # elif self.encoding_style == 'free':
-        #     return f"({self.main})"
+        
 
 # __eq__() or __lt__(), "is" operator to check if an instances are of the same type
     def __lt__(self, ga_to_compare): # self is the group addr ref, we want to check if self is smaller than the other ga
