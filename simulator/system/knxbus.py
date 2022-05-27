@@ -5,7 +5,7 @@ from typing import List
 from .tools import GroupAddress
 from devices import Actuator, Sensor, FunctionalModule
 from .telegrams import Telegram
-from interface.communication_interface import CommunicationInterface
+from interface.main import main
 
 # TODO: add an async function that checks whether there are telegrams to be transmitted from svshi, maybe in the callback function of the interface!
 
@@ -97,18 +97,11 @@ class KNXBus:
                 #     functional.receive_telegram(telegram)
 
     def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
-        # TODO: Heater does not send telegrams for the moment
-        from devices.functional_modules import Button #, TemperatureController
-        from system.telegrams import ButtonPayload #, TempControllerPayload
-
-        # TODO: can add other devices here
-        # if isinstance(device, Button):
-        #     self.group_address_to_payload_type.update(
-        #         (str(group_address), ButtonPayload))
-        # elif isinstance(device, TemperatureController):
-        #     self.group_address_to_payload_type.update(
-        #         (str(group_address), TempControllerPayload))
-
+        from system.telegrams import BinaryPayload
+        pass
+        # TODO: which else need to be handled?
+        # print((str(group_address), BinaryPayload)
+        # self.group_address_to_payload_type.update((str(group_address), BinaryPayload))
         # TODO: to be added when async things handled correctly
         # self.communication_interface.group_address_to_payload = self.group_address_to_payload_type
     

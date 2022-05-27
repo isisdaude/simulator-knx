@@ -21,10 +21,8 @@ class TelegramParser:
         self.group_address_to_payload: Dict[str,
                                             sim_t.Payload] = group_address_to_payload
         self.payload_to_dpt: Dict[sim_t.Payload, Union[DPTBinary, DPTArray]] = {
-            # sim_t.ButtonPayload: DPTBinary,
             sim_t.HeaterPayload: DPTArray,
-            sim_t.BinaryPayload: DPTBinary,
-            sim_t.ButtonPayload: DPTBinary
+            sim_t.BinaryPayload: DPTBinary
         }
 
         # Represent true and false values in knx communication
@@ -49,9 +47,9 @@ class TelegramParser:
         
         ga_split = str(telegram.destination_address).split('/')
 
-        if telegram.destination_address.address_format == self.__sim_encoding_to_xknx.get('free'):
+        if telegram.destination_address.levels == self.__sim_encoding_to_xknx.get('free'):
             address = GroupAddress('free', ga_split[0])
-        elif telegram.destination_address.address_format == self.__sim_encoding_to_xknx.get('2-levels'):
+        elif telegram.destination_address.levels == self.__sim_encoding_to_xknx.get('2-levels'):
             address = GroupAddress('2-levels', ga_split[0], 0, ga_split[1])
         else:
             address = GroupAddress('3-levels', ga_split[0], ga_split[1], ga_split[2])
@@ -59,22 +57,23 @@ class TelegramParser:
         source = IndividualAddress(telegram.source_address.area, telegram.source_address.line, telegram.source_address.main)
         output = None
 
-
         if isinstance(payload, GroupValueWrite):
             # For the moment, similarly to SVSHI, we only support GroupValueWrtie as there is no reading involved
             v = payload.value
+            
             if v:
-                dpt = self.payload_to_dpt.get(self.group_address_to_payload.get(str(address),None),None)
+                # We assume that we receive by default a Binary value
+                dpt = self.payload_to_dpt.get(self.group_address_to_payload.get(str(address),sim_t.BinaryPayload),None)
                 
                 if dpt == None:
                     return None
                 if dpt == DPTBinary:
-                    payload = self.group_address_to_payload.get(str(address))(binary_state=True if v.value == self.__TRUE else False)
+                    payload = self.group_address_to_payload.get(str(address), sim_t.BinaryPayload)(binary_state=True if v.value == self.__TRUE else False)
                     output = sim_t.Telegram(0, source, address,payload)
                 else:
                     decoder = DPT2ByteFloat()
                     conv_v = decoder.from_knx(v.value)
-                    payload = self.group_address_to_payload.get(str(address))(conv_v)
+                    payload = self.group_address_to_payload.get(str(address), sim_t.BinaryPayload)(conv_v)
                     output = sim_t.Telegram(0, source, address,payload)
         return output
     
@@ -90,11 +89,11 @@ class TelegramParser:
 
         if isinstance(payload, sim_t.BinaryPayload):
             dpt = self.payload_to_dpt.get(sim_t.BinaryPayload)
-            value = payload.binary_state
+            value = payload.content
         
-        elif isinstance(payload, sim_t.ButtonPayload):
-            dpt = self.payload_to_dpt.get(sim_t.ButtonPayload)
-            value = payload.state
+        # elif isinstance(payload, sim_t.ButtonPayload):
+        #     dpt = self.payload_to_dpt.get(sim_t.ButtonPayload)
+        #     value = payload.state
 
         elif isinstance(payload, sim_t.HeaterPayload):
             dpt = self.payload_to_dpt.get(sim_t.HeaterPayload)
@@ -112,9 +111,9 @@ class TelegramParser:
                 write_content = DPTArray(value)
      
             ga = GroupAddress(address)
-            ga.address_format = self.__sim_encoding_to_xknx.get(encoding)
+            ga.levels = self.__sim_encoding_to_xknx.get(encoding)
  
-            telegram = Telegram(source_address=IndividualAddress(telegram.source.__repr__()),
+            telegram = Telegram(source_address=IndividualAddress(f"{telegram.source.area}.{telegram.source.device}.{telegram.source.line}"),
                 destination_address=ga,
                 payload=GroupValueWrite(write_content)
             )
@@ -124,11 +123,10 @@ class TelegramParser:
             return None
 
 def main():
-    from system.telegrams import ButtonPayload, HeaterPayload, BinaryPayload
+    from system.telegrams import HeaterPayload, BinaryPayload
     from system.tools import GroupAddress, IndividualAddress
 
     group_address_to_payload_example = {
-        '0/0/0': ButtonPayload,
         '0/0': BinaryPayload,
     }
 
@@ -143,7 +141,7 @@ def main():
     print(str(back))
     print(str(back) == str(test_sim))
 
-if __name__=="__main__":
-    main()
+# if __name__=="__main__":
+#     main()
 
 
