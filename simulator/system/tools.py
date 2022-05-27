@@ -34,7 +34,7 @@ INSULATION_TO_HUMIDITY_FACTOR = {"perfect": 0, "good": 20/100, "average": 45/100
 INSULATION_TO_CO2_FACTOR = {"perfect": 0, "good": 10/100, "average": 25/100, "bad":50/100}
 
 
-# TODO: should check that in the right boundaries!!!
+# TODO: should check that individuql addr in the right boundaries!!!
 MAX_MAIN = 31
 MAX_MIDDLE = 7
 MAX_SUB_LONG = 255
@@ -42,6 +42,44 @@ MAX_SUB_SHORT = 2047
 MAX_FREE = 65535
 
 """ Class tools """
+
+class Window:
+    """Class to represent windows"""
+    def __init__(self, window_name, room, wall, location_offset_ratio, size):
+        from .check_tools import check_window
+        ## window img size is 300p wide, for a room of 12.5m=1000p, it corresponds to 3.75m
+        ## must scale the window if different size, e.g. if window size = 1m, scale factor x(horizontal) ou y(vertical) = 1/3.75``
+        self.WINDOW_PIXEL_SIZE = 300
+        ROOM_PIXEL_WIDTH = 1000 ## TODO: take this constant from a config file
+        self.initial_size = room.width * self.WINDOW_PIXEL_SIZE / ROOM_PIXEL_WIDTH # 3.75m if room width=12.5 for 1000 pixels
+        self.name = window_name
+        self.class_name = 'Window'
+        self.wall, self.window_loc, self.size  = check_window(wall, location_offset_ratio, size, room)   # size[width, height] in meters
+        # self.window_loc = (x, y, z) for 
+        # self.wall in north', 'south', 'east' or 'west'
+        # self.size = [width/lengh, height]
+        if self.wall is None: # failed check
+            raise ValueError("Window objec cannot be created, check the error logs")
+
+        self.beam_angle = 180 # arbitrary  but realistic
+        self.state = True # state to be compliant with LighActuator's attributes
+        self.state_ratio = 100 # change if blinds implemented
+
+        # for the GUI display
+        if self.wall in ['north', 'south']:
+            self.scale_x = self.size[0] / self.initial_size
+        if self.wall in ['east', 'west']:
+            self.scale_y = self.size[0] / self.initial_size
+        # self.location_out_offset =  # offset for location to consider light source point outside of room, so that with a certain beamangle, all light is considered
+
+    def max_lumen_from_out_lux(self, out_lux):
+        self.max_lumen = out_lux * math.prod(self.size) # out_lux*window_area
+    
+    def effective_lumen(self):
+        # Lumen quantity rationized with the state ratio (% of source's max lumens)
+        return self.max_lumen*(self.state_ratio/100)
+
+
 
 class Location:
     """Class to represent location"""
@@ -231,7 +269,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         logging.error("Incorrect group address, check the config file before launching the simulator")
         sys.exit()
     world_config = config_dict["world"]
-    # Store number of elements to check that the config file is correct
+    # Store number of main elements 
     number_of_rooms = world_config["number_of_rooms"]
     number_of_areas = knx_config["number_of_areas"]
     # Parsing of the World config to create the room(s), and store corresponding devices
@@ -269,7 +307,20 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
                     room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
-                    datetime, weather,test_mode=test_mode)
+                    datetime, weather, test_mode=test_mode)
+        windows = []
+        for window in room_config["windows"]:
+            wall = room_config["windows"][window]["wall"]
+            location_offset_ratio = room_config["windows"][window]["location_offset_ratio"]
+            size = room_config["windows"][window]["size"]
+            try:
+                window_object = Window(window, room, wall, location_offset_ratio, size)
+                windows.append(window_object)
+                room.add_window(window_object)
+            except ValueError as msg:
+                logging.error(msg)
+                
+                
         # room.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
@@ -549,11 +600,11 @@ def outdoor_light(date_time:datetime, weather:str):
 #     return desired_wattage
 
 
-def max_temperature_in_room(power, volume=1.0, insulation_state="good"):
-    """Maximum reachable temperature for this heater in the specified room"""
+# def max_temperature_in_room(power, volume=1.0, insulation_state="good"):
+#     """Maximum reachable temperature for this heater in the specified room"""
 
-    def watts_to_temp(watts):
-        return ((watts - 70)*2)/7 + 18
+#     def watts_to_temp(watts):
+#         return ((watts - 70)*2)/7 + 18
 
-    watts = power / ((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
-    return watts_to_temp(watts)
+#     watts = power / ((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
+#     return watts_to_temp(watts)

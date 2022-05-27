@@ -58,9 +58,9 @@ class Dimmer(FunctionalModule):
         else:
             logging.info(f"The {self.name} has been turned {self.__str_state}")
 
-        __dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
+        dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
         # Send Telegram to the knxbus
-        self.send_telegram(__dimmer_payload, control_field = True)
+        self.send_telegram(dimmer_payload, control_field = True)
     
     def get_dev_info(self):
         dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
@@ -88,8 +88,8 @@ class Dimmer(FunctionalModule):
 #     def __init__(self, name, refid, individual_addr, default_status):
 #         super().__init__('TemperatureController', name, refid, individual_addr, default_status, "thermostat")
 #         self.state = 10
-#         self.room_volume = 0
-#         self.room_insulation = 'average'
+#         self.__room_volume = 0
+#         self.__room_insulation = 'average'
 #         #self.sensor = Thermometer() ##TODO: init sensor with default config
 
 # ##TODO:  when temp is set, send telegram to heat sources
@@ -107,7 +107,7 @@ class Dimmer(FunctionalModule):
 #     def update_heaters(self):
 #         from system.tools import required_power
 #         """Function to update the heaters' values to reach the desired temperature"""
-#         required = required_power(self.state, self.room_volume, self.room_insulation)
+#         required = required_power(self.state, self.__room_volume, self.__room_insulation)
 #         logging.info(f"Sent required wattage to each heater linked to this controller.")
 #         self.send_telegram(TempControllerPayload(required), True)
 

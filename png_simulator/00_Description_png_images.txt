@@ -28,6 +28,8 @@ Moon 60x50
 coud_dark 100x50
 cloud_overcast 57x40
 
+window 300x30 or 30x300
+
 Room background 1000x800 (as defined in gui_config)
 
 GUI action Button 51x50 or 50x51 or 50x50

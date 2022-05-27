@@ -53,20 +53,20 @@ def test_correct_device_addition():
         # Test addition to ambient list for each device type
         if isinstance(devices[d], dev.Actuator):
             if isinstance(devices[d], dev.LightActuator):
-                assert ir_devices[d] in room1.world.ambient_light.light_sources
+                assert ir_devices[d] in room1.world.ambient_light.__light_sources  ##TODO chqnge privqte attr
             elif isinstance(devices[d], dev.TemperatureActuator):
-                assert ir_devices[d] in room1.world.ambient_temperature.temp_sources
+                assert ir_devices[d] in room1.world.ambient_temperature.__temp_sources
         elif isinstance(devices[d], dev.Sensor):
             if isinstance(devices[d], dev.Brightness):
-                assert ir_devices[d] in room1.world.ambient_light.light_sensors
+                assert ir_devices[d] in room1.world.ambient_light.__light_sensors
             elif isinstance(devices[d], dev.Thermometer):
-                assert ir_devices[d] in room1.world.ambient_temperature.temp_sensors
+                assert ir_devices[d] in room1.world.ambient_temperature.__temp_sensors
             elif isinstance(devices[d], dev.HumiditySoil): # Arbitrary init of soil humidity 
                 assert devices[d].humidity == room1.world.ambient_humidity.humidity
             elif isinstance(devices[d], dev.CO2Sensor):
                 assert ir_devices[d] in room1.world.ambient_co2.co2_sensors
             elif isinstance(devices[d], dev.AirSensor):
-                assert ir_devices[d] in room1.world.ambient_temperature.temp_sensors
+                assert ir_devices[d] in room1.world.ambient_temperature.__temp_sensors
                 assert ir_devices[d] in room1.world.ambient_humidity.humidity_sensors
                 assert ir_devices[d] in room1.world.ambient_co2.co2_sensors
         # Test storage of the bus in functional devices class's attributes 

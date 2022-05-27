@@ -190,7 +190,7 @@
     "outside_co2": 300,
     "inside_co2": 800.0,
     "datetime": "today",
-    "weather": "dark",
+    "weather": "clear",
     "number_of_rooms": 1,
     "rooms": {
       "room1": {
@@ -201,6 +201,19 @@
           3
         ],
         "insulation": "good",
+        "number_of_windows": 2,
+        "windows": {
+          "window1": {
+            "wall": "north",
+            "size": [2, 1.5],
+            "location_offset_ratio": 0.25
+          },
+          "window2": {
+            "wall": "east",
+            "size": [4, 1.5],
+            "location_offset_ratio": 0.75
+          }
+        },
         "room_devices": {
           "led1": [
             0.3625,

@@ -12,11 +12,11 @@ class DeviceListWidget(object):
     def __init__(self, x, y, batch, group_label, group_box):
         self.__batch = batch
         self.__group_box = group_box
-        self.topleft_y = y+OFFSET_DEVICELIST_BOX_TOP
-        self.length = OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
+        self.__topleft_y = y+OFFSET_DEVICELIST_BOX_TOP
+        self.__length = OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
         # Max number of devices to display in list, int div length (from start of list, below title 'y') by offset between devices
         self.MAX_SIZE_DEVICES_LIST = (y - OFFSET_LIST_DEVICE)//OFFSET_LIST_DEVICE
-        self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, self.length, border=BOX_BORDER,
+        self.__box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.__topleft_y-self.__length, DEVICE_LIST_BOX_WIDTH, self.__length, border=BOX_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=batch, group=self.__group_box)
 
@@ -29,22 +29,22 @@ class DeviceListWidget(object):
     def update_box(self, new_length):
         # update devices list box, new_length is simply number of devices * offset between them
         new_length = new_length if new_length>0 else OFFSET_DEVICELIST_BOX_TOP # length depend if there are devices or not
-        self.length = new_length + OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
-        self.box_shape.delete()
-        self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.topleft_y-self.length, DEVICE_LIST_BOX_WIDTH, height=self.length, border=BOX_BORDER,
+        self.__length = new_length + OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
+        self.__box_shape.delete()
+        self.__box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.__topleft_y-self.__length, DEVICE_LIST_BOX_WIDTH, height=self.__length, border=BOX_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=self.__batch, group=self.__group_box)
     
     def hit_test(self, x, y): # to check if mouse click is on the Device list widget
-        # print(f"x: {self.box_shape.x} < {x} < {(self.box_shape.x + DEVICE_LIST_BOX_WIDTH)}")
-        # print(f"y: {self.box_shape.y} < {y} < {(self.box_shape.y + self.length)}")
-        return (self.box_shape.x < x < (self.box_shape.x + DEVICE_LIST_BOX_WIDTH) and
-                self.box_shape.y < y < (self.box_shape.y + self.length))
+        # print(f"x: {self.__box_shape.x} < {x} < {(self.__box_shape.x + DEVICE_LIST_BOX_WIDTH)}")
+        # print(f"y: {self.__box_shape.y} < {y} < {(self.__box_shape.y + self.length)}")
+        return (self.__box_shape.x < x < (self.__box_shape.x + DEVICE_LIST_BOX_WIDTH) and
+                self.__box_shape.y < y < (self.__box_shape.y + self.__length))
 
 
 class SimTimeWidget(object):
     def __init__(self, x, y, batch, group_box, group_label):
-        self.box_shape = pyglet.shapes.BorderedRectangle(x, y-SIMTIME_BOX_LENGTH/2, SIMTIME_BOX_WIDTH, SIMTIME_BOX_LENGTH, border=BOX_BORDER,
+        self.__box_shape = pyglet.shapes.BorderedRectangle(x, y-SIMTIME_BOX_LENGTH/2, SIMTIME_BOX_WIDTH, SIMTIME_BOX_LENGTH, border=BOX_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=batch, group=group_box)
         self.simtime_label = pyglet.text.Label("SimTime: 0", # init the simulation time title
@@ -67,76 +67,97 @@ class DayTimeWeatherWidget(object):
         self.__group_weather = group_weather
         self.__group_daytime = group_daytime
         self.__temp_out, self.__hum_out, self.__co2_out = temp_out, hum_out, co2_out
-        self.box_shape = pyglet.shapes.BorderedRectangle(self.__pos_x, self.__pos_y, TIMEWEATHER_BOX_WIDTH, TIMEWEATHER_BOX_LENGTH, border=BOX_BORDER,
+        self.__box_shape = pyglet.shapes.BorderedRectangle(self.__pos_x, self.__pos_y, TIMEWEATHER_BOX_WIDTH, TIMEWEATHER_BOX_LENGTH, border=BOX_BORDER,
                                     color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                     batch=self.__batch, group=group_box)
-        self.__out_state_str = f"Out state: {temp_out}°C  {hum_out}%  {co2_out}ppm  " 
-        self.out_state_label = pyglet.text.Label(self.__out_state_str, # out_temp, out_co2, out_hum, out_lux
+        self.__out_state_str = f"Out state: {self.__temp_out}°C  {self.__hum_out}%  {self.__co2_out}ppm  " 
+        self.__out_state_label = pyglet.text.Label(self.__out_state_str, # out_temp, out_co2, out_hum, out_lux
                                     font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_OUT_STATE, bold=True,
                                     x=self.__pos_x+OFFSET_STATE_LABEL, y=self.__pos_y+OFFSET_STATE_LABEL,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__group_daytime)
-        self.sunrise_img = pyglet.image.load(SUNRISE_PATH)
-        self.sun_img = pyglet.image.load(SUN_PATH)
-        self.sunset_img = pyglet.image.load(SUNSET_PATH)
-        self.moon_img = pyglet.image.load(MOON_PATH)
-        self.cloud_overcast_img = pyglet.image.load(CLOUD_OVERCAST_PATH)
-        self.cloud_dark_img = pyglet.image.load(CLOUD_DARK_PATH)
+        self.__sunrise_img = pyglet.image.load(SUNRISE_PATH)
+        self.__sun_img = pyglet.image.load(SUN_PATH)
+        self.__sunset_img = pyglet.image.load(SUNSET_PATH)
+        self.__moon_img = pyglet.image.load(MOON_PATH)
+        self.__cloud_overcast_img = pyglet.image.load(CLOUD_OVERCAST_PATH)
+        self.__cloud_dark_img = pyglet.image.load(CLOUD_DARK_PATH)
 
-        self.__tod_dict= {"sunrise":{"img":self.sunrise_img, "offset_x":OFFSET_SUNRISE_X, "offset_y":OFFSET_SUNRISE_SUNSET_Y}, 
-                            "sun":{"img":self.sun_img, "offset_x":OFFSET_SUN_MOON_X, "offset_y":OFFSET_SUN_MOON_Y},
-                            "sunset":{"img":self.sunset_img, "offset_x":OFFSET_SUNSET_X, "offset_y":OFFSET_SUNRISE_SUNSET_Y}, 
-                            "moon":{"img":self.moon_img, "offset_x":OFFSET_SUN_MOON_X, "offset_y":OFFSET_SUN_MOON_Y}}
-        self.__weather_dict = {"overcast":{"img":self.cloud_overcast_img, "offset_x_ratio":OFFSET_CLOUD_WIDTH_RATIO, "offset_y_ratio":OFFSET_CLOUD_LENGTH_RATIO}, 
-                                "dark":{"img":self.cloud_dark_img, "offset_x_ratio":OFFSET_CLOUD_DARK_WIDTH_RATIO, "offset_y_ratio":OFFSET_CLOUD_DARK_LENGTH_RATIO}}
-        # self.sunrise = pyglet.sprite.Sprite(self.sunrise_img, self.__pos_x + OFFSET_SUNRISE_X, self.__pos_y + OFFSET_SUNRISE_SUNSET_Y, batch=self.__batch, group=self.__group_daytime)
-        # self.sun = pyglet.sprite.Sprite(self.sun_img, self.__pos_x + OFFSET_SUN_MOON_X, self.__pos_y + OFFSET_SUN_MOON_Y, batch=self.__batch, group=self.__group_daytime)
-        # self.sunset = pyglet.sprite.Sprite(self.sunset_img, self.__pos_x + OFFSET_SUNSET_X, self.__pos_y + OFFSET_SUNRISE_SUNSET_Y, batch=self.__batch, group=self.__group_daytime)
-        # self.moon = pyglet.sprite.Sprite(self.moon_img, self.__pos_x + OFFSET_SUN_MOON_X, self.__pos_y + OFFSET_SUN_MOON_Y, batch=self.__batch, group=self.__group_daytime)
+        self.__tod_dict= {"sunrise":{"img":self.__sunrise_img, "offset_x":OFFSET_SUNRISE_X, "offset_y":OFFSET_SUNRISE_SUNSET_Y}, 
+                            "sun":{"img":self.__sun_img, "offset_x":OFFSET_SUN_MOON_X, "offset_y":OFFSET_SUN_MOON_Y},
+                            "sunset":{"img":self.__sunset_img, "offset_x":OFFSET_SUNSET_X, "offset_y":OFFSET_SUNRISE_SUNSET_Y}, 
+                            "moon":{"img":self.__moon_img, "offset_x":OFFSET_SUN_MOON_X, "offset_y":OFFSET_SUN_MOON_Y}}
+        self.__weather_dict = {"overcast":{"img":self.__cloud_overcast_img, "offset_x_ratio":OFFSET_CLOUD_WIDTH_RATIO, "offset_y_ratio":OFFSET_CLOUD_LENGTH_RATIO}, 
+                                "dark":{"img":self.__cloud_dark_img, "offset_x_ratio":OFFSET_CLOUD_DARK_WIDTH_RATIO, "offset_y_ratio":OFFSET_CLOUD_DARK_LENGTH_RATIO}}
+        # self.sunrise = pyglet.sprite.Sprite(self.__sunrise_img, self.__pos_x + OFFSET_SUNRISE_X, self.__pos_y + OFFSET_SUNRISE_SUNSET_Y, batch=self.__batch, group=self.__group_daytime)
+        # self.sun = pyglet.sprite.Sprite(self.__sun_img, self.__pos_x + OFFSET_SUN_MOON_X, self.__pos_y + OFFSET_SUN_MOON_Y, batch=self.__batch, group=self.__group_daytime)
+        # self.sunset = pyglet.sprite.Sprite(self.__sunset_img, self.__pos_x + OFFSET_SUNSET_X, self.__pos_y + OFFSET_SUNRISE_SUNSET_Y, batch=self.__batch, group=self.__group_daytime)
+        # self.moon = pyglet.sprite.Sprite(self.__moon_img, self.__pos_x + OFFSET_SUN_MOON_X, self.__pos_y + OFFSET_SUN_MOON_Y, batch=self.__batch, group=self.__group_daytime)
 
         # self.sprite = self.sun
-        # self.cloud_overcast =  pyglet.sprite.Sprite(self.cloud_overcast_img, self.sprite.x + OFFSET_CLOUD_WIDTH_RATIO*self.sprite.width, self.sprite.y + OFFSET_CLOUD_LENGTH_RATIO*self.sprite.height, batch=self.__batch, group=self.__group_weather)
-        # self.cloud_dark =  pyglet.sprite.Sprite(self.cloud_dark_img, self.sprite.x + OFFSET_CLOUD_DARK_WIDTH_RATIO*self.sprite.width, self.sprite.y + *self.sprite.height, batch=self.__batch, group=self.__group_weather)
+        # self.cloud_overcast =  pyglet.sprite.Sprite(self.__cloud_overcast_img, self.sprite.x + OFFSET_CLOUD_WIDTH_RATIO*self.sprite.width, self.sprite.y + OFFSET_CLOUD_LENGTH_RATIO*self.sprite.height, batch=self.__batch, group=self.__group_weather)
+        # self.cloud_dark =  pyglet.sprite.Sprite(self.__cloud_dark_img, self.sprite.x + OFFSET_CLOUD_DARK_WIDTH_RATIO*self.sprite.width, self.sprite.y + *self.sprite.height, batch=self.__batch, group=self.__group_weather)
         
     def update_out_state(self, weather:str, time_of_day:str, lux_out:float):
         """ weather is 'clear', 'overcast' or 'dark', time_of_day is 'sunrise', 'sun', 'sunset, 'moon'"""
         # delete old sprite
-        if hasattr(self, "tod_sprite"):
-            self.tod_sprite.delete()
-        if hasattr(self, 'weather_sprite'):
-            self.weather_sprite.delete()
+        if hasattr(self, "_tod_sprite"):
+            self._tod_sprite.delete()
+        if hasattr(self, '_weather_sprite'):
+            self._weather_sprite.delete()
         # update lux_out
-        self.lux_out = round(lux_out,1) if lux_out > 1 else lux_out
-        self.out_state_label.text = self.__out_state_str + str(self.lux_out) + "lux"
+        self.__lux_out = round(lux_out,1) if lux_out > 1 else lux_out
+        self.__out_state_label.text = self.__out_state_str + str(self.__lux_out) + "lux"
         # update time_of_day img
         if time_of_day in self.__tod_dict:
-            self.tod_sprite = pyglet.sprite.Sprite(self.__tod_dict[time_of_day]["img"], self.__pos_x + self.__tod_dict[time_of_day]["offset_x"], self.__pos_y + self.__tod_dict[time_of_day]["offset_y"], batch=self.__batch, group=self.__group_daytime)
+            self._tod_sprite = pyglet.sprite.Sprite(self.__tod_dict[time_of_day]["img"], self.__pos_x + self.__tod_dict[time_of_day]["offset_x"], self.__pos_y + self.__tod_dict[time_of_day]["offset_y"], batch=self.__batch, group=self.__group_daytime)
         # update weather img
         if weather != 'clear':
             if weather in self.__weather_dict:
-                self.weather_sprite = pyglet.sprite.Sprite(self.__weather_dict[weather]["img"], self.tod_sprite.x + self.__weather_dict[weather]["offset_x_ratio"] * self.tod_sprite.width, self.tod_sprite.y + self.__weather_dict[weather]["offset_y_ratio"] * self.tod_sprite.height, batch=self.__batch, group=self.__group_weather)
+                self._weather_sprite = pyglet.sprite.Sprite(self.__weather_dict[weather]["img"], self._tod_sprite.x + self.__weather_dict[weather]["offset_x_ratio"] * self._tod_sprite.width, self._tod_sprite.y + self.__weather_dict[weather]["offset_y_ratio"] * self._tod_sprite.height, batch=self.__batch, group=self.__group_weather)
 
-        
+
+class WindowWidget(object):
+    def __init__(self, window_object, window_file, batch, group, room_width_ratio, room_height_ratio, room_origin_x, room_origin_y): # window_object class is Window not IR device
+        self.__batch = batch
+        self.__group = group
+        self.__img = pyglet.image.load(window_file)
+        self.__width, self.__length = self.__img.width, self.__img.height
+        self.__loc_x, self.__loc_y = window_object.window_loc[0], window_object.window_loc[1]
+        self.__pos_x, self.__pos_y = system_loc_to_gui_pos(self.__loc_x, self.__loc_y, room_width_ratio, room_height_ratio, room_origin_x, room_origin_y, window=True)
+        self.__pos_x, self.__pos_y = window_pos_from_gui_loc(self.__pos_x, self.__pos_y, window_object)
+        self.__pos_x -= self.__width/2 # sprite pos is bottom left, not center of image
+        self.__pos_y -= self.__length/2
+        if hasattr(window_object, "scale_x"): # horizontal window, north or south
+            self.sprite = pyglet.sprite.Sprite(self.__img, self.__pos_x, self.__pos_y, batch=self.__batch, group=self.__group)
+            self.sprite.scale_x = window_object.scale_x
+        elif hasattr(window_object, "scale_y"): # horizontal window, north or south
+            self.sprite = pyglet.sprite.Sprite(self.__img, self.__pos_x, self.__pos_y, batch=self.__batch, group=self.__group)
+            self.sprite.scale_y = window_object.scale_y
+    
+    def delete(self):
+        self.sprite.delete()
+
 
 
 
 # Button widgets
 class ButtonWidget(object):
     def __init__(self, x, y, batch, button_file, group, label_text=''):
-        self.img = pyglet.image.load(button_file)
-        self.__width, self.__length = self.img.width, self.img.height
-        self.pos_x, self.pos_y = x, y
+        self.__img = pyglet.image.load(button_file)
+        self.__width, self.__length = self.__img.width, self.__img.height
+        self.__pos_x, self.__pos_y = x, y
         self.__batch, self.group = batch, group
-        self.sprite = pyglet.sprite.Sprite(self.img, self.pos_x, self.pos_y, batch=self.__batch, group=self.group)
+        self.sprite = pyglet.sprite.Sprite(self.__img, self.__pos_x, self.__pos_y, batch=self.__batch, group=self.group)
         self.label = pyglet.text.Label(label_text,
                                     font_name=FONT_BUTTON, font_size=10,
-                                    x=(self.pos_x+self.__width//2), y=(self.pos_y-OFFSET_LABEL_BUTTON),
+                                    x=(self.__pos_x+self.__width//2), y=(self.__pos_y-OFFSET_LABEL_BUTTON),
                                     anchor_x='center', anchor_y='center',
                                     batch=self.__batch, group=self.group)
 
     def hit_test(self, x, y): # to check if mouse click is on the Button widget
-        return (self.pos_x < x < (self.pos_x + self.__width) and
-                self.pos_y < y < (self.pos_y + self.__length))
+        return (self.__pos_x < x < (self.__pos_x + self.__width) and
+                self.__pos_y < y < (self.__pos_y + self.__length))
 
 class ButtonPause(object):
     def __init__(self, x, y, batch, button_pause_file, button_play_file, group):
@@ -358,7 +379,7 @@ class AvailableDevices(object): # library of devices availables, presented on th
         self.in_motion = False
         self.devices = []
 
-        self.box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_AVAILABLEDEVICES_LINE3-OFFSET_AVAILABLE_DEVICES-WIN_BORDER/2, AVAILABLE_DEVICES_BOX_WIDTH, AVAILABLE_DEVICES_BOX_LENGTH, border=BOX_BORDER,
+        self.__box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_AVAILABLEDEVICES_LINE3-OFFSET_AVAILABLE_DEVICES-WIN_BORDER/2, AVAILABLE_DEVICES_BOX_WIDTH, AVAILABLE_DEVICES_BOX_LENGTH, border=BOX_BORDER,
                                             color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
                                             batch=batch, group=group_box)
 
@@ -450,26 +471,25 @@ class RoomWidget(object):
 
 class PersonWidget(object):
     def __init__(self, img_path, x, y, batch, group):
-        self.moving = True
         self.__batch, self.__group = batch, group
-        self.pos_x, self.pos_y = x, y
-        self.img = pyglet.image.load(img_path)
-        self.width, self.length = self.img.width, self.img.height
-        self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
-        self.sprite = pyglet.sprite.Sprite(self.img, self.origin_x, self.origin_y, batch=self.__batch, group=self.__group)
+        self.__pos_x, self.__pos_y = x, y
+        self.__img = pyglet.image.load(img_path)
+        self.__width, self.__length = self.__img.width, self.__img.height
+        self.__origin_x, self.__origin_y = self.__pos_x - self.__width//2, self.__pos_y - self.__length//2
+        self.__sprite = pyglet.sprite.Sprite(self.__img, self.origin_x, self.__origin_y, batch=self.__batch, group=self.__group)
     
     def hit_test(self, x, y): # to check if mouse click is on the Room widget
-        return (self.origin_x < x < (self.origin_x + self.width) and
-                self.origin_y < y < (self.origin_y + self.length))
+        return (self.__origin_x < x < (self.__origin_x + self.__width) and
+                self.__origin_y < y < (self.__origin_y + self.__length))
     
     def update_position(self, new_x, new_y):
         """ Doct string"""
-        self.pos_x, self.pos_y = new_x, new_y
-        self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
-        self.sprite.update(x=self.origin_x, y=self.origin_y)
+        self.__pos_x, self.__pos_y = new_x, new_y
+        self.__origin_x, self.__origin_y = self.__pos_x - self.__width//2, self.__pos_y - self.__length//2
+        self.__sprite.update(x=self.__origin_x, y=self.__origin_y)
     
     def delete(self):
-        self.sprite.delete()
+        self.__sprite.delete()
 
    
 
@@ -482,13 +502,25 @@ def gui_pos_to_system_loc( pos_x, pos_y, width_ratio, length_ratio, room_x, room
         logging.warning("The system is not initialized and the room width/length ratios are not defined")
     return loc_x, loc_y
 
-def system_loc_to_gui_pos( loc_x, loc_y, width_ratio, length_ratio, room_x, room_y):
+def system_loc_to_gui_pos( loc_x, loc_y, width_ratio, length_ratio, room_x, room_y, window=False):
     try:
         pos_x = int(room_x + width_ratio * loc_x)
         pos_y = int(room_y + length_ratio * loc_y)
     except AttributeError:
         logging.warning("The system is not initialized and the room width/length ratios are not defined")
     return pos_x, pos_y
+
+def window_pos_from_gui_loc(pos_x, pos_y, window_object):
+    # to display window in "wall" area arund room widget
+    if window_object.wall == 'north':
+        return pos_x, pos_y+ROOM_BORDER/2
+    if window_object.wall == 'south':
+        return pos_x, pos_y-ROOM_BORDER/2
+    if window_object.wall == 'east':
+        return pos_x+ROOM_BORDER/2, pos_y
+    if window_object.wall == 'west':
+        return pos_x-ROOM_BORDER/2, pos_y
+    
 
 def color_from_state_ratio(state_ratio): #state_ratio in 0-100
     if 0 <= state_ratio:

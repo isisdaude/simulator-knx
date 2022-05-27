@@ -9,7 +9,7 @@ from typing import List
 import simulation as sim
 from devices import Device
 
-from .tools import Location
+from .tools import Location, Window
 from .check_tools import check_group_address, check_room_config #, check_simulation_speed_factor
 from .knxbus import KNXBus
 from abc import ABC, abstractclassmethod
@@ -74,8 +74,13 @@ class Room:
         self.knxbus= KNXBus()
         """List of all devices in the room"""
         self.devices: List[InRoomDevice] = []
+        self.windows: List[InRoomDevice] = []
         """Simulation status to pause/resume"""
         self.simulation_status = True
+
+        ### TODO windows if not None
+        ## implement add_window method
+        ### add to ambient light sources with correct computations
 
 
     def add_device(self, device: Device, x: float, y: float, z:float):
@@ -123,6 +128,13 @@ class Room:
     #             if isinstance(device, FunctionalModule):
     #                 device.disconnect_from_knxbus()
 
+    def add_window(self, window:Window):
+        # we consider windows as devices (actuator for light with outdoor light, potentially actuator for humidity and co2)
+        x, y, z = window.window_loc[0],  window.window_loc[1], window.window_loc[2]
+        in_room_device = InRoomDevice(window, self, x, y, z)
+        self.windows.append(in_room_device)
+        self.world.ambient_light.add_source(in_room_device)
+
     def attach(self, device, group_address:str):
         ga = check_group_address(self.group_address_style, group_address)
         if ga:
@@ -141,6 +153,7 @@ class Room:
                 # remove from List
                 # detach from bus
                 # remove from world
+        
 
     def update_world(self, interval=1, gui_mode=False):
         if self.test_mode == False:

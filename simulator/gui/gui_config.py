@@ -166,5 +166,7 @@ SUNSET_PATH = 'png_simulator/sunset.png'
 MOON_PATH = 'png_simulator/moon.png'
 CLOUD_OVERCAST_PATH = 'png_simulator/cloud_overcast.png'
 CLOUD_DARK_PATH = 'png_simulator/cloud_dark.png'
+WINDOW_VERTICAL_PATH = 'png_simulator/window_vertical.png'
+WINDOW_HORIZONTAL_PATH = 'png_simulator/window_horizontal.png'
 
 GREEN_PATH = 'png_simulator/green.png'

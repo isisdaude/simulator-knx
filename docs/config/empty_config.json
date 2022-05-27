@@ -12,9 +12,14 @@
   },
   "world":{
     "simulation_speed_factor":180,
-    "outside_temperature":20.0,
+    "outside_temperature": 20.0,
+    "inside_temperature": 25.0,
     "outside_relativehumidity": 50.0,
+    "inside_relativehumidity": 35.0,
     "outside_co2": 300,
+    "inside_co2": 800.0,
+    "datetime": "today",
+    "weather": "clear",
     "number_of_rooms":1,
     "rooms":{
       "room1":{

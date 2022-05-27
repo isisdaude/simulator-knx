@@ -12,7 +12,7 @@ import numpy as np
 
 
 from system.tools import configure_system_from_file, DEV_CLASSES, GroupAddress, Location
-from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget, DayTimeWeatherWidget
+from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget, DayTimeWeatherWidget, WindowWidget
 from .gui_config import *
 
 
@@ -42,6 +42,7 @@ class GUIWindow(pyglet.window.Window):
 
         # Array to store the devices added to the room (e.g., by dragging them in)
         self.__room_devices : List[DeviceWidget] = []  
+        self.__gui_windows : List[WindowWidget] = []
         self.__devices_scroll = 0 # Keep state of the scroll position of devices list
         # Default individual addresses when adding devices during simulation
         self.__individual_address_default = [0,0,100] # we suppose no more than 99 devices on area0/line0, and no more than 155 new manually added devices
@@ -331,6 +332,19 @@ class GUIWindow(pyglet.window.Window):
                                     batch=self.__batch, group=self.__foreground)
                 self.__room_temperature_levels.append(room_temperature_level)
             room_temperature_counter +=1
+    
+    def __display_windows(self):
+        for gui_window in self.__gui_windows:
+            gui_window.delete()
+        self.__gui_windows = []
+        for window in self.room.windows:
+            if window.device.wall in ['north', 'south']:
+                window_widget = WindowWidget(window.device, WINDOW_HORIZONTAL_PATH, self.__batch, self.__foreground, self.__room_width_ratio, self.__room_length_ratio,
+                                            self.__room_widget.origin_x, self.__room_widget.origin_y)
+            elif window.device.wall in ['east', 'west']:
+                window_widget = WindowWidget(window.device, WINDOW_VERTICAL_PATH, self.__batch, self.__foreground, self.__room_width_ratio, self.__room_length_ratio,
+                                            self.__room_widget.origin_x, self.__room_widget.origin_y)
+            self.__gui_windows.append(window_widget)
 
     def __switch_sprite(self):
         """ Switch devices' sprite (image) if their state has changed"""
@@ -349,6 +363,7 @@ class GUIWindow(pyglet.window.Window):
                     room_device.sprite.opacity = new_opacity
             except AttributeError: #if no state attribute (e.g. sensor)
                 pass
+    
     
 ### Devices and configuration file management methods ###
     def __add_device_to_simulation(self, room, pos_x, pos_y):
@@ -495,6 +510,7 @@ class GUIWindow(pyglet.window.Window):
         self.__display_brightness_labels()
         self.__display_temperature_labels()
         self.__display_airsensor_labels()
+        self.__display_windows()
     
 
     def update_sensors(self, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states):
