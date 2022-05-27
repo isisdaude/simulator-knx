@@ -5,7 +5,6 @@ from typing import List
 from .tools import GroupAddress
 from devices import Actuator, Sensor, FunctionalModule
 from .telegrams import Telegram
-from interface.main import main
 
 # TODO: add an async function that checks whether there are telegrams to be transmitted from svshi, maybe in the callback function of the interface!
 

@@ -20,7 +20,7 @@ class Interface:
 	def __init__(self):
 		self.__sending_lock = asyncio.Lock()
 		self.__sending_queue: asyncio.Queue[sim_t.Telegram] = asyncio.Queue()
-		from telegram_parser import TelegramParser
+		from .telegram_parser import TelegramParser
 		group_address_to_payload = {} #TODO: create correct bindings! for the moment, only BinaryPayload
 
 		self.telegram_parser = TelegramParser(group_address_to_payload)
@@ -59,7 +59,7 @@ class Interface:
 
 	
 
-	async def main(self):#, room):
+	async def main(self, room):
 		"""Initializes the communication between any external KNX interface and us"""
 		
 
@@ -119,14 +119,14 @@ class Interface:
 				
 				
 				
-	def run(self):#, room):
+	def run(self, room):
 		asyncio.run(self.main())
 
-i = Interface()
-from system.tools import GroupAddress, IndividualAddress
-ga = GroupAddress('2-levels', 0,0)
-ia = IndividualAddress(0,0,1)
-test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
-asyncio.run(i.add_to_sending_queue([test_sim]))
-i.run()
+# i = Interface()
+# from system.tools import GroupAddress, IndividualAddress
+# ga = GroupAddress('2-levels', 0,0)
+# ia = IndividualAddress(0,0,1)
+# test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
+# asyncio.run(i.add_to_sending_queue([test_sim]))
+# i.run()
 
