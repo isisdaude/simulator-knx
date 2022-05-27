@@ -32,7 +32,7 @@ class LED(LightActuator):
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
 
-            if isinstance(telegram.payload, DimmerPayload):
+            elif isinstance(telegram.payload, DimmerPayload):
                 self.state = telegram.payload.binary_state
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
