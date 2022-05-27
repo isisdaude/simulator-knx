@@ -1,8 +1,5 @@
-from abc import ABC, abstractclassmethod
-from ast import Assert
+from abc import ABC
 import logging
-
-
 
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""
@@ -21,33 +18,31 @@ class Payload(ABC):
     """Abstract class to represent the payload given as attribute to the Telegrams sent"""
     def __init__(self):
         super().__init__()
+        self.content = None
 
     EMPTY_FIELD = None
     """Static constant to represent an empty payload field, that is not used."""
+
+    def __repr__(self) -> str:
+        return f"{self.content}"
+
 
 class BinaryPayload(Payload):
     """Class to represent a binary payload (True/False)"""
     def __init__(self, binary_state: bool):
         super().__init__()
         # Binary state to send on the bus
-        self.binary_state = binary_state
+        self.content: bool = binary_state
 
     def __str__(self) -> str:
-        return f" BinaryPayload: state={self.binary_state}"
+        return f" BinaryPayload: state={self.content}"
 
-# class SwitchPayload(Payload):
-#     """Class to represent a switch 'binary' payload (True/False)"""
-#     def __init__(self, switch_state: bool):
-#         super().__init__()
-#         # Binary state received from the bus
-#         self.switch_state = switch_state
-
-#     def __str__(self) -> str:
-#         return f" BinaryPayload: {self.switch_state}"
+    def __repr__(self) -> str:
+        return super().__repr__()
 
 class DimmerPayload(BinaryPayload):
     """Class to represent a dimmer payload (True/False + value)"""
-    def __init__(self, binary_state: bool, state_ratio : float):
+    def __init__(self, binary_state: bool, state_ratio: float):
         super().__init__(binary_state) # Initialize the Binary Payload attribute to determine of device should be turned ON/OFF
         # state_ratio corresponding to dimming value (percentage)
         try:
@@ -59,62 +54,15 @@ class DimmerPayload(BinaryPayload):
         self.state_ratio = state_ratio
 
     def __str__(self) -> str:
-        return f" DimmerPayload: state={self.binary_state} | ratio={self.state_ratio}"
-
-# class SwitchPayload(Payload):
-#     """Class to represent the Switch's state (device receiving a boolean on the bus), if demanded by another device or the user"""
-#     def __init__(self, switched: bool):
-#         super().__init__()
-#         self.switched = switched
-#     def __str__(self) -> str:
-#         ## TODO: display a more truthful payload
-#         return ""
-
-class ButtonPayload(Payload):
-    """Class for the payload of a Button's state"""
-    def __init__(self, state: bool): # pushed: bool,
-        super().__init__()
-        self.state = state
-    
-    def __str__(self) -> str:
-        return f" ButtonPayload: state={self.state}"
-
-    # def __str__(self) -> str:
-    #     ## TODO: display a more truthful payload
-    #     return "The button is pushed." if self.pushed else "The button is not pushed."
-
-
-# class SwitchPayload(Payload):
-#     """Class to represent the payload of a switch (button with state)"""
-#     def __init__(self, switched: bool):
-#         super().__init__()
-#         self.switched = switched
-
-#     def __str__(self) -> str:
-#         ## TODO: display a more truthful payload
-#         return "The switch is switched." if self.switched else "The switch is not switched."
-
-
-
+        return f" DimmerPayload: state={self.content} | ratio={self.state_ratio}"
 
 class HeaterPayload(Payload):
     """Class to represent the payload of a heater, fields are none if unused"""
 
-    def __init__(self, max_power):
+    def __init__(self, max_power: float):
         super().__init__()
-        self.max_power = max_power
+        self.content: float = max_power
 
     def __str__(self) -> str:
         ## TODO: display a more truthful payload
-        return f"The maximum power of this heater is {self.max_power}."
-
-# class TempControllerPayload(Payload):
-#     """Class to represent the payload of a temperature controller, fields are none if unused"""
-
-#     def __init__(self, set_heater_power):
-#         super().__init__()
-#         self.set_heater_power = set_heater_power
-
-#     def __str__(self) -> str:
-#         ## TODO: display a more truthful payload
-#         return f"The temperature controller sets the power of the heater to {self.set_heater_power}."
+        return f"The maximum power of this heater is {self.content}."

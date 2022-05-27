@@ -1,21 +1,14 @@
 """
 Some class definitions for the simulated KNX functional modules (button, switch, Temp controller,...).
 """
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
+
 import logging
 from .device_abstractions import FunctionalModule
-# from .actuators import
-# from .sensors import Thermometer
-# from system.tools import IndividualAddress
-from system.telegrams import ButtonPayload, BinaryPayload, DimmerPayload, HeaterPayload, Payload, Telegram#, TempControllerPayload
-
-#from abc import ABC, abstractclassmethod
-
+from system.telegrams import BinaryPayload, DimmerPayload, HeaterPayload, Payload, Telegram
 
 class Button(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
         super().__init__('Button', name, refid, location, default_status, "button")
-        # self.state = 0  ## button has no state, it can just be pressed and realeased directly
         self.state = False
         self.__str_state = "OFF"
 
@@ -24,7 +17,6 @@ class Button(FunctionalModule):
         self.state = not self.state
         self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
         logging.info(f"The {self.name} has been turned {self.__str_state}")
-        # button_payload = ButtonPayload(state=self.state)
         __binary_payload = BinaryPayload(binary_state=self.state)
         # Send Telegram to the knxbus
         self.send_telegram(__binary_payload, control_field = True)
@@ -38,7 +30,6 @@ class Button(FunctionalModule):
 class Dimmer(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
         super().__init__('Dimmer', name, refid, location, default_status, "dimmer")
-        # self.state = 0  ## button has no state, it can just be pressed and realeased directly
         self.state = False
         self.__str_state = "OFF"
         self.state_ratio = 100
@@ -66,48 +57,4 @@ class Dimmer(FunctionalModule):
         dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
-
-
-# class Switch(FunctionalModule):
-#     def __init__(self, name, refid, location, default_status):
-#         super().__init__('Switch', name, refid, location, default_status, "switch")
-#         # self.state = 0  ## button has no state, it can just be pressed and realeased directly
-#         self.state = False
-#         self.__str_state = "OFF"
-
-#     def user_input(self):
-#         self.state = not self.state
-#         self.__str_state = "ON" if self.__str_state=="OFF" else "OFF" #switch the state of the switch
-#         logging.info(f"The {self.name} has been switched {self.__str_state}")
-#         payload = SwitchPayload(switched=True)
-#         # Send Telegram to the knxbus giving itself as argument
-#         self.send_telegram(payload, control_field = True)
-
-
-# class TemperatureController(FunctionalModule):
-#     def __init__(self, name, refid, individual_addr, default_status):
-#         super().__init__('TemperatureController', name, refid, individual_addr, default_status, "thermostat")
-#         self.state = 10
-#         self.__room_volume = 0
-#         self.__room_insulation = 'average'
-#         #self.sensor = Thermometer() ##TODO: init sensor with default config
-
-# ##TODO:  when temp is set, send telegram to heat sources
-
-#     def user_input(self, wished_temp):
-#         logging.info(f"User asked to reach {wished_temp} on controller {self.name}")
-#         self.state = wished_temp
-#         self.update_heaters() ## TODO update sources
-
-#         # payload = wished_temp ##TODO redefine and prepare the payload here, not in functional module
-#         # control_field = 0 # to differentiate between data (temperature read) and control (set heater ON) telegrams
-#         # # depends on the user input/request
-#         # self.send_telegram(payload, control_field = True)
-
-#     def update_heaters(self):
-#         from system.tools import required_power
-#         """Function to update the heaters' values to reach the desired temperature"""
-#         required = required_power(self.state, self.__room_volume, self.__room_insulation)
-#         logging.info(f"Sent required wattage to each heater linked to this controller.")
-#         self.send_telegram(TempControllerPayload(required), True)
 

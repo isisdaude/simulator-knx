@@ -35,7 +35,7 @@ async def main():
                 payload=GroupValueWrite(DPTBinary(1)),
             )
     
-    await xknx.telegrams.put(telegram)
+    #await xknx.telegrams.put(telegram)
     await xknx.start()
     print("Connected!")
     print("sending telegram")
