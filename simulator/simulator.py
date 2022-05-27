@@ -136,10 +136,11 @@ def launch_simulation():
         room1.world.time.scheduler_start()
 
         try:
+            i = Interface()
             loop = asyncio.get_event_loop()
             interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
             interface_thread.start()
-            interface_task = asyncio.run_coroutine_threadsafe(main(room1), loop)
+            interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
             # signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
             # for s in signals:
             #     loop.add_signal_handler(s, lambda s=s: asyncio.create_task(shutdown(s, loop)))
