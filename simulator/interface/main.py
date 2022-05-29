@@ -20,7 +20,7 @@ class Interface:
 	def __init__(self):
 		self.__sending_lock = asyncio.Lock()
 		self.__sending_queue: asyncio.Queue[sim_t.Telegram] = asyncio.Queue()
-		from .telegram_parser import TelegramParser
+		from telegram_parser import TelegramParser
 		group_address_to_payload = {} #TODO: create correct bindings! for the moment, only BinaryPayload
 
 		self.telegram_parser = TelegramParser(group_address_to_payload)
@@ -74,11 +74,13 @@ class Interface:
 
 		(frame, addr) = self.__create_connection(self.xknx)
 
+		telegram_queue_task = asyncio.create_task(self.__process_telegram_queue(addr))
+		
 		
 		while True:
-			# data, addr = self.sock.recvfrom(1024)
+			data, addr = self.sock.recvfrom(1024)
 			
-			# frame.from_knx(data)
+			frame.from_knx(data)
 
 			if isinstance(frame.body, TunnellingRequest):
 				telegram: real_t.Telegram = frame.body.cemi.telegram
@@ -92,7 +94,7 @@ class Interface:
 				print("ACK sent")
 
 			# TODO: as a task?
-			await self.__process_telegram_queue(addr)
+			# await self.__process_telegram_queue(addr)
 					
 
 	async def add_to_sending_queue(self, teleg: List[sim_t.Telegram]):
@@ -104,29 +106,30 @@ class Interface:
 		"""Endless loop for processing telegrams."""
 		# TODO: On another thread?
 		while True:
-			with self.__sending_lock:
-				# Breaking up queue if None is pushed to the queue
-				if self.__sending_queue:
-						teleg = await self.__sending_queue.get()
-						if teleg is None:
-							return
-						sender = KNXIPFrame(self.xknx)
-						cemif = CEMIFrame(self.xknx).init_from_telegram(self.xknx, teleg)
-						req = TunnellingRequest(self.xknx, cemi= cemif)
-						sender = sender.init_from_body(req)
-						print("Sending to SVSHI!")
-						self.sock.sendto(bytes(sender.to_knx()), addr)
-				
-				
+			if self.__sending_queue:
+				async with self.__sending_lock:
+					# Breaking up queue if None is pushed to the queue
+					if self.__sending_queue:
+							teleg = await self.__sending_queue.get()
+							if teleg is None:
+								return
+							sender = KNXIPFrame(self.xknx)
+							cemif = CEMIFrame(self.xknx).init_from_telegram(self.xknx, teleg)
+							req = TunnellingRequest(self.xknx, cemi= cemif)
+							sender = sender.init_from_body(req)
+							print("Sending to SVSHI!")
+							self.sock.sendto(bytes(sender.to_knx()), addr)
+					
+					
 				
 	def run(self, room):
-		asyncio.run(self.main())
+		asyncio.run(self.main(room))
 
-# i = Interface()
-# from system.tools import GroupAddress, IndividualAddress
-# ga = GroupAddress('2-levels', 0,0)
-# ia = IndividualAddress(0,0,1)
-# test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
-# asyncio.run(i.add_to_sending_queue([test_sim]))
-# i.run()
+i = Interface()
+from system.tools import GroupAddress, IndividualAddress
+ga = GroupAddress('2-levels', 0,0)
+ia = IndividualAddress(0,0,1)
+test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
+asyncio.run(i.add_to_sending_queue([test_sim]))
+i.run(1)
 
