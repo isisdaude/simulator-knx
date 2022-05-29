@@ -67,7 +67,7 @@ class Room:
     def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False): # system_dt is delta t in seconds between updates
         self.__test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
-        self.name, self.width, self.length, self.height, self.__speed_factor, self.__.group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
+        self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
         self.world = sim.World(self.width, self.length, self.height, self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
         """Representation of the KNX Bus"""
@@ -136,7 +136,7 @@ class Room:
         self.world.ambient_light.add_source(in_room_device)
 
     def attach(self, device, group_address:str):
-        ga = check_group_address(self.__.group_address_style, group_address)
+        ga = check_group_address(self.__group_address_style, group_address)
         if ga:
             self.knxbus.attach(device, ga)
             return 1
@@ -144,7 +144,7 @@ class Room:
             return 0
     
     def detach(self, device, group_address:str):
-        ga = check_group_address(self.__.group_address_style, group_address)
+        ga = check_group_address(self.__group_address_style, group_address)
         if ga in self.knxbus.group_addresses:
             self.knxbus.detach(device, ga)
             return 1
