@@ -198,7 +198,7 @@ def test_incorrect_device_status():
 #     rooms = system.configure_system(speed_factor)
 #     assert len(rooms) == 1  ##TODO: change this test if multiple rooms
 #     for room in rooms:
-#         assert room.group_address_style == group_address_style
+#         assert room.__.group_address_style == group_address_style
 #         for inroom_device in room.devices:
 #             assert inroom_device.device.name in config_devices
 #             try:

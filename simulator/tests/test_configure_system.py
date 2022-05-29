@@ -64,11 +64,11 @@ def test_correct_device_addition():
             elif isinstance(devices[d], dev.HumiditySoil): # Arbitrary init of soil humidity 
                 assert devices[d].humidity == room1.world.ambient_humidity.humidity
             elif isinstance(devices[d], dev.CO2Sensor):
-                assert ir_devices[d] in room1.world.ambient_co2.co2_sensors
+                assert ir_devices[d] in room1.world.ambient_co2.__co2_sensors
             elif isinstance(devices[d], dev.AirSensor):
                 assert ir_devices[d] in room1.world.ambient_temperature.__temp_sensors
-                assert ir_devices[d] in room1.world.ambient_humidity.humidity_sensors
-                assert ir_devices[d] in room1.world.ambient_co2.co2_sensors
+                assert ir_devices[d] in room1.world.ambient_humidity.__humidity_sensors
+                assert ir_devices[d] in room1.world.ambient_co2.__co2_sensors
         # Test storage of the bus in functional devices class's attributes 
         elif isinstance(devices[d], dev.FunctionalModule):
             assert hasattr(devices[d], 'knxbus')
@@ -88,19 +88,19 @@ def test_correct_attachement_to_bus():
         room1.attach(devices[d], ga1_str)
         assert ga1 in room1.knxbus.group_addresses
         assert ga1 in devices[d].group_addresses
-        for ga_bus in room1.knxbus.ga_buses:
+        for ga_bus in room1.knxbus.__ga_buses:
             if ga_bus.group_address == ga1:
                 ga1_bus = ga_bus
         if ga1_bus is None:
             assert False
-        ga_bus_index = room1.knxbus.ga_buses.index(ga1_bus)
-        assert ga1 == room1.knxbus.ga_buses[ga_bus_index].group_address
+        ga_bus_index = room1.knxbus.__ga_buses.index(ga1_bus)
+        assert ga1 == room1.knxbus.__ga_buses[ga_bus_index].group_address
         if isinstance(devices[d], dev.Actuator):
-            assert devices[d] in room1.knxbus.ga_buses[ga_bus_index].actuators
+            assert devices[d] in room1.knxbus.__ga_buses[ga_bus_index].actuators
         if isinstance(devices[d], dev.FunctionalModule):
-            assert devices[d] in room1.knxbus.ga_buses[ga_bus_index].functional_modules
+            assert devices[d] in room1.knxbus.__ga_buses[ga_bus_index].functional_modules
         if isinstance(devices[d], dev.Sensor):
-            assert devices[d] in room1.knxbus.ga_buses[ga_bus_index].sensors
+            assert devices[d] in room1.knxbus.__ga_buses[ga_bus_index].sensors
 
 ga2 = system.GroupAddress('3-levels', main=2, middle=2, sub=2)
 # ga2_bus = system.GroupAddressBus(ga2)
@@ -117,26 +117,26 @@ def test_correct_detachement_from_bus():
         room1.add_device(devices[d], x, y, z)
         # We attach a second device
         room1.attach(devices[d], ga2_str)
-        for ga_bus in room1.knxbus.ga_buses:
+        for ga_bus in room1.knxbus.__ga_buses:
             if ga_bus.group_address == ga2:
                 ga2_bus = ga_bus
         if ga2_bus is None:
             assert False
-        ga_bus_index = room1.knxbus.ga_buses.index(ga2_bus)
+        ga_bus_index = room1.knxbus.__ga_buses.index(ga2_bus)
         # Test detachement (attachement is correct because of the previous test)
         room1.detach(devices[d], ga2_str)
         assert ga2 not in devices[d].group_addresses
         if isinstance(devices[d], dev.Actuator):
-            assert devices[d] not in room1.knxbus.ga_buses[ga_bus_index].actuators
+            assert devices[d] not in room1.knxbus.__ga_buses[ga_bus_index].actuators
         if isinstance(devices[d], dev.FunctionalModule):
-            assert devices[d] not in room1.knxbus.ga_buses[ga_bus_index].functional_modules
+            assert devices[d] not in room1.knxbus.__ga_buses[ga_bus_index].functional_modules
         if isinstance(devices[d], dev.Sensor):
-            assert devices[d] not in room1.knxbus.ga_buses[ga_bus_index].sensors
+            assert devices[d] not in room1.knxbus.__ga_buses[ga_bus_index].sensors
     # Test removal of ga_bus if no device connected to it
     room1.detach(led22, ga2_str)
     assert ga2 not in led22.group_addresses
     assert ga2 not in room1.knxbus.group_addresses
-    assert ga2_bus not in room1.knxbus.ga_buses
+    assert ga2_bus not in room1.knxbus.__ga_buses
 
 
 # TODO: test wrong config files, test good/wrong attachement to bus, detachement

@@ -495,7 +495,7 @@ class GUIWindow(pyglet.window.Window):
 
         print(" ------- Initialization of the KNX System's GUI representation ------- ")
         for in_room_device in self.room.devices:
-            # Supported instances: Button, Dimmer, LED, Heater, AC, Brightness, Thermometer, AirSensor Humidity? CO2?
+            # Supported instances: Button, Dimmer, LED, Heater, AC, Brightness, Thermometer, AirSensor Humidity? CO2? ##TODO
             gui_device = getattr(self.__available_devices, in_room_device.device.class_name.lower())
             pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.__room_width_ratio, self.__room_length_ratio, self.__room_widget.origin_x, self.__room_widget.origin_y)
             print(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
@@ -503,7 +503,7 @@ class GUIWindow(pyglet.window.Window):
                 img_neutral = DEVICE_THERMO_NEUTRAL_PATH
             else: 
                 img_neutral = None
-            device_widget = DeviceWidget(pos_x, pos_y, self.__batch, gui_device.file_ON, gui_device.file_OFF, group=self.__foreground, device_type='sensor', device_class=in_room_device.name[:-1], device_number=in_room_device.name[-1], img_neutral=img_neutral)
+            device_widget = DeviceWidget(pos_x, pos_y, self.__batch, gui_device.file_ON, gui_device.file_OFF, group=self.__foreground, device_class=in_room_device.name[:-1], device_number=in_room_device.name[-1], img_neutral=img_neutral)
             device_widget.in_room_device = in_room_device
             self.__room_devices.append(device_widget)
         self.__display_devices_list()
@@ -567,7 +567,7 @@ class GUIWindow(pyglet.window.Window):
                 if humsoil_name == room_device.label_name:
                     if hasattr(room_device, 'humiditysoil'):
                         room_device.humiditysoil = humiditysoil
-                        room_device.update_drop()
+                        room_device.update_drop_sprite()
         
         for presence in presence_sensors_states:
             pres_name, pres_state = presence[0], presence[1]
@@ -601,7 +601,7 @@ class GUIWindow(pyglet.window.Window):
             room_device_label.delete()
         self.__room_devices_labels = []
         # Re-initialization of Pause button
-        self.__button_pause.update_image(reload=True)
+        self.__button_pause.update_sprite(reload=True)
         # Re configuration of the room and simulation time
         if default_config:
             config_path = self.__DEFAULT_CONFIG_PATH
@@ -661,7 +661,7 @@ class GUIWindow(pyglet.window.Window):
         elif symbol == pyglet.window.key.P:
             if modifiers and pyglet.window.key.MOD_CTRL:
                 self.__button_pause.activate(self)
-                self.__button_pause.update_image()
+                self.__button_pause.update_sprite()
         # CTRL-R to reload simulation from start
         elif symbol == pyglet.window.key.R:
             if modifiers and pyglet.window.key.MOD_CTRL:
@@ -707,7 +707,7 @@ class GUIWindow(pyglet.window.Window):
                         if isinstance(room_device.in_room_device.device, HumiditySoil): # We put water in pot
                             if hasattr(room_device, "humiditysoil"):
                                 room_device.humiditysoil = room_device.in_room_device.device.humiditysoil = 90 # Fully wet loam soil, update knx system device
-                                room_device.update_drop()
+                                room_device.update_drop_sprite()
 
             # LEFT click + CTRL : assign a group address to a device
             elif modifiers & pyglet.window.key.MOD_CTRL:
@@ -768,7 +768,7 @@ class GUIWindow(pyglet.window.Window):
                                 if room_device.device_class.lower() in device_class.lower():
                                     similar_dev_counter += 1
                             # Create a moving_device attribute
-                            self._moving_device = DeviceWidget(x, y, self.__batch, device.file_ON, device.file_OFF, group=self.__foreground, device_type=device.device_type, device_class=device_class, device_number=str(similar_dev_counter))
+                            self._moving_device = DeviceWidget(x, y, self.__batch, device.file_ON, device.file_OFF, group=self.__foreground, device_class=device_class, device_number=str(similar_dev_counter))
                             return
                     for room_device in self.__room_devices:
                         if room_device.hit_test(x, y):
@@ -854,7 +854,7 @@ class GUIWindow(pyglet.window.Window):
             for button in self.__buttons:
                 # if button.widget.hit_test(x, y):
                 if button == self.__button_pause and hasattr(self.__button_pause, 'clicked'):
-                    button.update_image()
+                    button.update_sprite()
                     delattr(self.__button_pause, 'clicked')
                 button.widget.sprite.opacity = OPACITY_DEFAULT
                     

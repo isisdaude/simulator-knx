@@ -335,18 +335,13 @@ def check_wheater_date(date_time, weather):
     return sim_datetime, sim_weather
 
 
-def check_window(wall:str, location_offset_ratio:float, size:float, room):
+def check_window(wall:str, location_offset:float, size:float, room):
+    """ location offse is location in m from strat of wall (left side of north/south walls, bottm side of east/west walls"""
     # wall str check
     try:
         assert wall in ['north', 'south', 'east', 'west']
     except AssertionError:
         logging.error(f"The window's wall '{wall}' is incorrect, should be in 'north', 'south', 'east', 'west'] -> we do not consider this window in the simulation.")
-        return None, None, None
-    # location_offset_ratio check
-    try: 
-        assert 0 <= location_offset_ratio and location_offset_ratio <= 1
-    except AssertionError:
-        logging.error(f"The window's location_offset_ratio '{location_offset_ratio}'is incorrect, should be a ratio >=0 and <=1 -> we do not consider this window in the simulation.")
         return None, None, None
 
     # size (width/length, height) in m
@@ -358,13 +353,14 @@ def check_window(wall:str, location_offset_ratio:float, size:float, room):
         logging.error(f"The window's size '{size}' is incorrect, should be > 0 -> we do not consider this window in the simulation.")
         return None, None, None
 
+    # window dimensions & location
     # window height
     try:
         assert size_height <= room.height
     except AssertionError:
         logging.error(f"The window's height '{size_height}' is too large, should be lower than room's height = '{room.height} -> we do not consider this window in the simulation.'")
         return None, None, None
-    # window width/length
+    # window width/length, window loc
     if wall in ['north', 'south']: # Horizontal window
         try: 
             log_bounds = ('width', room.width)
@@ -372,7 +368,7 @@ def check_window(wall:str, location_offset_ratio:float, size:float, room):
         except AssertionError:
             logging.error(f"The window's size '{size_width}' is incorrect, should be lower than room's {log_bounds[0]} = '{log_bounds[1]}' -> we do not consider this window in the simulation.")
             return None, None, None
-        window_loc = location_offset_ratio * room.width # concret location of window center
+        window_loc = location_offset # concret location of window center
         try: # check if left side in the room's bounds
             assert (window_loc-size_width/2) > 0
         except AssertionError:
@@ -396,7 +392,7 @@ def check_window(wall:str, location_offset_ratio:float, size:float, room):
         except AssertionError:
             logging.error(f"The window's size '{size_width}' is incorrect, should be lower than room's {log_bounds[0]} = '{log_bounds[1]}' -> we do not consider this window in the simulation.")
             return None, None, None
-        window_loc = location_offset_ratio * room.length # concret location of window center
+        window_loc = location_offset # concret location of window center
         try: # check if bottom side in the room's bounds
             assert (window_loc-size_width/2) > 0
         except AssertionError:

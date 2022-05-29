@@ -26,6 +26,13 @@
         "name":"bedroom1",
         "dimensions":[12.5, 10, 3],
         "insulation":"average",
+        "windows": {
+          "window1": {
+            "wall": "north",
+            "size": [2, 1.5],
+            "location_offset": 4
+          }
+        },
         "room_devices":{}
       }
     }

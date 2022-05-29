@@ -12,15 +12,15 @@ class KNXBus:
     '''Class that implements the transmission over the KNX Bus, between Actuators and FuntionalModules'''
 
     def __init__(self):
-        self.name = "KNX Bus"
+        # self.name = "KNX Bus"
         self.group_addresses = []  # list of group addresses
         # list of group address buses
-        self.ga_buses: List[GroupAddressBus] = []
-        self.temp_actuaors = []
-        self.temp_functional = []
-        self.group_address_to_payload_type = {}
+        self.__ga_buses: List[GroupAddressBus] = []
+        # self.__temp_actuators = []
+        # self.__temp_functional = []
+        self.__group_address_to_payload_type = {}
         # TODO: add this to the bus with proper variables
-        # self.communication_interface = CommunicationInterface('localhost', '???', self.group_address_to_payload_type)
+        # self.communication_interface = CommunicationInterface('localhost', '???', self.__group_address_to_payload_type)
         # self.communication_interface.start_communication()
 
     # If not in list, add the observer to the list
@@ -51,9 +51,9 @@ class KNXBus:
                 ga_bus = GroupAddressBus(group_address)
                 ga_bus.add_device(device) # add ga to devices ga list
                 # we add the new object to the list
-                self.ga_buses.append(ga_bus)
+                self.__ga_buses.append(ga_bus)
             else:  # if the group address already exists, we just add the device to the corresponding class GroupAddressBus
-                for ga_bus in self.ga_buses:
+                for ga_bus in self.__ga_buses:
                     if ga_bus.group_address == group_address:
                         logging.info(
                             f"{device.name} is added to the ga_bus ({group_address.name})")
@@ -70,10 +70,10 @@ class KNXBus:
             logging.warning(
                 f"The group address '{group_address.name}' is not linked to {device.name}, that thus cannot be detached.")
         else:
-            for ga_bus in self.ga_buses:
+            for ga_bus in self.__ga_buses:
                 if ga_bus.group_address == group_address:
                     if not ga_bus.detach_device(device): # return number of devices linked to this ga_bus, if none, we delete the ga bus
-                        self.ga_buses.remove(ga_bus)
+                        self.__ga_buses.remove(ga_bus)
                         self.group_addresses.remove(group_address)
                         logging.info(
                             f"The ga_bus ({group_address.name}) is deleted as no devices are connected to it.")
@@ -83,7 +83,7 @@ class KNXBus:
         '''Transmits a telegram through the bus'''
         #print("telegram in transmission")
         # print(telegram)
-        for ga_bus in self.ga_buses:
+        for ga_bus in self.__ga_buses:
             if telegram.destination == ga_bus.group_address:
                 # Sending to external applications
                 # self.communication_interface.add_telegram_to_send(telegram)
@@ -100,13 +100,13 @@ class KNXBus:
         pass
         # TODO: which else need to be handled?
         # print((str(group_address), BinaryPayload)
-        # self.group_address_to_payload_type.update((str(group_address), BinaryPayload))
+        # self.__group_address_to_payload_type.update((str(group_address), BinaryPayload))
         # TODO: to be added when async things handled correctly
-        # self.communication_interface.group_address_to_payload = self.group_address_to_payload_type
+        # self.communication_interface.group_address_to_payload = self.__group_address_to_payload_type
     
     def get_info(self):
         bus_dict = {"name": self.name, "group_addresses":{}}
-        for ga_bus in self.ga_buses:
+        for ga_bus in self.__ga_buses:
             str_ga = ga_bus.group_address.name
             ga_dict = {str_ga: {}}
             sensor_names = []

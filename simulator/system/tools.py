@@ -1,5 +1,5 @@
 
-import logging, sys
+import logging, sys, copy
 from  datetime import datetime, timezone, timedelta
 # import astral
 from astral import LocationInfo
@@ -8,6 +8,7 @@ import asyncio
 import math
 import json
 import devices as dev
+import system
 import pprint
 pp=pprint.PrettyPrinter(compact=True)
 
@@ -45,16 +46,19 @@ MAX_FREE = 65535
 
 class Window:
     """Class to represent windows"""
-    def __init__(self, window_name, room, wall, location_offset_ratio, size):
+    def __init__(self, window_name, room, wall, location_offset, size):
         from .check_tools import check_window
         ## window img size is 300p wide, for a room of 12.5m=1000p, it corresponds to 3.75m
         ## must scale the window if different size, e.g. if window size = 1m, scale factor x(horizontal) ou y(vertical) = 1/3.75``
         self.WINDOW_PIXEL_SIZE = 300
         ROOM_PIXEL_WIDTH = 1000 ## TODO: take this constant from a config file
+        # to copy window instance in compute_distance_from_window()
+        self.location_offset = location_offset
+
         self.initial_size = room.width * self.WINDOW_PIXEL_SIZE / ROOM_PIXEL_WIDTH # 3.75m if room width=12.5 for 1000 pixels
         self.name = window_name
         self.class_name = 'Window'
-        self.wall, self.window_loc, self.size  = check_window(wall, location_offset_ratio, size, room)   # size[width, height] in meters
+        self.wall, self.window_loc, self.size  = check_window(wall, location_offset, size, room)   # size[width, height] in meters
         # self.window_loc = (x, y, z) for 
         # self.wall in north', 'south', 'east' or 'west'
         # self.size = [width/lengh, height]
@@ -77,7 +81,7 @@ class Window:
     
     def effective_lumen(self):
         # Lumen quantity rationized with the state ratio (% of source's max lumens)
-        return self.max_lumen*(self.state_ratio/100)
+        return 0.2*self.max_lumen + 0.8*self.max_lumen*(self.state_ratio/100) # 20% of outdoor light will pass even with blinds closed
 
 
 
@@ -212,7 +216,7 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False):
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
                 room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
-    # room1.group_address_style = '3-levels'
+    # room1.__.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
     room1.add_device(button1, 0, 0, 1)
@@ -284,17 +288,17 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         windows = []
         for window in room_config["windows"]:
             wall = room_config["windows"][window]["wall"]
-            location_offset_ratio = room_config["windows"][window]["location_offset_ratio"]
+            location_offset = room_config["windows"][window]["location_offset"]
             size = room_config["windows"][window]["size"]
             try:
-                window_object = Window(window, room, wall, location_offset_ratio, size)
+                window_object = Window(window, room, wall, location_offset, size)
                 windows.append(window_object)
                 room.add_window(window_object)
             except ValueError as msg:
                 logging.error(msg)
                 
                 
-        # room.group_address_style = group_address_encoding_style
+        # room.__.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
         room_devices_config = room_config["room_devices"]
@@ -499,13 +503,46 @@ class ScriptParser():
 
 
 """Tools for physical world updates"""
-def compute_distance(source, sensor) -> float:
+def compute_distance(source, sensor) -> float: # in_room_devices
     """ Computes euclidian distance between a sensor and a actuator"""
     delta_x = abs(source.location.x - sensor.location.x)
     delta_y = abs(source.location.y - sensor.location.y)
     delta_z = abs(source.location.z - sensor.location.z)
     dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
     return dist
+
+def compute_distance_from_window(window, sensor) -> float:   # wndow and sensor is in room device
+    """Compute closest distace between window and brightness sensor"""
+    # window_nearest_point = copy.deepcopy(window)
+    window_copy = Window("window_nearest", window.room, window.device.wall,window.device.location_offset, window.device.size)
+    window_nearest_point = system.InRoomDevice(window_copy, window.room, window_copy.window_loc[0], window_copy.window_loc[1], window_copy.window_loc[2])
+    if window.device.wall in ['north', 'south']:
+        win_left_x = window.location.x
+        win_right_x = win_left_x + window.device.size[0]
+        # Test if sensor if in the same axe than window, on left or on right
+        if sensor.location.x < win_left_x: 
+            window_nearest_point.location.x = win_left_x
+            return compute_distance(window_nearest_point, sensor)
+        elif win_right_x < sensor.location.x:
+            window_nearest_point.location.x = win_right_x
+            return compute_distance(window_nearest_point, sensor)
+        else: 
+            window_nearest_point.location.x = sensor.location.x
+            return compute_distance(window_nearest_point, sensor)
+    elif window.device.wall in ['west', 'east']:
+        win_bottom_y = window.location.y
+        win_top_y = win_bottom_y + window.device.size[0]
+        # Test if sensor if in the same axe than window, on bottom or on top
+        if sensor.location.y < win_bottom_y:
+            window_nearest_point.location.y = win_bottom_y
+            return compute_distance(window_nearest_point, sensor)
+        elif win_top_y < sensor.location.y:
+            window_nearest_point.location.y = win_top_y
+            return compute_distance(window_nearest_point, sensor)
+        else:
+            window_nearest_point.location.y = sensor.location.y
+            return compute_distance(window_nearest_point, sensor)
+    
 
 DATE_WEATHER_TO_LUX = {"clear_day":10752, "overcast_day":1075, "dark_day":107, "clear_sunrise_sunset":300, "overcast_sunrise_sunset":100, "dark_sunrise_sunset":10,  "clear_twilight":10.8, "overcast_twilight":1, "clear_night":0.108, "overcast_night":0.0001, "dark_night":0}
 def outdoor_light(date_time:datetime, weather:str):
