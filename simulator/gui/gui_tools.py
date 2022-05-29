@@ -476,7 +476,7 @@ class PersonWidget(object):
         self.__img = pyglet.image.load(img_path)
         self.__width, self.__length = self.__img.width, self.__img.height
         self.__origin_x, self.__origin_y = self.__pos_x - self.__width//2, self.__pos_y - self.__length//2
-        self.__sprite = pyglet.sprite.Sprite(self.__img, self.origin_x, self.__origin_y, batch=self.__batch, group=self.__group)
+        self.__sprite = pyglet.sprite.Sprite(self.__img, self.__origin_x, self.__origin_y, batch=self.__batch, group=self.__group)
     
     def hit_test(self, x, y): # to check if mouse click is on the Room widget
         return (self.__origin_x < x < (self.__origin_x + self.__width) and
