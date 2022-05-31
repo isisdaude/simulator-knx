@@ -167,9 +167,9 @@ class ButtonPause(object):
 
     def activate(self, gui_window):
         gui_window.pause_simulation()
-        if gui_window.room.simulation_status: # Pause button if simulation running
+        if gui_window.room.simulation_status: # Pause button PNG to show if simulation running
             self.file_to_use = self.pause_file
-        elif not gui_window.room.simulation_status: # Play button if simulation paused
+        elif not gui_window.room.simulation_status: # Play button PNG to show if simulation paused
             self.file_to_use = self.play_file
         self.clicked = True  ## NOTE cannot be private as we call hasattr() from GUI class
 

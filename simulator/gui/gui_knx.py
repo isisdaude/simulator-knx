@@ -5,7 +5,7 @@ import logging
 import shutil
 from typing import List
 import json
-from time import time
+from time import time, sleep
 from datetime import timedelta, datetime
 import numpy as np
 
@@ -619,12 +619,15 @@ class GUIWindow(pyglet.window.Window):
         self.room.simulation_status = not self.room.simulation_status
         if not self.room.simulation_status:
             logging.info("The simulation is paused")
-            self.room.world.time.pause_time = time() # save current time to update start_time when
+            self.__sleep_time_till_next_update = pyglet.clock.get_sleep_time(True) # get time before next scheduled update
+            # self.room.world.time.pause_time = time() # save current time to update start_time when
         else:
+            if self.__sleep_time_till_next_update:
+                sleep(self.__sleep_time_till_next_update) # waits before updating again when simulation resumed, to respect simulation time in system
             logging.info("The simulation is resumed")
-            paused_time = time() - self.room.world.time.pause_time
-            self.room.world.time.start_time += paused_time
-            delattr(self.room.world.time, 'pause_time')
+            # paused_time = time() - self.room.world.time.pause_time
+            # self.room.world.time.start_time += paused_time
+            # delattr(self.room.world.time, 'pause_time')
 
 
 ## Pyglet 'on-event' methods ##
@@ -899,7 +902,7 @@ def update_window(dt, window, date_time, current_str_simulation_time, weather, t
     window.simtime_widget.simtime_label.text = f"SimTime: {sim_time}" 
     window.simtime_widget.date_label.text = f"Date: {datetime_str}"
     window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
-    print(f"doing simtime update at {sim_time[:-5]} \n")
+    print(f"doing simtime update at {sim_time} \n") #[:-5]
     ## TODO print out lux at top left of window
 
 # if __name__ == '__main__':

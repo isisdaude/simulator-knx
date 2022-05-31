@@ -64,7 +64,7 @@ def test_correct_devices_creation():
     assert heater1.status == heater1_config["status"]
     assert heater1.max_power == heater1_config["max_power"]
     assert heater1.state_ratio == heater1_config["state_ratio"]
-    assert heater1.power == heater1_config["power"]
+    assert heater1.effective_power == heater1_config["power"]
     # Test correct AC
     ac1 = dev.AC("ac1", "M-0_C1", system.IndividualAddress(0,0,12), "enabled", 400)
     assert ac1.name == ac1_config["name"]
@@ -75,7 +75,7 @@ def test_correct_devices_creation():
     assert ac1.status == ac1_config["status"]
     assert ac1.max_power == ac1_config["max_power"]
     assert ac1.state_ratio == ac1_config["state_ratio"]
-    assert ac1.power == ac1_config["power"]
+    assert ac1.effective_power == ac1_config["power"]
     # Test correct switch
     switch1 = dev.Switch("switch1", "M-0_S3", system.IndividualAddress(0,0,44), "enabled")
     assert switch1.name == switch1_config["name"]

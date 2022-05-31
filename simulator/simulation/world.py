@@ -28,6 +28,7 @@ class Time:
         self.__system_dt = system_dt
         self.__datetime_init = date_time
         self.__date_time = date_time
+        self.__simtim_tick_counter = 0
         # ratio for physical state update, pro rata per hour
         self.update_rule_ratio = (self.__system_dt * self.speed_factor)/3600
 
@@ -41,25 +42,30 @@ class Time:
         try:
             self.__update_job = self.__scheduler.add_job(job_function, 'interval', seconds = self.__system_dt)
         except AttributeError:
-            logging.warning("The Scheduler is not initialized: job cannnot be added")
+            logging.warning("The Scheduler is not initialized: update job cannnot be added")
 
     def scheduler_start(self):
         try:
             self.__scheduler.start()
             self.start_time = time.time()
+            self._last_tick_time = self.start_time
         except AttributeError:
             logging.warning("The Scheduler is not initialized and cannot be started")
 
-    # Simulation time management
+    # Simulation time management  ##TODO increment a counter every tick (system_dt) and compute correspondign timedelta wit hspeed factor, do not consider time() function 
     def simulation_time(self, str_mode=False):
         try:
-            if hasattr(self, 'pause_time'): # if system was paused, we consider only the active simulation time 
-                elapsed_time = (self.pause_time - self.start_time)*self.speed_factor
-            else:
-                # Elapsed time from simulation point-of-view (not real seconds but simulated seconds)
-                elapsed_time = (time.time() - self.start_time)*self.speed_factor
+            # if hasattr(self, 'pause_time'): # if system was paused, we consider only the active simulation time 
+            #     elapsed_time = (self.pause_time - self.start_time)*self.speed_factor
+            #     print(f"elapsed time when paused: {elapsed_time}")
+            # else:
+            # Elapsed time from simulation point-of-view (not real seconds but simulated seconds)
+            elapsed_time = (self.__simtim_tick_counter)*self.speed_factor
+            # print(f"elapsed_time system : {self.__simtim_tick_counter}, simulation : {elapsed_time}")
+            # elapsed_time = (time.time() - self.start_time)*self.speed_factor
             if str_mode:
-                str_elapsed_time = str(timedelta(seconds=round(elapsed_time, 2)))[:-5]
+                str_elapsed_time = str(timedelta(seconds=round(elapsed_time, 2)))#[:-5]
+                # print(f"str_simtime : {str_elapsed_time}")
                 return str_elapsed_time
             else:
                 return elapsed_time # in seconds
@@ -67,6 +73,12 @@ class Time:
             logging.warning("The Simulation time is not initialized")
     
     def update_datetime(self):
+        # if not hasattr(self, "_last_tick_time"):
+        #     self._last_tick_time = time.time()
+        # else:
+        #     print(f"time since last tick : {time.time() - self._last_tick_time}")
+        #     self._last_tick_time = time.time()
+        self.__simtim_tick_counter += self.__system_dt # Increment simtime with system_dt=interval between two tick/updates
         self.__date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
         print(self.__date_time.strftime("%Y-%m-%d %H:%M:%S"))
         return self.__date_time
@@ -132,14 +144,14 @@ class AmbientTemperature:
             # self.total_actual_power = 0
             # for source in self.__temp_sources:
             #     if source.device.status and source.device.state:
-            #         self.total_actual_power += source.device.power
+            #         self.total_actual_power += source.device.effective_power
             for source in self.__temp_sources: # sources of heat or cold
                 if source.device.status and source.device.state: # if source enabled
                     if isinstance(source.device, Heater):
-                        source.device.update_rule = source.device.power/self.total_max_power 
+                        source.device.update_rule = source.device.effective_power/self.total_max_power 
                         self.__temperature_in += source.device.update_rule*self.__update_rule_ratio
                     if isinstance(source.device, AC):
-                        source.device.update_rule = - source.device.power/self.total_max_power
+                        source.device.update_rule = - source.device.effective_power/self.total_max_power
                         self.__temperature_in += source.device.update_rule*self.__update_rule_ratio # The ac update rule is <0
             # Compute max temp
             #relative_max_power = self.__max_power_heater - self.__max_power_ac
@@ -226,7 +238,7 @@ class AmbientLight:
             if isinstance(source.device, system.Window):
                 # Compute closest distance between sensor and windows
                 distance = system.compute_distance_from_window(source, brightness_sensor)
-                print(f"sensor {brightness_sensor.name} is at {distance} from window {source.name}")
+                # print(f"sensor {brightness_sensor.name} is at {distance} from window {source.name}")
             elif (source.device.is_enabled() and source.device.state):
                 # print(f"{source.device.name} is a light source")
                 # Compute distance between sensor and each source

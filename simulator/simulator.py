@@ -47,8 +47,8 @@ LOGGING_LEVEL = logging.WARNING
 
 ## User command mode (script or CLI)
 GUI_MODE = 0
-TERMINAL_MODE = 1
-INTERFACE_MODE = TERMINAL_MODE # or TERMINAL_MODE
+CLI_MODE = 1
+INTERFACE_MODE = GUI_MODE # or CLI_MODE
 ## User interface mode
 SCRIPT_MODE = 0
 CLI_MODE = 1
@@ -60,12 +60,14 @@ EMPTY_CONFIG = 2 # configuration with no devices
 DEV_CONFIG = 3 # configuration from python function
 CONFIG_MODE = FILE_CONFIG
 
+SYSTEM_DT = 1
+
 def launch_simulation():
-    GUI_MODE = True 
+    # GUI_MODE = True 
     ## TODO implement  kind of a switch for config (flag config_mode that wan be equak tto DEFAUK, FILE, or EMPTY)
     default_mode = False
     empty_mode = False
-    SYSTEM_DT = 1
+    
     logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
     # System configuration based on a JSON config file
@@ -119,7 +121,7 @@ def launch_simulation():
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time
-        room1 = rooms[0] # NOTE: implementation for multiple rooms using the rooms list
+        room1 = rooms[0] # NOTE: further implementation for multiple rooms can use the rooms list
         try:
             i = Interface()
             loop = asyncio.new_event_loop()

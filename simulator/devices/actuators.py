@@ -59,12 +59,12 @@ class TemperatureActuator(Actuator, ABC):
         self.max_power = max_power
         """Power of the device in Watts"""
         self.state_ratio = 100 # Percentage of 'amplitude'
-        self.power = self.max_power * self.state_ratio/100
+        self.effective_power = self.max_power * self.state_ratio/100
         """Power really used, max by default"""
     
     def get_dev_info(self):
         self.__str_state = "ON" if self.state else "OFF"
-        dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "power":self.power}
+        dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "power":self.effective_power}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
@@ -105,14 +105,13 @@ class Heater(TemperatureActuator):
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
-                self.power = self.max_power
+                self.effective_power = self.max_power
             if isinstance(telegram.payload, DimmerPayload):
                 self.state = telegram.payload.binary_state
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
-                    self.power = self.max_power * self.state_ratio/100
-    
-    
+                    self.effective_power = self.max_power * self.state_ratio/100
+
 
 
 class AC(TemperatureActuator):
@@ -132,12 +131,12 @@ class AC(TemperatureActuator):
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.binary_state
-                self.power = self.max_power
+                self.effective_power = self.max_power
             if isinstance(telegram.payload, DimmerPayload):
                 self.state = telegram.payload.binary_state
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
-                    self.power = self.max_power * self.state_ratio/100
+                    self.effective_power = self.max_power * self.state_ratio/100
     
 
 

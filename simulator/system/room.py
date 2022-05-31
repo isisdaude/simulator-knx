@@ -77,6 +77,8 @@ class Room:
         self.windows: List[InRoomDevice] = []
         """Simulation status to pause/resume"""
         self.simulation_status = True
+        self.__paused_tick_counter = 0
+        self.__system_dt = system_dt
 
         ### TODO windows if not None
         ## implement add_window method
@@ -123,10 +125,34 @@ class Room:
 
     ### TODO: implement removal of devices
     # def remove_device(self, in_room_device):
+    #     from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor, HumiditySoil, HumidityAir, CO2Sensor, PresenceSensor
     #     for device in self.devices:
-    #         if device == in_room_device:
-    #             if isinstance(device, FunctionalModule):
-    #                 device.disconnect_from_knxbus()
+    #         if device.name == in_room_device.name:
+    #             self.knxbus.remove_device(in_room_device) # remove from all its group addresses
+    #             if isinstance(device, Actuator):
+    #                 if isinstance(device, LightActuator):
+    #                     self.world.ambient_light.remove_source(in_room_device)
+    #                 elif isinstance(device, TemperatureActuator):
+    #                     self.world.ambient_temperature.add_source(in_room_device)
+    #             elif isinstance(device, Sensor):
+    #                 if isinstance(device, Brightness):
+    #                     self.world.ambient_light.add_sensor(in_room_device)
+    #                 elif isinstance(device, Thermometer):
+    #                     self.world.ambient_temperature.add_sensor(in_room_device)
+    #                 elif isinstance(device, HumiditySoil): 
+    #                     self.world.soil_moisture.add_sensor(in_room_device)
+    #                 elif isinstance(device, HumidityAir): 
+    #                     self.world.ambient_humidity.add_sensor(in_room_device) 
+    #                 elif isinstance(device, CO2Sensor):
+    #                     self.world.ambient_co2.add_sensor(in_room_device)
+    #                 elif isinstance(device, AirSensor):
+    #                     self.world.ambient_temperature.add_sensor(in_room_device)
+    #                     self.world.ambient_humidity.add_sensor(in_room_device)
+    #                     self.world.ambient_co2.add_sensor(in_room_device)
+    #                 elif isinstance(device, PresenceSensor):
+    #                     self.world.presence.add_sensor(in_room_device)
+    #             elif isinstance(device, FunctionalModule):
+    #                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
 
     def add_window(self, window:Window):
         # we consider windows as devices (actuator for light with outdoor light, potentially actuator for humidity and co2)
@@ -158,7 +184,10 @@ class Room:
     def update_world(self, interval=1, gui_mode=False):
         if self.__test_mode == False:
             import gui
-            if self.simulation_status:
+            if self.simulation_status: # True if system is running (not in pause)
+                if self.__paused_tick_counter > 0:
+                    logging.info(f"Simulation was paused for {self.__paused_tick_counter * self.__system_dt} seconds")
+                    self.__paused_tick_counter = 0
                 # world.update updates value of all sensors system instances 
                 date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
                 #brightness_levels = brightness_sensor_name, brightness
@@ -177,6 +206,11 @@ class Room:
                     True
                     # print("not gui mode")
                 ## TODO update sensors without using the gui
+            else: # system on pause
+                ### get time since last schedule call
+                self.__paused_tick_counter += 1
+                print(f" Simulation paused for {self.__paused_tick_counter * self.__system_dt} seconds", end='\r') 
+                
         elif self.__test_mode:
             True
             # print("test mode")
