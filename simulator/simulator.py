@@ -27,7 +27,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # import simulation as sim
 import gui
 import system
-
+from interface.main import Interface
 
 # SCRIPT_DIR = os.path.dirname(__file__)
 # SAVED_CONFIG_PATH = os.path.join(SCRIPT_DIR,"/docs/config/")
@@ -112,7 +112,7 @@ def launch_simulation():
         # TODO: implement for multiple rooms
         try:
             # i = Interface()
-            # loop = asyncio.new_event_loop()
+            loop = asyncio.new_event_loop()
             # interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
             # interface_thread.start()
             # interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
@@ -137,7 +137,7 @@ def launch_simulation():
 
         try:
             # i = Interface()
-            # loop = asyncio.get_event_loop()
+            loop = asyncio.get_event_loop()
             # interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
             # interface_thread.start()
             # interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
