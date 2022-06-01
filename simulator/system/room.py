@@ -78,6 +78,12 @@ class Room:
         """Simulation status to pause/resume"""
         self.simulation_status = True
 
+        from interface.main import Interface
+        from devices.actuators import IPInterface
+        from .tools import IndividualAddress
+        self.__interface = Interface(self.knxbus)
+        self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
+
         ### TODO windows if not None
         ## implement add_window method
         ### add to ambient light sources with correct computations
@@ -139,6 +145,7 @@ class Room:
         ga = check_group_address(self.group_address_style, group_address)
         if ga:
             self.knxbus.attach(device, ga)
+            self.knxbus.attach(self.interface_device, ga)
             return 1
         else:
             return 0

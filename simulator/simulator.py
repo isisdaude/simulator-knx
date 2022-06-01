@@ -27,7 +27,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # import simulation as sim
 import gui
 import system
-from interface.main import Interface
+
 
 # SCRIPT_DIR = os.path.dirname(__file__)
 # SAVED_CONFIG_PATH = os.path.join(SCRIPT_DIR,"/docs/config/")
@@ -111,15 +111,15 @@ def launch_simulation():
         room1 = rooms[0]
         # TODO: implement for multiple rooms
         try:
-            i = Interface()
-            loop = asyncio.new_event_loop()
-            interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
-            interface_thread.start()
-            interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
+            # i = Interface()
+            # loop = asyncio.new_event_loop()
+            # interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
+            # interface_thread.start()
+            # interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
-            interface_task.cancel()
+            # interface_task.cancel()
             sys.exit()
         print("The GUI window has been closed and the simulation terminated.")
 
@@ -136,11 +136,11 @@ def launch_simulation():
         room1.world.time.scheduler_start()
 
         try:
-            i = Interface()
-            loop = asyncio.get_event_loop()
-            interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
-            interface_thread.start()
-            interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
+            # i = Interface()
+            # loop = asyncio.get_event_loop()
+            # interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
+            # interface_thread.start()
+            # interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
             # signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
             # for s in signals:
             #     loop.add_signal_handler(s, lambda s=s: asyncio.create_task(shutdown(s, loop)))
