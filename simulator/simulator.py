@@ -54,6 +54,7 @@ def launch_simulation():
     EMPTY_CONFIG = True # configuration with no devices
     default_mode = False
     empty_mode = False
+    SVSHI_MODE = False
     SYSTEM_DT = 1
     logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
@@ -88,7 +89,7 @@ def launch_simulation():
             except ValueError:
                 logging.warning("The simulation speed should be a number")
                 continue
-        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')]
+        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', svshi_mode=SVSHI_MODE)]
 
     # # We save the config path to further reload the simulation
     # for room in rooms:
