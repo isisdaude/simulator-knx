@@ -30,10 +30,10 @@ class LED(LightActuator):
         if telegram.control_field == True: # Control field bit
 
             if isinstance(telegram.payload, BinaryPayload):
-                self.state = telegram.payload.binary_state
+                self.state = telegram.payload.content
 
             elif isinstance(telegram.payload, DimmerPayload):
-                self.state = telegram.payload.binary_state
+                self.state = telegram.payload.content
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
 
@@ -104,10 +104,10 @@ class Heater(TemperatureActuator):
          if telegram.control_field == True:  # Control field bit
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
-                self.state = telegram.payload.binary_state
+                self.state = telegram.payload.content
                 self.effective_power = self.max_power
             if isinstance(telegram.payload, DimmerPayload):
-                self.state = telegram.payload.binary_state
+                self.state = telegram.payload.content
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
                     self.effective_power = self.max_power * self.state_ratio/100
@@ -130,10 +130,10 @@ class AC(TemperatureActuator):
         if telegram.control_field == True:  # Control field bit
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
-                self.state = telegram.payload.binary_state
+                self.state = telegram.payload.content
                 self.effective_power = self.max_power
             if isinstance(telegram.payload, DimmerPayload):
-                self.state = telegram.payload.binary_state
+                self.state = telegram.payload.content
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
                     self.effective_power = self.max_power * self.state_ratio/100
@@ -148,9 +148,9 @@ class Switch(Actuator):
 
     def update_state(self, telegram):
         if isinstance(telegram.payload, BinaryPayload):
-            self.state = telegram.payload.binary_state
+            self.state = telegram.payload.content
         if isinstance(telegram.payload, DimmerPayload):
-            self.state = telegram.payload.binary_state # do not consider the state_ratio
+            self.state = telegram.payload.content # do not consider the state_ratio
 
     def get_dev_info(self):
         dev_specific_dict = {"state":self.state}

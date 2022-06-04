@@ -1,5 +1,5 @@
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging
+import logging, sys
 from typing import List
 
 from .tools import GroupAddress
@@ -81,15 +81,24 @@ class KNXBus:
     # notifier is a functional module (e.g. button)
     def transmit_telegram(self, telegram):
         '''Transmits a telegram through the bus'''
-        #print("telegram in transmission")
+        # print("telegram in transmission")
         # print(telegram)
         for ga_bus in self.__ga_buses:
+            # print(f"ga_bus : {ga_bus.group_address}")
+            # print(f"telegram has attr destination : {hasattr(telegram, 'destination')}")
             if telegram.destination == ga_bus.group_address:
                 # Sending to external applications
                 # self.communication_interface.add_telegram_to_send(telegram)
                 # TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators:  # loop on actuator linked to this group address
-                    actuator.update_state(telegram) 
+                    # print(f"actuator: {actuator.name}")
+                    # print(f"actuator {actuator.name} hasattr update_state : {hasattr(actuator, 'update_state')}")
+                    try:
+                        actuator.update_state(telegram)
+                    except AttributeError:
+                        logging.warning(f"The actuator {actuator.name} or the telegram created is missing an Attribute.")
+                    except:
+                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.update_state(telegram)
                 # for functional in ga_bus.functional_modules:

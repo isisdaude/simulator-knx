@@ -17,11 +17,12 @@ class DeviceListWidget(object):
         # Max number of devices to display in list, int div length (from start of list, below title 'y') by offset between devices
         self.MAX_SIZE_DEVICES_LIST = (y - OFFSET_LIST_DEVICE)//OFFSET_LIST_DEVICE
         self.__box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.__topleft_y-self.__length, DEVICE_LIST_BOX_WIDTH, self.__length, border=BOX_BORDER,
-                                            color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+                                            color=COLOR_BOX_DEVICESLIST, border_color=COLOR_BOX_DEVICESLIST_BORDER,
                                             batch=batch, group=self.__group_box)
 
         self.deviceslist_title = pyglet.text.Label("Devices in the Room:",
                                     font_name=FONT_SYSTEM_TITLE, font_size=15, bold=True,
+                                    color = COLOR_FONT_DEVICESLIST_TITLE,
                                     x=x, y=y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=batch, group=group_label)
@@ -32,7 +33,7 @@ class DeviceListWidget(object):
         self.__length = new_length + OFFSET_DEVICELIST_BOX_TOP+OFFSET_DEVICELIST_BOX_BOTTOM
         self.__box_shape.delete()
         self.__box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, self.__topleft_y-self.__length, DEVICE_LIST_BOX_WIDTH, height=self.__length, border=BOX_BORDER,
-                                            color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+                                            color=COLOR_BOX_DEVICESLIST, border_color=COLOR_BOX_DEVICESLIST_BORDER,
                                             batch=self.__batch, group=self.__group_box)
     
     def hit_test(self, x, y): # to check if mouse click is on the Device list widget
@@ -43,35 +44,56 @@ class DeviceListWidget(object):
 class SimTimeWidget(object):
     def __init__(self, x, y, batch, group_box, group_label):
         self.__box_shape = pyglet.shapes.BorderedRectangle(x, y-SIMTIME_BOX_LENGTH/2, SIMTIME_BOX_WIDTH, SIMTIME_BOX_LENGTH, border=BOX_BORDER,
-                                            color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+                                            color=COLOR_BOX_SIMTIME, border_color=COLOR_BOX_SIMTIME_BORDER,
                                             batch=batch, group=group_box)
-        self.simtime_label = pyglet.text.Label("SimTime: 0", # init the simulation time title
-                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_SIMTIME, bold=True,
+        self.simtime_label = pyglet.text.Label("SimTime:", # init the simulation time title
+                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATE, bold=True,
+                                    color = COLOR_FONT_SIMTIME_LABEL,
                                     x=x+OFFSET_SIMTIME_BOX, y=y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=batch, group=group_label)
-        
-        self.date_label = pyglet.text.Label("Date: ", # init the simulation time display
+        self.simtime_value = pyglet.text.Label("0:00:00", 
                                     font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_SIMTIME, bold=True,
+                                    color = COLOR_FONT_SIMTIME_VALUE,
+                                    x=x+OFFSET_SIMTIME_BOX+OFFSET_SIMTIME_VALUE, y=y,
+                                    anchor_x='left', anchor_y='bottom',
+                                    batch=batch, group=group_label)
+        
+        self.date_label = pyglet.text.Label("Date: ", # init the simulation date display
+                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATE, bold=True,
+                                    color = COLOR_FONT_SIMTIME_LABEL,
                                     x=x+OFFSET_SIMTIME_BOX, y=y-OFFSET_SIMTIME_DATE,
+                                    anchor_x='left', anchor_y='bottom',
+                                    batch=batch, group=group_label)
+        self.date_value = pyglet.text.Label("", 
+                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATE, bold=True,
+                                    color = COLOR_FONT_SIMTIME_VALUE,
+                                    x=x+OFFSET_SIMTIME_BOX+OFFSET_DATETIME_VALUE, y=y-OFFSET_SIMTIME_DATE,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=batch, group=group_label)
 
 class DayTimeWeatherWidget(object):
     def __init__(self, x, y, batch, group_box, group_daytime, group_weather, temp_out, hum_out, co2_out):
-        self.__pos_x = x
+        self.__pos_x = x # pos init box shape (left bottom corner)
         self.__pos_y = y
         self.__batch = batch
         self.__group_weather = group_weather
         self.__group_daytime = group_daytime
         self.__temp_out, self.__hum_out, self.__co2_out = temp_out, hum_out, co2_out
         self.__box_shape = pyglet.shapes.BorderedRectangle(self.__pos_x, self.__pos_y, TIMEWEATHER_BOX_WIDTH, TIMEWEATHER_BOX_LENGTH, border=BOX_BORDER,
-                                    color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+                                    color=COLOR_BOX_WEATHER, border_color=COLOR_BOX_WEATHER_BORDER,
                                     batch=self.__batch, group=group_box)
-        self.__out_state_str = f"Out state: {self.__temp_out}°C  {self.__hum_out}%  {self.__co2_out}ppm  " 
-        self.__out_state_label = pyglet.text.Label(self.__out_state_str, # out_temp, out_co2, out_hum, out_lux
+        self.__out_state_str = f"{self.__temp_out}°C  {self.__hum_out}%  {self.__co2_out}ppm  " 
+        self.__out_state_label = pyglet.text.Label("Out state:", # out_temp, out_co2, out_hum (out_lux is added later)
                                     font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_OUT_STATE, bold=True,
-                                    x=self.__pos_x+OFFSET_STATE_LABEL, y=self.__pos_y+OFFSET_STATE_LABEL,
+                                    color = COLOR_FONT_OUTSTATE_LABEL,
+                                    x=self.__pos_x+OFFSET_OUTSTATE_LABEL, y=self.__pos_y+OFFSET_OUTSTATE_LABEL,
+                                    anchor_x='left', anchor_y='bottom',
+                                    batch=self.__batch, group=self.__group_daytime)
+        self.__out_state_value = pyglet.text.Label(self.__out_state_str, # out_temp, out_co2, out_hum
+                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_OUT_STATE, bold=True,
+                                    color = COLOR_FONT_OUTSTATE_VALUE,
+                                    x=self.__pos_x+OFFSET_OUTSTATE_LABEL+OFFSET_OUTSTATE_VALUE, y=self.__pos_y+OFFSET_OUTSTATE_LABEL,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__group_daytime)
         self.__sunrise_img = pyglet.image.load(SUNRISE_PATH)
@@ -106,7 +128,7 @@ class DayTimeWeatherWidget(object):
             self._weather_sprite.delete()
         # update lux_out
         self.__lux_out = round(lux_out,1) if lux_out > 1 else lux_out
-        self.__out_state_label.text = self.__out_state_str + str(self.__lux_out) + "lux"
+        self.__out_state_value.text = self.__out_state_str + str(self.__lux_out) + "lux"
         # update time_of_day img
         if time_of_day in self.__tod_dict:
             self._tod_sprite = pyglet.sprite.Sprite(self.__tod_dict[time_of_day]["img"], self.__pos_x + self.__tod_dict[time_of_day]["offset_x"], self.__pos_y + self.__tod_dict[time_of_day]["offset_y"], batch=self.__batch, group=self.__group_daytime)
@@ -150,6 +172,7 @@ class ButtonWidget(object):
         self.sprite = pyglet.sprite.Sprite(self.__img, self.__pos_x, self.__pos_y, batch=self.__batch, group=self.__group)
         self.label = pyglet.text.Label(label_text,
                                     font_name=FONT_BUTTON, font_size=10,
+                                    color = COLOR_FONT_BUTTON,
                                     x=(self.__pos_x+self.__width//2), y=(self.__pos_y-OFFSET_LABEL_BUTTON),
                                     anchor_x='center', anchor_y='center',
                                     batch=self.__batch, group=self.__group)
@@ -221,7 +244,7 @@ class DimmerSetterWidget(object):
         self.room_device_widget.sprite.opacity = OPACITY_CLICKED
         self.init_state_ratio = room_device_widget.in_room_device.device.state_ratio
         self.center_x, self.center_y = room_device_widget.pos_x, room_device_widget.pos_y
-        self.state_label_x = self.center_x + room_device_widget.width//2
+        self.state_label_x = self.center_x + room_device_widget.width//2 + OFFSET_DIMMER_RATIO
         self.state_label_y = self.center_y - room_device_widget.length//2
         self.being_set = False
 
@@ -230,7 +253,7 @@ class DimmerSetterWidget(object):
         self.being_set = True
         self.state_ratio_label = pyglet.text.Label(str(self.init_state_ratio),
                                     font_name=FONT_INTERACTIVE, font_size=FONT_SIZE_INTERACTIVE,
-                                    x=(self.state_label_x+OFFSET_DIMMER_RATIO), y=self.state_label_y,
+                                    x=(self.state_label_x), y=self.state_label_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=batch, group=group,
                                     color=color_from_state_ratio(self.init_state_ratio))
@@ -271,8 +294,10 @@ class DeviceWidget(object):
 
         if available_device: # available devices for a manual import (displayed outside of the GUI)
             self.origin_x, self.origin_y = self.pos_x, self.pos_y
+            label_color = COLOR_FONT_AVAILABLEDEVICE
         else:
             self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
+            label_color = COLOR_FONT_ROOMDEVICE
             if "humiditysoil" in self.label_name:  # for the soil humifity sensor
                 self.humiditysoil = 10 # arbitrary init of soil humidity
                 # https://www.acurite.com/blog/soil-moisture-guide-for-plants-and-vegetables.html
@@ -287,11 +312,12 @@ class DeviceWidget(object):
                 self.__drop_sprite = pyglet.sprite.Sprite(self.__drop_red, x=self.__drop_pos_x, y=self.__drop_pos_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
                 self.__drop_label = pyglet.text.Label('10%',
                                     font_name=FONT_INTERACTIVE, font_size=FONT_SIZE_INTERACTIVE,
+                                    color = color_from_humiditysoil(self.humiditysoil),
                                     x=self.__drop_label_pos_x, y=self.__drop_label_pos_y,
                                     anchor_x='left', anchor_y='center',
                                     batch=self.__batch, group=self.__group)
-                self.__drop_label.color = color_from_humiditysoil(self.humiditysoil)
         
+        ## Thermometer
         if img_neutral is not None: # for thermometer when no change in temperature
             self.__img_neutral = pyglet.image.load(img_neutral)
             self.sprite = pyglet.sprite.Sprite(self.__img_neutral, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
@@ -299,6 +325,7 @@ class DeviceWidget(object):
             self.sprite = pyglet.sprite.Sprite(self.img_OFF, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
         self.label = pyglet.text.Label(self.label_name,
                                     font_name=FONT_DEVICE, font_size=10,
+                                    color = label_color,
                                     x=(self.origin_x+self.width//2), y=(self.origin_y-OFFSET_LABEL_DEVICE),
                                     anchor_x='center', anchor_y='center',
                                     batch=self.__batch, group=self.__group)
@@ -324,6 +351,13 @@ class DeviceWidget(object):
         self.origin_x, self.origin_y = self.pos_x - self.width//2, self.pos_y - self.length//2
         self.sprite.update(x=self.origin_x, y=self.origin_y)
         self.label.update(x=(self.origin_x+self.width//2), y=(self.origin_y-OFFSET_LABEL_DEVICE))
+        if "humiditysoil" in self.label_name:
+            self.__drop_pos_x = self.pos_x + self.width//2
+            self.__drop_pos_y = self.pos_y
+            self.__drop_label_pos_x = self.__drop_pos_x
+            self.__drop_label_pos_y = self.pos_y - 1.5*OFFSET_LABEL_DEVICE  
+            self.__drop_sprite.update(x=self.__drop_pos_x, y=self.__drop_pos_y)  
+            self.__drop_label.update(x=self.__drop_label_pos_x, y=self.__drop_label_pos_y)
         if update_loc:
             self.loc_x, self.loc_y = loc_x, loc_y
             self.in_room_device.update_location(new_x=self.loc_x, new_y=self.loc_y)
@@ -353,10 +387,10 @@ class DeviceWidget(object):
             self.__drop_sprite = pyglet.sprite.Sprite(drop, x=self.__drop_pos_x, y=self.__drop_pos_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
             self.__drop_label = pyglet.text.Label(str(self.humiditysoil)+'%',
                                     font_name=FONT_INTERACTIVE, font_size=FONT_SIZE_INTERACTIVE,
+                                    color = color_from_humiditysoil(self.humiditysoil),
                                     x=self.__drop_label_pos_x, y=self.__drop_label_pos_y,
                                     anchor_x='left', anchor_y='center',
                                     batch=self.__batch, group=self.__group)
-            self.__drop_label.color = color_from_humiditysoil(self.humiditysoil)
     
     def update_thermometer_sprite(self, rising_temp):
         if 'thermometer' in self.label_name:
@@ -380,7 +414,7 @@ class AvailableDevices(object): # library of devices availables, presented on th
         self.devices = []
 
         self.__box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_AVAILABLEDEVICES_LINE3-OFFSET_AVAILABLE_DEVICES-WIN_BORDER/2, AVAILABLE_DEVICES_BOX_WIDTH, AVAILABLE_DEVICES_BOX_LENGTH, border=BOX_BORDER,
-                                            color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+                                            color=COLOR_BOX_AVAILABLEDEVICES, border_color=COLOR_BOX_AVAILABLEDEVICES_BORDER,
                                             batch=batch, group=group_box)
 
         # Line 1
@@ -442,9 +476,6 @@ class RoomWidget(object):
         # Cordinates to represent the actual room dimensions (border is a margin to accept devices on boundaries)
         self.origin_x = WIN_WIDTH - WIN_BORDER - ROOM_BORDER - width
         self.origin_y = WIN_BORDER + ROOM_BORDER
-        # Label coordinates
-        # self.label_x = self.origin_x + width/2
-        # self.label_y = self.origin_y + OFFSET_ROOM_LABEL
         # Actual dimensions of the room, not the rectangle shape
         self.width = width
         self.length = length
@@ -452,7 +483,7 @@ class RoomWidget(object):
         self.__img = pyglet.image.load(ROOM_BACKGROUND_PATH)
         self.__batch = batch
         self.__shape = pyglet.shapes.BorderedRectangle(self.__origin_x_shape, self.__origin_y_shape, width+2*ROOM_BORDER, length+2*ROOM_BORDER, border=ROOM_BORDER,
-                                            color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+                                            color=COLOR_ROOM, border_color=COLOR_ROOM_BORDER,
                                             batch=self.__batch, group=group_bg)#, group = group
         self.__shape.opacity = OPACITY_ROOM
         self.__sprite = pyglet.sprite.Sprite(self.__img, self.origin_x, self.origin_y, batch=self.__batch, group=group_mg)

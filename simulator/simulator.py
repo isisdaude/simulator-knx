@@ -42,7 +42,7 @@ EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
 SCRIPT = "FullScript"
 SCRIPT_FILE_PATH = "./docs/scripts/" + SCRIPT + ".txt" 
 # Configure logging messages format
-LOGGING_LEVEL = logging.WARNING
+LOGGING_LEVEL = logging.INFO
 
 
 ## User command mode (script or CLI)

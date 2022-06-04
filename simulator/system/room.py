@@ -116,6 +116,7 @@ class Room:
                 self.world.presence.add_sensor(in_room_device)
 
         elif isinstance(device, FunctionalModule):
+            print(f"FunctionalModule {device.name} establich connection with the bus")
             device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             # if isinstance(device, Button):
             #     device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams

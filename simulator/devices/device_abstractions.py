@@ -32,6 +32,7 @@ class Device(ABC):
         return f"Device : {self.name}  {self.refid}  status:{self.is_enabled()}  {self.individual_addr} "
 
     def send_telegram(self, payload, control_field):
+        # print(f"device {self.name} has attr bus : {hasattr(self, 'knxbus')}")
         from system import Telegram # Import here to avoid circular import between system ,-> device_abstractions
         for group_address in self.group_addresses:
             telegram = Telegram(control_field, self.individual_addr, group_address, payload)
@@ -41,12 +42,13 @@ class Device(ABC):
             except AttributeError:
                 logging.warning(f"The device '{self.name}' is not connected to the bus, and thus cannot send telegrams")
             except:
-                print(f"hasattr knxbus: {hasattr(self, 'knxbus')}")
-                print(f"knx bus hasattr transmit_telegram: {hasattr(self.knxbus, 'transmit_telegram')}")
+                # print(f"hasattr knxbus: {hasattr(self, 'knxbus')}")
+                # print(f"knx bus hasattr transmit_telegram: {hasattr(self.knxbus, 'transmit_telegram')}")
                 logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
         return 0
 
     def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams
+        logging.info(f"The bus is added to device {self.name}'s class attributes.")
         self.knxbus = knxbus # can connect to only one
         # if knxbus not in self.knx_buses: # if we later implement multiple buses
         #     self.knx_buses.append(knxbus)

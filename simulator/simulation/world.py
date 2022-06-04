@@ -18,6 +18,7 @@ import system
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+SOIL_MOISTURE_MIN = 10
 
 class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
@@ -419,27 +420,25 @@ class SoilMoisture:
     def __init__(self, update_rule_ratio):
         self.__humiditysoil_sensors = []
         self.__update_rule_ratio = update_rule_ratio
-        self.__update_rule_down = -0.5 # -0.5% of soil moisture per hour, limited to ambient humidity
-        self.__update_rule_up = 0.1 # if lower than humidity in, the moisture increase very slowly
+        self.__update_rule_down = -0.5 # -0.5% of soil moisture per hour, limited to SOIL_MOISTURE_MIN
+        # self.__update_rule_up = 0.1 # if lower than humidity in, the moisture increase very slowly
     
     def add_sensor(self, humiditysoilsensor):
         """ humiditysoilsensor: InRoomDevice """
         self.__humiditysoil_sensors.append(humiditysoilsensor)
 
-    def update(self, humidity_in):
+    def update(self): #, humidity_in
         logging.info("Soil Moisture update")
         moisture_levels = []
         for sensor in self.__humiditysoil_sensors:
-            if sensor.device.humiditysoil > humidity_in:
+            if sensor.device.humiditysoil > SOIL_MOISTURE_MIN:
                 moisture_delta = self.__update_rule_down * self.__update_rule_ratio 
-                if (sensor.device.humiditysoil+moisture_delta) < humidity_in: 
-                    sensor.device.humiditysoil = humidity_in
-            elif sensor.device.humiditysoil <= humidity_in:
-                moisture_delta = self.__update_rule_up * self.__update_rule_ratio 
-                if (sensor.device.humiditysoil+moisture_delta) > humidity_in: 
-                    sensor.device.humiditysoil = humidity_in
-            if sensor.device.humiditysoil != humidity_in:
-                sensor.device.humiditysoil += moisture_delta
+                if (sensor.device.humiditysoil+moisture_delta) < SOIL_MOISTURE_MIN:
+                    sensor.device.humiditysoil = SOIL_MOISTURE_MIN
+                else:
+                    sensor.device.humiditysoil += moisture_delta
+            else:
+                sensor.device.humiditysoil = SOIL_MOISTURE_MIN
             moisture_levels.append((sensor.device.name, round(sensor.device.humiditysoil,2)))
         return moisture_levels
 
@@ -507,7 +506,7 @@ class World:
         temperature_levels, rising_temp = self.ambient_temperature.update()
         humidity_levels = self.ambient_humidity.update(self.ambient_temperature.get_temperature(str_mode=False))
         co2_levels = self.ambient_co2.update(self.ambient_temperature.get_temperature(str_mode=False), self.ambient_humidity.get_humidity(str_mode=False))
-        humiditysoil_levels = self.soil_moisture.update(self.ambient_humidity.get_humidity(str_mode=False))
+        humiditysoil_levels = self.soil_moisture.update() #self.ambient_humidity.get_humidity(str_mode=False)
         presence_sensors_states = self.presence.update()
         # humidity_levels = self.ambient_humidity.update()
         return date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states
