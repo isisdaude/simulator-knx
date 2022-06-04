@@ -156,3 +156,20 @@ class Switch(Actuator):
         dev_specific_dict = {"state":self.state}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+
+class IPInterface(Actuator):
+    """Concrete class to represent an IP interface to communicate with external interfaces"""
+    from interface.main import Interface
+    def __init__(self, name, refid, individual_addr, default_status, interface: Interface, state=False):
+        super().__init__('IPInterface', name, refid, individual_addr, default_status, 'ip_interface', state)
+        self.interface = interface
+
+    def update_state(self, telegram):
+        # TODO: For the moment, retransmit only Binary Telegrams!
+        if isinstance(telegram.payload, BinaryPayload):
+            self.interface.add_to_sending_queue([telegram])
+
+    def get_dev_info(self):
+        dev_specific_dict = {"state":self.state}
+        dev_specific_dict.update(self._dev_basic_dict)
+        return dev_specific_dict

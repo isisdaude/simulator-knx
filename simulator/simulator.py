@@ -59,7 +59,7 @@ DEFAULT_CONFIG  = 1 # configuration from default json file (~3devices)
 EMPTY_CONFIG    = 2 # configuration with no devices
 DEV_CONFIG      = 3 # configuration from python function
 CONFIG_MODE = FILE_CONFIG
-
+SVSHI_MODE = False
 SYSTEM_DT = 1
 
 def launch_simulation():
@@ -72,7 +72,7 @@ def launch_simulation():
 
     # System configuration based on a JSON config file
     if CONFIG_MODE == FILE_CONFIG:
-        rooms = system.configure_system_from_file(CONFIG_PATH, SYSTEM_DT)
+        rooms = system.configure_system_from_file(CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
 
     # System configuration from function configure_system
     elif CONFIG_MODE == DEV_CONFIG:
@@ -80,17 +80,17 @@ def launch_simulation():
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
             if system.check_simulation_speed_factor(simulation_speed_factor):
                 break
-        rooms = system.configure_system(simulation_speed_factor, SYSTEM_DT)
+        rooms = system.configure_system(simulation_speed_factor, SYSTEM_DT, svshi_mode=SVSHI_MODE)
 
     # System configuration based on a default JSON config file
     elif CONFIG_MODE == DEFAULT_CONFIG:
         default_mode = True
-        rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH, SYSTEM_DT)
+        rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
     
     # System configuration based on a default JSON config file
     elif CONFIG_MODE  == EMPTY_CONFIG:
         empty_mode = True
-        rooms = system.configure_system_from_file(EMPTY_CONFIG_PATH, SYSTEM_DT)
+        rooms = system.configure_system_from_file(EMPTY_CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
 
     # System configuration based on a simple Room with no devices
     else:
@@ -101,7 +101,7 @@ def launch_simulation():
             except ValueError:
                 logging.warning("The simulation speed should be a number")
                 continue
-        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels')]
+        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', svshi_mode=SVSHI_MODE)]
 
     # # We save the config path to further reload the simulation
     # for room in rooms:
@@ -123,15 +123,10 @@ def launch_simulation():
             room.world.time.start_time = start_time
         room1 = rooms[0] # NOTE: further implementation for multiple rooms can use the rooms list
         try:
-            i = Interface()
             loop = asyncio.new_event_loop()
-            interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
-            interface_thread.start()
-            interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
-            interface_task.cancel()
             sys.exit()
         print("The GUI window has been closed and the simulation terminated.")
 
@@ -148,16 +143,8 @@ def launch_simulation():
         room1.world.time.scheduler_start()
 
         try:
-            i = Interface()
             loop = asyncio.get_event_loop()
-            interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
-            interface_thread.start()
-            interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
-            # signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
-            # for s in signals:
-            #     loop.add_signal_handler(s, lambda s=s: asyncio.create_task(shutdown(s, loop)))
-            #app = ui.GraphicalUserInterface(loop)
-            #app.mainloop()
+
             # TODO: implement for multiple rooms
             loop.run_until_complete(async_main(loop, room1))
         except (KeyboardInterrupt, SystemExit):
@@ -168,11 +155,6 @@ def launch_simulation():
             logging.info("Simulation Terminated")
             print("\nThe simulation program has been ended.")
             sys.exit(1)
-
-
-async def background_loop(loop: asyncio.AbstractEventLoop) -> None:
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
 
 
 async def user_input_loop(room):

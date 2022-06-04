@@ -64,7 +64,7 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False): # system_dt is delta t in seconds between updates
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False, svshi_mode=False): # system_dt is delta t in seconds between updates
         self.__test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
@@ -79,6 +79,15 @@ class Room:
         self.simulation_status = True
         self.__paused_tick_counter = 0
         self.__system_dt = system_dt
+        
+        """if SVSHI mode activated, waits for a connection and starts the communication"""
+        self.svshi_mode = svshi_mode
+        if self.svshi_mode:
+            from interface.main import Interface
+            from devices.actuators import IPInterface
+            from .tools import IndividualAddress
+            self.__interface = Interface(self.knxbus)
+            self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
 
         ### TODO windows if not None
         ## implement add_window method
@@ -166,6 +175,8 @@ class Room:
         ga = check_group_address(self.__group_address_style, group_address)
         if ga:
             self.knxbus.attach(device, ga)
+            if self.svshi_mode:
+                self.knxbus.attach(self.interface_device, ga)
             return 1
         else:
             return 0

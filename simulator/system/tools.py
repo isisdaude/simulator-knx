@@ -197,7 +197,7 @@ class GroupAddress:
 
 """ Functions tools """
 
-def configure_system(simulation_speed_factor, system_dt=1, test_mode=False):
+def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False):
     from .room import Room
     # Declaration of sensors, actuators and functional modules
     led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
@@ -215,7 +215,7 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False):
     room_insulation = 'good'
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
-                room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+                room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode, svshi_mode=svshi_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
     # room1.__.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -235,7 +235,7 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False):
     # return the room object to access all elements of the room (world included)
     return [room1]
 
-def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
+def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, svshi_mode=False):
     from .room import Room
     from .check_tools import check_group_address, check_simulation_speed_factor
     with open(config_file_path, "r") as file:
@@ -284,7 +284,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
                     room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
-                    datetime, weather, test_mode=test_mode)
+                    datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode)
         windows = []
         for window in room_config["windows"]:
             wall = room_config["windows"][window]["wall"]
@@ -393,7 +393,7 @@ def user_command_parser(command, room):
                 return 0
             state = True if command_split[2]=='ON' else False
             if len(command_split) == 4: # User gives ON/OFF state and value (e.g. for dimmer)
-                
+                pass
             else:
                 for in_room_device in room.devices:
                     if in_room_device.name in name:
@@ -565,7 +565,7 @@ class ScriptParser():
         
         elif command.startswith('set') and len(command_split) >= 3 and command_split[1] in ['Temperature', 'Humidity', 'CO2', 'Brightness', 'Weather']:
             ## TODO set ambient in world directly
-        
+            pass
             # print(f"command parser with '{command}'")
             # set device
             
