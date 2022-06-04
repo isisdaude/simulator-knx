@@ -12,9 +12,11 @@ class Button(FunctionalModule):
         self.state = False
         self.__str_state = "OFF"
 
-    def user_input(self):
+    def user_input(self, state=None):
         # logging.info(f"The {self.name} has been pressed")
         self.state = not self.state
+        if state is not None: # if user gives the wanted state
+            self.state = state
         self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
         logging.info(f"The {self.name} has been turned {self.__str_state}")
         __binary_payload = BinaryPayload(binary_state=self.state)
@@ -34,15 +36,17 @@ class Dimmer(FunctionalModule):
         self.__str_state = "OFF"
         self.state_ratio = 100
 
-    def user_input(self, state_ratio=100, switch_state=False, keep_on=False):
+    def user_input(self, state=None, state_ratio=100, switch_state=False, keep_on=False):
         # logging.info(f"The {self.name} has been pressed")
         if keep_on: # If switch state but we want the dimmer to be on anyway
             self.state = True
             self.__str_state = "ON"
         else: # if user turn ON/OFF dimmer, no need for switch_state flag
             self.state = not self.state
-            self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
-        
+        if state is not None: # if user gives the wanted state (True/False)
+            self.state = state
+        self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
+
         if self.state:
             self.state_ratio = state_ratio
             logging.info(f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}%")

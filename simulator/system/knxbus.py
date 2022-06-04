@@ -1,5 +1,5 @@
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging
+import logging, sys
 from typing import List
 
 from .tools import GroupAddress
@@ -12,15 +12,15 @@ class KNXBus:
     '''Class that implements the transmission over the KNX Bus, between Actuators and FuntionalModules'''
 
     def __init__(self):
-        self.name = "KNX Bus"
+        # self.name = "KNX Bus"
         self.group_addresses = []  # list of group addresses
         # list of group address buses
-        self.ga_buses: List[GroupAddressBus] = []
-        self.temp_actuaors = []
-        self.temp_functional = []
-        self.group_address_to_payload_type = {}
+        self.__ga_buses: List[GroupAddressBus] = []
+        # self.__temp_actuators = []
+        # self.__temp_functional = []
+        self.__group_address_to_payload_type = {}
         # TODO: add this to the bus with proper variables
-        # self.communication_interface = CommunicationInterface('localhost', '???', self.group_address_to_payload_type)
+        # self.communication_interface = CommunicationInterface('localhost', '???', self.__group_address_to_payload_type)
         # self.communication_interface.start_communication()
 
     # If not in list, add the observer to the list
@@ -51,9 +51,9 @@ class KNXBus:
                 ga_bus = GroupAddressBus(group_address)
                 ga_bus.add_device(device) # add ga to devices ga list
                 # we add the new object to the list
-                self.ga_buses.append(ga_bus)
+                self.__ga_buses.append(ga_bus)
             else:  # if the group address already exists, we just add the device to the corresponding class GroupAddressBus
-                for ga_bus in self.ga_buses:
+                for ga_bus in self.__ga_buses:
                     if ga_bus.group_address == group_address:
                         logging.info(
                             f"{device.name} is added to the ga_bus ({group_address.name})")
@@ -70,10 +70,10 @@ class KNXBus:
             logging.warning(
                 f"The group address '{group_address.name}' is not linked to {device.name}, that thus cannot be detached.")
         else:
-            for ga_bus in self.ga_buses:
+            for ga_bus in self.__ga_buses:
                 if ga_bus.group_address == group_address:
                     if not ga_bus.detach_device(device): # return number of devices linked to this ga_bus, if none, we delete the ga bus
-                        self.ga_buses.remove(ga_bus)
+                        self.__ga_buses.remove(ga_bus)
                         self.group_addresses.remove(group_address)
                         logging.info(
                             f"The ga_bus ({group_address.name}) is deleted as no devices are connected to it.")
@@ -81,15 +81,24 @@ class KNXBus:
     # notifier is a functional module (e.g. button)
     def transmit_telegram(self, telegram):
         '''Transmits a telegram through the bus'''
-        #print("telegram in transmission")
+        # print("telegram in transmission")
         # print(telegram)
-        for ga_bus in self.ga_buses:
+        for ga_bus in self.__ga_buses:
+            # print(f"ga_bus : {ga_bus.group_address}")
+            # print(f"telegram has attr destination : {hasattr(telegram, 'destination')}")
             if telegram.destination == ga_bus.group_address:
                 # Sending to external applications
                 # self.communication_interface.add_telegram_to_send(telegram)
                 # TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators:  # loop on actuator linked to this group address
-                    actuator.update_state(telegram) 
+                    # print(f"actuator: {actuator.name}")
+                    # print(f"actuator {actuator.name} hasattr update_state : {hasattr(actuator, 'update_state')}")
+                    try:
+                        actuator.update_state(telegram)
+                    except AttributeError:
+                        logging.warning(f"The actuator {actuator.name} or the telegram created is missing an Attribute.")
+                    except:
+                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.update_state(telegram)
                 # for functional in ga_bus.functional_modules:
@@ -100,13 +109,13 @@ class KNXBus:
         pass
         # TODO: which else need to be handled?
         # print((str(group_address), BinaryPayload)
-        # self.group_address_to_payload_type.update((str(group_address), BinaryPayload))
+        # self.__group_address_to_payload_type.update((str(group_address), BinaryPayload))
         # TODO: to be added when async things handled correctly
-        # self.communication_interface.group_address_to_payload = self.group_address_to_payload_type
+        # self.communication_interface.group_address_to_payload = self.__group_address_to_payload_type
     
     def get_info(self):
         bus_dict = {"name": self.name, "group_addresses":{}}
-        for ga_bus in self.ga_buses:
+        for ga_bus in self.__ga_buses:
             str_ga = ga_bus.group_address.name
             ga_dict = {str_ga: {}}
             sensor_names = []

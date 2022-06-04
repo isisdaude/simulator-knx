@@ -39,31 +39,45 @@ CONFIG_PATH = "./docs/config/sim_config_bedroom.json"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
 
-SCRIPT_FILE_PATH = "./docs/app_verification/LightTemp.txt" #"./docs/app_verification/Light.txt"
+SCRIPT = "FullScript"
+SCRIPT_FILE_PATH = "./docs/scripts/" + SCRIPT + ".txt" 
 # Configure logging messages format
 LOGGING_LEVEL = logging.WARNING
 
-script_mode = True
-UI_MODE = True
+
+## User command mode (script or CLI)
+GUI_MODE = 0
+CLI_MODE = 1
+INTERFACE_MODE = CLI_MODE # or CLI_MODE
+## User interface mode
+SCRIPT_MODE = 0
+CLI_MODE    = 1
+COMMAND_MODE = CLI_MODE # only if  INTERFACE_MODE = CLI_MODE
+## Configuration mode
+FILE_CONFIG     = 0   # configuration from json file
+DEFAULT_CONFIG  = 1 # configuration from default json file (~3devices)
+EMPTY_CONFIG    = 2 # configuration with no devices
+DEV_CONFIG      = 3 # configuration from python function
+CONFIG_MODE = FILE_CONFIG
+
+SYSTEM_DT = 1
 
 def launch_simulation():
-    GUI_MODE = True
-    FILE_CONFIG_MODE = True # configuration from json file
-    DEV_CONFIG = False # configuration from python function
-    DEFAULT_CONFIG = True # configuration from default json file (~3devices)
-    EMPTY_CONFIG = True # configuration with no devices
+    # GUI_MODE = True 
+    ## TODO implement  kind of a switch for config (flag config_mode that wan be equak tto DEFAUK, FILE, or EMPTY)
     default_mode = False
     empty_mode = False
     SVSHI_MODE = False
     SYSTEM_DT = 1
+
     logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
 
     # System configuration based on a JSON config file
-    if FILE_CONFIG_MODE:
+    if CONFIG_MODE == FILE_CONFIG:
         rooms = system.configure_system_from_file(CONFIG_PATH, SYSTEM_DT)
 
     # System configuration from function configure_system
-    elif DEV_CONFIG:
+    elif CONFIG_MODE == DEV_CONFIG:
         while(True): # Waits for the input to be a correct speed factor, before starting the simulation
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
             if system.check_simulation_speed_factor(simulation_speed_factor):
@@ -71,12 +85,12 @@ def launch_simulation():
         rooms = system.configure_system(simulation_speed_factor, SYSTEM_DT)
 
     # System configuration based on a default JSON config file
-    elif DEFAULT_CONFIG:
+    elif CONFIG_MODE == DEFAULT_CONFIG:
         default_mode = True
         rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH, SYSTEM_DT)
     
     # System configuration based on a default JSON config file
-    elif EMPTY_CONFIG:
+    elif CONFIG_MODE  == EMPTY_CONFIG:
         empty_mode = True
         rooms = system.configure_system_from_file(EMPTY_CONFIG_PATH, SYSTEM_DT)
 
@@ -97,7 +111,7 @@ def launch_simulation():
     # room1 = rooms[0] # for now only one room
 
     # GUI interface with the user
-    if GUI_MODE:
+    if INTERFACE_MODE == GUI_MODE:
         if default_mode:
             config_path = DEFAULT_CONFIG_PATH
         elif empty_mode:
@@ -109,8 +123,7 @@ def launch_simulation():
         start_time = time.time()
         for room in rooms:
             room.world.time.start_time = start_time
-        room1 = rooms[0]
-        # TODO: implement for multiple rooms
+        room1 = rooms[0] # NOTE: further implementation for multiple rooms can use the rooms list
         try:
             loop = asyncio.new_event_loop()
             pyglet.app.run()
@@ -121,7 +134,7 @@ def launch_simulation():
         print("The GUI window has been closed and the simulation terminated.")
 
     # Terminal interface with the user (no visual feedback)
-    else: # run the simulation without the GUI window
+    elif INTERFACE_MODE == CLI_MODE: # run the simulation without the GUI window
         # Configure the start_time attribute of rooms' Time object
         start_time = time.time()
         for room in rooms:
@@ -148,9 +161,11 @@ def launch_simulation():
             sys.exit(1)
 
 
+
 async def user_input_loop(room):
+    """Asyncio loop to await user command from terminal"""
     while True:
-        global script_mode
+        # global script_mode
         # if verif_mode:
         #     message = ''
         # else:
@@ -162,23 +177,26 @@ async def user_input_loop(room):
             # sys.exit(1)
 
 async def simulator_script_loop(room, file_path):
+    """Asyncio loop to await user command from a .txt script"""
     script_parser = system.ScriptParser()
-    global script_mode
+    # global script_mode
     with open(file_path, "r") as f:
         commands = f.readlines()
         for command in commands:
-            if script_mode:
+            if SCRIPT_MODE:
                 print("\n>>> Next command?")
             command = command.strip().lower() # remove new line symbol and put in lower case
             print(f"Command >>> '{command}' <<<")
-            script_state = await script_parser.script_command_parser(room, command)
-            if script_state is None:
-                # await kill_tasks()
-                script_mode = False
-                return None
+            await script_parser.script_command_parser(room, command)
+            # script_state = 
+            # if script_state is None:
+            #     # await kill_tasks()
+            #     script_mode = False
+            #     return None
                 # sys.exit(1)
 
 async def kill_tasks():
+    """Function called to kill task when program ended"""
     try:
         pending = asyncio.Task.all_tasks()
         for task in pending:
@@ -186,15 +204,16 @@ async def kill_tasks():
             with suppress(asyncio.CancelledError):
                 await task 
     except AttributeError:
-        return None        
+        return None
 
 
 async def async_main(loop, room):
+    """ Manager function of asyncio tasks"""
     tasks = []
-    if UI_MODE:
+    if COMMAND_MODE == CLI_MODE:
         ui_task = loop.create_task(user_input_loop(room))
         tasks.append(ui_task) 
-    if script_mode:
+    elif COMMAND_MODE == SCRIPT_MODE:
         script_task = loop.create_task(simulator_script_loop(room, SCRIPT_FILE_PATH))
         tasks.append(script_task) 
 
@@ -203,3 +222,22 @@ async def async_main(loop, room):
 
 if __name__ == "__main__":
     launch_simulation()
+
+# async def shutdown(signal, loop):
+#     """Cleanup tasks tied to the service's shutdown."""
+#     logging.info(f"Received exit signal {signal.name}...")
+#     tasks = [t for t in asyncio.all_tasks() if t is not
+#              asyncio.current_task()]
+
+#     [task.cancel() for task in tasks]
+
+#     logging.info(f"Cancelling {len(tasks)} outstanding tasks")
+#     await asyncio.gather(*taskss, return_exceptions=True)
+#     logging.info(f"Flushing metrics")
+#     loop.stop()
+#     print("\nThe simulation program has been ended.")
+#     sys.exit(1)
+        
+
+
+

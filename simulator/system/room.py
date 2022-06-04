@@ -16,7 +16,7 @@ from abc import ABC, abstractclassmethod
 
 class InRoomDevice:
         """Inner class to represent a device located at a certain position in a room"""
-        def __init__(self, device: Device, room,  x:float, y:float, z:float):
+        def __init__(self, device, room,  x:float, y:float, z:float): # device can be Device or Window
             self.room = room
             self.device = device
             self.name = device.name
@@ -36,8 +36,8 @@ class InRoomDevice:
             new_loc = Location(self.room, new_x, new_y, new_z)
             self.location = new_loc
 
-        def get_position(self):
-            return self.location.pos
+        # def get_position(self):
+        #     return self.location.pos
 
         # def get_x(self) -> float:
         #     return self.location.x
@@ -67,9 +67,9 @@ class Room:
     def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False, svshi_mode=False): # system_dt is delta t in seconds between updates
         self.test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
-        self.name, self.width, self.length, self.height, self.speed_factor, self.group_address_style, self.insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
+        self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
-        self.world = sim.World(self.width, self.length, self.height, self.speed_factor, system_dt, self.insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
+        self.world = sim.World(self.width, self.length, self.height, self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus()
         """List of all devices in the room"""
@@ -86,6 +86,10 @@ class Room:
             from .tools import IndividualAddress
             self.__interface = Interface(self.knxbus)
             self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
+
+        self.__paused_tick_counter = 0
+        self.__system_dt = system_dt
+
 
         ### TODO windows if not None
         ## implement add_window method
@@ -123,6 +127,7 @@ class Room:
                 self.world.presence.add_sensor(in_room_device)
 
         elif isinstance(device, FunctionalModule):
+            print(f"FunctionalModule {device.name} establich connection with the bus")
             device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
             # if isinstance(device, Button):
             #     device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
@@ -132,10 +137,34 @@ class Room:
 
     ### TODO: implement removal of devices
     # def remove_device(self, in_room_device):
+    #     from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor, HumiditySoil, HumidityAir, CO2Sensor, PresenceSensor
     #     for device in self.devices:
-    #         if device == in_room_device:
-    #             if isinstance(device, FunctionalModule):
-    #                 device.disconnect_from_knxbus()
+    #         if device.name == in_room_device.name:
+    #             self.knxbus.remove_device(in_room_device) # remove from all its group addresses
+    #             if isinstance(device, Actuator):
+    #                 if isinstance(device, LightActuator):
+    #                     self.world.ambient_light.remove_source(in_room_device)
+    #                 elif isinstance(device, TemperatureActuator):
+    #                     self.world.ambient_temperature.add_source(in_room_device)
+    #             elif isinstance(device, Sensor):
+    #                 if isinstance(device, Brightness):
+    #                     self.world.ambient_light.add_sensor(in_room_device)
+    #                 elif isinstance(device, Thermometer):
+    #                     self.world.ambient_temperature.add_sensor(in_room_device)
+    #                 elif isinstance(device, HumiditySoil): 
+    #                     self.world.soil_moisture.add_sensor(in_room_device)
+    #                 elif isinstance(device, HumidityAir): 
+    #                     self.world.ambient_humidity.add_sensor(in_room_device) 
+    #                 elif isinstance(device, CO2Sensor):
+    #                     self.world.ambient_co2.add_sensor(in_room_device)
+    #                 elif isinstance(device, AirSensor):
+    #                     self.world.ambient_temperature.add_sensor(in_room_device)
+    #                     self.world.ambient_humidity.add_sensor(in_room_device)
+    #                     self.world.ambient_co2.add_sensor(in_room_device)
+    #                 elif isinstance(device, PresenceSensor):
+    #                     self.world.presence.add_sensor(in_room_device)
+    #             elif isinstance(device, FunctionalModule):
+    #                 device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams
 
     def add_window(self, window:Window):
         # we consider windows as devices (actuator for light with outdoor light, potentially actuator for humidity and co2)
@@ -145,7 +174,7 @@ class Room:
         self.world.ambient_light.add_source(in_room_device)
 
     def attach(self, device, group_address:str):
-        ga = check_group_address(self.group_address_style, group_address)
+        ga = check_group_address(self.__group_address_style, group_address)
         if ga:
             self.knxbus.attach(device, ga)
             if self.svshi_mode:
@@ -155,7 +184,7 @@ class Room:
             return 0
     
     def detach(self, device, group_address:str):
-        ga = check_group_address(self.group_address_style, group_address)
+        ga = check_group_address(self.__group_address_style, group_address)
         if ga in self.knxbus.group_addresses:
             self.knxbus.detach(device, ga)
             return 1
@@ -167,9 +196,12 @@ class Room:
         
 
     def update_world(self, interval=1, gui_mode=False):
-        if self.test_mode == False:
+        if self.__test_mode == False:
             import gui
-            if self.simulation_status:
+            if self.simulation_status: # True if system is running (not in pause)
+                if self.__paused_tick_counter > 0:
+                    logging.info(f"Simulation was paused for {self.__paused_tick_counter * self.__system_dt} seconds")
+                    self.__paused_tick_counter = 0
                 # world.update updates value of all sensors system instances 
                 date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
                 #brightness_levels = brightness_sensor_name, brightness
@@ -188,7 +220,12 @@ class Room:
                     True
                     # print("not gui mode")
                 ## TODO update sensors without using the gui
-        elif self.test_mode:
+            else: # system on pause
+                ### get time since last schedule call
+                self.__paused_tick_counter += 1
+                print(f" Simulation paused for {self.__paused_tick_counter * self.__system_dt} seconds", end='\r') 
+                
+        elif self.__test_mode:
             True
             # print("test mode")
             ## TODO update sensors without using the gui
@@ -210,13 +247,13 @@ class Room:
         return self.world.get_info(ambient, self, str_mode=str_mode) # if room (self) not provided, brightness is average of sensors
     
     def get_bus_info(self):
-        bus_dict = {"group address encoding style":self.group_address_style}
+        bus_dict = {"group address encoding style":self.__.group_address_style}
         bus_dict.update(self.knxbus.get_info())
         return bus_dict
         #TODO number of group addresses and their devices
     
     def get_room_info(self):
-        room_dict = {"name":self.name, "width": self.width, "length":self.length, "height":self.height, "volume": self.width*self.length*self.height, "insulation":self.insulation, "devices":[]}
+        room_dict = {"name":self.name, "width": self.width, "length":self.length, "height":self.height, "volume": self.width*self.length*self.height, "insulation":self.__insulation, "devices":[]}
         for ir_dev in self.devices:
             room_dict['devices'].append(ir_dev.name)
         return room_dict

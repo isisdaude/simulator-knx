@@ -38,12 +38,12 @@ def test_correct_world_creation():
     assert world.ambient_humidity.temp == temp_out # NOTE: to change if temp init ≠ temp_out in room
     assert world.ambient_humidity.humidity_out == hum_out
     assert world.ambient_humidity.__room_insulation == insulation ### TODO prvate attr name
-    assert world.ambient_humidity.saturation_vapour_pressure == p_sat
+    assert world.ambient_humidity.__saturation_vapour_pressure == p_sat
     assert world.ambient_humidity.humidity == 35 # NOTE: to change if humidity init is provided
-    assert world.ambient_humidity.vapor_pressure == vapor_pressure
+    assert world.ambient_humidity.__vapor_pressure == vapor_pressure
     assert world.ambient_humidity.update_rule_ratio == update_rule_ratio ### TODO prvate attr name
     assert hasattr(world, 'ambient_co2')
-    assert world.ambient_co2.co2level == 800 # NOTE: to change if co2 init is provided
+    assert world.ambient_co2.__co2_in == 800 # NOTE: to change if co2 init is provided
     assert world.ambient_co2.outside_co2 == co2_out
     assert world.ambient_co2.__room_insulation == insulation ### TODO prvate attr name
     assert world.ambient_co2.update_rule_ratio == update_rule_ratio ### TODO prvate attr name

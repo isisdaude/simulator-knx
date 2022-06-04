@@ -5,7 +5,7 @@ import logging
 import shutil
 from typing import List
 import json
-from time import time
+from time import time, sleep
 from datetime import timedelta, datetime
 import numpy as np
 
@@ -79,21 +79,24 @@ class GUIWindow(pyglet.window.Window):
         self.daytimeweather_widget = DayTimeWeatherWidget(TIMEWEATHER_POS[0], TIMEWEATHER_POS[1], self.__batch, group_box=self.__background, group_daytime=self.__middleground, group_weather=self.__foreground, temp_out=self.room.world.ambient_temperature.temperature_out, hum_out=self.room.world.ambient_humidity.humidity_out, co2_out=self.room.world.ambient_co2.co2_out )
         # Initialize the list of devices in the room
         self.__devicelist_widget = DeviceListWidget(DEVICELIST_POS[0], DEVICELIST_POS[1], self.__batch, group_label=self.__foreground, group_box=self.__background)
-        self.__sensors_box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_SENSOR_LEVELS_BOX_Y_BOTTOM, SENSOR_LEVELS_BOX_WIDTH, SENSOR_LEVELS_BOX_LENGTH, border=WIN_BORDER/2,
-                                    color=BLUESUMMERSKY_RGB, border_color=BLUEMINSK_RGB,
+        self.__sensors_box_shape = pyglet.shapes.BorderedRectangle(WIN_BORDER/2, OFFSET_SENSOR_LEVELS_BOX_Y_BOTTOM, SENSOR_LEVELS_BOX_WIDTH, SENSOR_LEVELS_BOX_LENGTH, border=BOX_BORDER,
+                                    color=COLOR_BOX_SENSORS, border_color=COLOR_BOX_SENSORS_BORDER,
                                     batch=self.__batch, group=self.__background)
         self.__brightness_label = pyglet.text.Label("Brightness (lux):",
                                     font_name=FONT_SYSTEM_TITLE, font_size=15,  bold=True,
+                                    color=COLOR_FONT_SENSORS_TITLE,
                                     x=BRIGHTNESS_LABEL_POS[0], y=BRIGHTNESS_LABEL_POS[1],
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
         self.__temperature_label = pyglet.text.Label("Temperature (°C):",
                                     font_name=FONT_SYSTEM_TITLE, font_size=15,  bold=True,
+                                    color=COLOR_FONT_SENSORS_TITLE,
                                     x=TEMPERATURE_LABEL_POS[0], y=TEMPERATURE_LABEL_POS[1],
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
         self.__airquality_label = pyglet.text.Label("Air quality - T(°C) / CO2(ppm) / RH(%):",  #350-1,000 ppm, 
                                     font_name=FONT_SYSTEM_TITLE, font_size=15,  bold=True,
+                                    color=COLOR_FONT_SENSORS_TITLE,
                                     x=AIRSENSOR_LABEL_POS[0], y=AIRSENSOR_LABEL_POS[1],
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -138,11 +141,13 @@ class GUIWindow(pyglet.window.Window):
             label_text = room_device.label.text + ga_text
             room_device_label = pyglet.text.Label(label_text,
                                 font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_DEVICESLIST,
+                                color=COLOR_FONT_DEVICESLIST_DEVICE,
                                 x=room_dev_x, y=room_dev_y,
                                 anchor_x='left', anchor_y='bottom',
                                 batch=self.__batch, group=self.__foreground)
             room_device_ia_label = pyglet.text.Label(ia_label,
                                 font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_INDIVIDUAL_ADDR,
+                                color=COLOR_FONT_DEVICESLIST_DEVICE_IA,
                                 x=room_dev_x, y=room_dev_ia_y,
                                 anchor_x='left', anchor_y='bottom',
                                 batch=self.__batch, group=self.__foreground)
@@ -166,6 +171,7 @@ class GUIWindow(pyglet.window.Window):
                 room_brightness_counter += 1
                 room_brightness_label = pyglet.text.Label('bright'+room_device.label.text[-1],
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LABEL,
+                                    color=COLOR_FONT_SENSORS_DEVICE,
                                     x=room_bright_x, y=room_bright_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -186,6 +192,7 @@ class GUIWindow(pyglet.window.Window):
                 room_temperature_counter += 1
                 room_temperature_label = pyglet.text.Label('thermo'+room_device.label.text[-1],
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LABEL,
+                                    color=COLOR_FONT_SENSORS_DEVICE,
                                     x=room_temp_x, y=room_temp_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -208,6 +215,7 @@ class GUIWindow(pyglet.window.Window):
                 room_air_y = air_y
                 room_airquality_label = pyglet.text.Label('airsensor'+room_device.label.text[-1],
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LABEL,
+                                    color=COLOR_FONT_SENSORS_DEVICE,
                                     x=room_air_x, y=room_air_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -220,6 +228,7 @@ class GUIWindow(pyglet.window.Window):
                 room_air_y = air_y
                 room_airquality_label = pyglet.text.Label('co2sensor'+room_device.label.text[-1],
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LABEL,
+                                    color=COLOR_FONT_SENSORS_DEVICE,
                                     x=room_air_x, y=room_air_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -232,6 +241,7 @@ class GUIWindow(pyglet.window.Window):
                 room_air_y = air_y
                 room_airquality_label = pyglet.text.Label('humidityair'+room_device.label.text[-1],
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LABEL,
+                                    color=COLOR_FONT_SENSORS_DEVICE,
                                     x=room_air_x, y=room_air_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -269,6 +279,7 @@ class GUIWindow(pyglet.window.Window):
                         if air_value != '-':
                             room_sensor_level = pyglet.text.Label(air_value,
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LEVEL,
+                                    color=COLOR_FONT_SENSORS_VALUE,
                                     x=air_level_x, y=air_level_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -282,6 +293,7 @@ class GUIWindow(pyglet.window.Window):
                     co2 = str(airsensor_dict[airsensor]["co2level"])+' ppm'
                     room_sensor_level = pyglet.text.Label(co2,
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LEVEL,
+                                    color=COLOR_FONT_SENSORS_VALUE,
                                     x=air_level_x, y=air_level_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -293,6 +305,7 @@ class GUIWindow(pyglet.window.Window):
                     co2 = str(airsensor_dict[airsensor]["humidity"])+' %'
                     room_sensor_level = pyglet.text.Label(co2,
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LEVEL,
+                                    color=COLOR_FONT_SENSORS_VALUE,
                                     x=air_level_x, y=air_level_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -309,8 +322,9 @@ class GUIWindow(pyglet.window.Window):
                 bright_level_x = room_brightness_label.x #+ room_brightness_counter*OFFSET_SENSOR_LEVELS
                 bright_level_y = room_brightness_label.y - OFFSET_SENSOR_TITLE
                 bright_level_text = str(brightness) # + ' lm'
-                room_brightness_level = pyglet.text.Label(bright_level_text,
+                room_brightness_level = pyglet.text.Label(bright_level_text+" lux",
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LEVEL,
+                                    color=COLOR_FONT_SENSORS_VALUE,
                                     x=bright_level_x, y=bright_level_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -325,8 +339,9 @@ class GUIWindow(pyglet.window.Window):
                 temp_level_x = room_temperature_label.x #+ room_brightness_counter*OFFSET_SENSOR_LEVELS
                 temp_level_y = room_temperature_label.y - OFFSET_SENSOR_TITLE
                 temp_level_text = str(temperature) # + ' lm'
-                room_temperature_level = pyglet.text.Label(temp_level_text,
+                room_temperature_level = pyglet.text.Label(temp_level_text+" °C",
                                     font_name=FONT_SYSTEM_INFO, font_size=FONT_SIZE_SENSOR_LEVEL,
+                                    color=COLOR_FONT_SENSORS_VALUE,
                                     x=temp_level_x, y=temp_level_y,
                                     anchor_x='left', anchor_y='bottom',
                                     batch=self.__batch, group=self.__foreground)
@@ -495,7 +510,7 @@ class GUIWindow(pyglet.window.Window):
 
         print(" ------- Initialization of the KNX System's GUI representation ------- ")
         for in_room_device in self.room.devices:
-            # Supported instances: Button, Dimmer, LED, Heater, AC, Brightness, Thermometer, AirSensor Humidity? CO2?
+            # Supported instances: Button, Dimmer, LED, Heater, AC, Brightness, Thermometer, AirSensor Humidity? CO2? ##TODO
             gui_device = getattr(self.__available_devices, in_room_device.device.class_name.lower())
             pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.__room_width_ratio, self.__room_length_ratio, self.__room_widget.origin_x, self.__room_widget.origin_y)
             print(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
@@ -503,7 +518,7 @@ class GUIWindow(pyglet.window.Window):
                 img_neutral = DEVICE_THERMO_NEUTRAL_PATH
             else: 
                 img_neutral = None
-            device_widget = DeviceWidget(pos_x, pos_y, self.__batch, gui_device.file_ON, gui_device.file_OFF, group=self.__foreground, device_type='sensor', device_class=in_room_device.name[:-1], device_number=in_room_device.name[-1], img_neutral=img_neutral)
+            device_widget = DeviceWidget(pos_x, pos_y, self.__batch, gui_device.file_ON, gui_device.file_OFF, group=self.__foreground, device_class=in_room_device.name[:-1], device_number=in_room_device.name[-1], img_neutral=img_neutral)
             device_widget.in_room_device = in_room_device
             self.__room_devices.append(device_widget)
         self.__display_devices_list()
@@ -567,7 +582,7 @@ class GUIWindow(pyglet.window.Window):
                 if humsoil_name == room_device.label_name:
                     if hasattr(room_device, 'humiditysoil'):
                         room_device.humiditysoil = humiditysoil
-                        room_device.update_drop()
+                        room_device.update_drop_sprite()
         
         for presence in presence_sensors_states:
             pres_name, pres_state = presence[0], presence[1]
@@ -601,7 +616,7 @@ class GUIWindow(pyglet.window.Window):
             room_device_label.delete()
         self.__room_devices_labels = []
         # Re-initialization of Pause button
-        self.__button_pause.update_image(reload=True)
+        self.__button_pause.update_sprite(reload=True)
         # Re configuration of the room and simulation time
         if default_config:
             config_path = self.__DEFAULT_CONFIG_PATH
@@ -619,12 +634,15 @@ class GUIWindow(pyglet.window.Window):
         self.room.simulation_status = not self.room.simulation_status
         if not self.room.simulation_status:
             logging.info("The simulation is paused")
-            self.room.world.time.pause_time = time() # save current time to update start_time when
+            self.__sleep_time_till_next_update = pyglet.clock.get_sleep_time(True) # get time before next scheduled update
+            # self.room.world.time.pause_time = time() # save current time to update start_time when
         else:
+            if self.__sleep_time_till_next_update:
+                sleep(self.__sleep_time_till_next_update) # waits before updating again when simulation resumed, to respect simulation time in system
             logging.info("The simulation is resumed")
-            paused_time = time() - self.room.world.time.pause_time
-            self.room.world.time.start_time += paused_time
-            delattr(self.room.world.time, 'pause_time')
+            # paused_time = time() - self.room.world.time.pause_time
+            # self.room.world.time.start_time += paused_time
+            # delattr(self.room.world.time, 'pause_time')
 
 
 ## Pyglet 'on-event' methods ##
@@ -661,7 +679,7 @@ class GUIWindow(pyglet.window.Window):
         elif symbol == pyglet.window.key.P:
             if modifiers and pyglet.window.key.MOD_CTRL:
                 self.__button_pause.activate(self)
-                self.__button_pause.update_image()
+                self.__button_pause.update_sprite()
         # CTRL-R to reload simulation from start
         elif symbol == pyglet.window.key.R:
             if modifiers and pyglet.window.key.MOD_CTRL:
@@ -702,12 +720,13 @@ class GUIWindow(pyglet.window.Window):
                                 return
                             elif isinstance(room_device.in_room_device.device, Button):
                                 # user_input() will send the telegram with the appropriate payload on the bus
+                                # print(f"room_device name: {room_device.label_name} user input")
                                 room_device.in_room_device.device.user_input() 
                                 self.__switch_sprite()
                         if isinstance(room_device.in_room_device.device, HumiditySoil): # We put water in pot
                             if hasattr(room_device, "humiditysoil"):
                                 room_device.humiditysoil = room_device.in_room_device.device.humiditysoil = 90 # Fully wet loam soil, update knx system device
-                                room_device.update_drop()
+                                room_device.update_drop_sprite()
 
             # LEFT click + CTRL : assign a group address to a device
             elif modifiers & pyglet.window.key.MOD_CTRL:
@@ -768,7 +787,7 @@ class GUIWindow(pyglet.window.Window):
                                 if room_device.device_class.lower() in device_class.lower():
                                     similar_dev_counter += 1
                             # Create a moving_device attribute
-                            self._moving_device = DeviceWidget(x, y, self.__batch, device.file_ON, device.file_OFF, group=self.__foreground, device_type=device.device_type, device_class=device_class, device_number=str(similar_dev_counter))
+                            self._moving_device = DeviceWidget(x, y, self.__batch, device.file_ON, device.file_OFF, group=self.__foreground, device_class=device_class, device_number=str(similar_dev_counter))
                             return
                     for room_device in self.__room_devices:
                         if room_device.hit_test(x, y):
@@ -854,7 +873,7 @@ class GUIWindow(pyglet.window.Window):
             for button in self.__buttons:
                 # if button.widget.hit_test(x, y):
                 if button == self.__button_pause and hasattr(self.__button_pause, 'clicked'):
-                    button.update_image()
+                    button.update_sprite()
                     delattr(self.__button_pause, 'clicked')
                 button.widget.sprite.opacity = OPACITY_DEFAULT
                     
@@ -896,10 +915,10 @@ def update_window(dt, window, date_time, current_str_simulation_time, weather, t
         Update the Simulation Time displayed and should update the world state'''
     sim_time = current_str_simulation_time
     datetime_str = date_time.strftime("%Y-%m-%d %H:%M:%S")
-    window.simtime_widget.simtime_label.text = f"SimTime: {sim_time}" 
-    window.simtime_widget.date_label.text = f"Date: {datetime_str}"
+    window.simtime_widget.simtime_value.text = f"{sim_time}" 
+    window.simtime_widget.date_value.text = f"{datetime_str}"
     window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
-    print(f"doing simtime update at {sim_time[:-5]} \n")
+    print(f"doing simtime update at {sim_time} \n") #[:-5]
     ## TODO print out lux at top left of window
 
 # if __name__ == '__main__':

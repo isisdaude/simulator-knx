@@ -84,6 +84,13 @@
         "name":"bedroom1",
         "dimensions":[12.5, 10, 3],
         "insulation":"good",
+        "windows": {
+          "window1": {
+            "wall": "north",
+            "size": [2, 1.5],
+            "location_offset": 4
+          }
+        },
         "room_devices":{
           "led1":[2.5, 2.5, 1],
           "led2":[9, 6.5, 1],
