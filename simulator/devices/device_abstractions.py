@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 
 FUNCTIONAL_MODULE_TYPES = ["button", "switch", "dimmer"]
 SENSOR_TYPES = ["button", "brightness", "temperature", "humidity", "co2"]
-ACTUATOR_TYPES = ["light", "heater", "cooler"]
+ACTUATOR_TYPES = ["light", "heater", "cooler", "ip_interface"]
 
 class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)

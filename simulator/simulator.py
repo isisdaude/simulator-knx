@@ -112,15 +112,11 @@ def launch_simulation():
         room1 = rooms[0]
         # TODO: implement for multiple rooms
         try:
-            # i = Interface()
             loop = asyncio.new_event_loop()
-            # interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
-            # interface_thread.start()
-            # interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
-            # interface_task.cancel()
+            
             sys.exit()
         print("The GUI window has been closed and the simulation terminated.")
 
@@ -137,16 +133,9 @@ def launch_simulation():
         room1.world.time.scheduler_start()
 
         try:
-            # i = Interface()
+            
             loop = asyncio.get_event_loop()
-            # interface_thread = threading.Thread(target=background_loop, args=(loop,), daemon=True)
-            # interface_thread.start()
-            # interface_task = asyncio.run_coroutine_threadsafe(i.main(room1), loop)
-            # signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
-            # for s in signals:
-            #     loop.add_signal_handler(s, lambda s=s: asyncio.create_task(shutdown(s, loop)))
-            #app = ui.GraphicalUserInterface(loop)
-            #app.mainloop()
+            
             # TODO: implement for multiple rooms
             loop.run_until_complete(async_main(loop, room1))
         except (KeyboardInterrupt, SystemExit):
@@ -158,10 +147,6 @@ def launch_simulation():
             print("\nThe simulation program has been ended.")
             sys.exit(1)
 
-
-def background_loop(loop: asyncio.AbstractEventLoop) -> None:
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
 
 async def user_input_loop(room):
     while True:
@@ -201,23 +186,7 @@ async def kill_tasks():
             with suppress(asyncio.CancelledError):
                 await task 
     except AttributeError:
-        return None
-
-# async def shutdown(signal, loop):
-#     """Cleanup tasks tied to the service's shutdown."""
-#     logging.info(f"Received exit signal {signal.name}...")
-#     tasks = [t for t in asyncio.all_tasks() if t is not
-#              asyncio.current_task()]
-
-#     [task.cancel() for task in tasks]
-
-#     logging.info(f"Cancelling {len(tasks)} outstanding tasks")
-#     await asyncio.gather(*taskss, return_exceptions=True)
-#     logging.info(f"Flushing metrics")
-#     loop.stop()
-#     print("\nThe simulation program has been ended.")
-#     sys.exit(1)
-        
+        return None        
 
 
 async def async_main(loop, room):
