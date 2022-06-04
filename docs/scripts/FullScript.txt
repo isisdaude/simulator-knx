@@ -1,7 +1,7 @@
 wait 3
 store world brightness
 set button1
-wait 2
+wait 2 h
 assert world brightness up
 wait 2
 store world temperature

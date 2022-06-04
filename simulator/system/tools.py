@@ -373,54 +373,79 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False):
 
 
 def user_command_parser(command, room):
-    if command[:3] == 'set': #FunctionalModule
-        name = command[4:]
-        # print(f"name: {name}")
-        for in_room_device in room.devices:
-            # print(f"name:'{name}', ir_name:'{in_room_device.name}'")
-            if in_room_device.name in name:
-                if not isinstance(in_room_device.device, dev.FunctionalModule):
-                    logging.warning("Users can only interact with a Functional Module")
+    command_split = command.split(' ')
+    if command_split[0] == 'set': #FunctionalModule
+        name = command_split[1]
+        if len(command_split) == 2: # not ON/OFF or value detailed, we simply switch the state of the device
+            # print(f"name: {name}")
+            for in_room_device in room.devices:
+                # print(f"name:'{name}', ir_name:'{in_room_device.name}'")
+                if in_room_device.name in name:
+                    if not isinstance(in_room_device.device, dev.FunctionalModule):
+                        logging.warning("Users can only interact with a Functional Module")
+                        return 1
+                    # print("user_input()")
+                    in_room_device.device.user_input()
                     return 1
-                # print("user_input()")
-                in_room_device.device.user_input()
-                return 1
-    elif command[:7] == 'getinfo':
+        elif len(command_split) >= 3: # User gives ON/OFF state
+            if command_split[2] not in ['ON', 'OFF']:
+                logging.warning(f"Unrecognised command, it is skipped")
+                return 0
+            state = True if command_split[2]=='ON' else False
+            if len(command_split) == 4: # User gives ON/OFF state and value (e.g. for dimmer)
+                
+            else:
+                for in_room_device in room.devices:
+                    if in_room_device.name in name:
+                        if not isinstance(in_room_device.device, dev.FunctionalModule):
+                            logging.warning("Users can only interact with a Functional Module")
+                            return 1
+                        # print("user_input()")
+                        in_room_device.device.user_input(state=state)
+                        return 1
+ 
+            
+
+        
+    elif command_split[0] == 'getinfo':
         print("getinfo:> ", command[8:])
-        if 'world' in command[8:13]: # user asks for world info
-            ambient = command[14:].strip() # can be 'time', 'temperature', 'humidity', 'co2level', 'co2', 'brightness', 'all'
-            if len(ambient) >= len('all'): # smallest str acceptable after 'getinfo world' command
-                if 'time' in ambient:
-                    world_dict = room.get_world_info('time')
-                if 'temperature' in ambient:
-                    world_dict = room.get_world_info('temperature')
-                if 'humidity' in ambient:
-                    world_dict = room.get_world_info('humidity')
-                if 'co2' in ambient:
-                    world_dict = room.get_world_info('co2level')
-                    # brightness is a global average from edge location in room, or average of sensors
-                if 'brightness' in ambient: 
-                    world_dict = room.get_world_info('brightness')
-                if 'all' in ambient:
-                    world_dict = room.get_world_info('all')
+        if 'world' in command_split[1]: # user asks for world info
+            if len(command_split) > 2:
+                ambient = command_split[1] # can be 'time', 'temperature', 'humidity', 'co2level', 'co2', 'brightness', 'all'
+                if len(ambient) >= len('all'): # smallest str acceptable after 'getinfo world' command
+                    if 'time' in ambient:
+                        world_dict = room.get_world_info('time')
+                    if 'temperature' in ambient:
+                        world_dict = room.get_world_info('temperature')
+                    if 'humidity' in ambient:
+                        world_dict = room.get_world_info('humidity')
+                    if 'co2' in ambient:
+                        world_dict = room.get_world_info('co2level')
+                        # brightness is a global average from edge location in room, or average of sensors
+                    if 'brightness' in ambient: 
+                        world_dict = room.get_world_info('brightness')
+                    if 'all' in ambient:
+                        world_dict = room.get_world_info('all')
             else: # if nothing detailed, just get all world info
                 world_dict = room.get_world_info('all')
             ## TODO check some stuff with info, write some kind of API
             pp.pprint(world_dict)
             return world_dict
-        elif 'room' in command[8:12]: # user asks for info on the room
+        elif 'room' in command_split[1]: # user asks for info on the room
             room_dict = room.get_room_info()
             pp.pprint(room_dict)
             return room_dict
-        elif 'bus' in command[8:11]:
+        elif 'bus' in command_split[1]:
             bus_dict = room.get_bus_info()
             pp.pprint(bus_dict)
             return bus_dict
         else:
-            if 'dev' in command[8:11]: # user ask for info on a device
-                name = command[12:].strip() # strip to remove spaces
+            if 'dev' in command_split[1]: # user ask for info on a device
+                if len(command_split) > 2:
+                    name = command_split[2]
             else:
-                name = command[8:].strip() # user ask for info on a device without using the dev keyword
+                if len(command_split) > 1:
+                    name = command_split[1] # user ask for info on a device without using the dev keyword
             device_dict = room.get_device_info(name)
             ## TODO check some stuff with info, write some kind of API
             pp.pprint(device_dict)
@@ -451,53 +476,99 @@ class ScriptParser():
     async def script_command_parser(self, room, command):
         command_split = command.split(' ')
         if command.startswith('wait'):
-            sleep_time = int(command_split[1])
+            if 'h' in command_split[2]: # time to wait in simulated hours, not computer seconds
+                speed_factor = room.world.time.speed_factor
+                sleep_time = int(command_split[1]*3600/speed_factor) # time to wait in computer system seconds
+            elif len(command_split) == 2: # if only 2 keywords
+                sleep_time = int(command_split[1])
+            else:
+                logging.warning(f"The last command cannot be parsed, it is skipped.")
             logging.info(f"[VERIF] Wait for {sleep_time} sec")
             await asyncio.sleep(sleep_time)
             return 1
         elif command.startswith('store'):
             if command_split[1] == 'world':
-                if len(command_split) > 2: # ambient to store is precised by the user
-                    for ambient in command_split[2:]:
-                        self.stored_values[ambient] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
-                        logging.info(f"[VERIF] The world {ambient} is stored.")
-                        return 1
-                else: # No ambient precised, we store all
-                    for ambient in ['simtime', 'brightness', 'temperature', 'humidity', 'co2']:
-                        self.stored_values[ambient] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
-                        logging.info(f"[VERIF] The world {ambient} is stored.")
-                        return 1
+                if len(command_split) > 3: # ambient and var name should be given
+                    var_name = command_split[3]
+                    ambient = command_split[2]
+                    self.stored_values[var_name] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
+                    logging.info(f"[VERIF] The world {ambient} (indoor) is stored in variable {var_name}")
+                    return 1
+                # else: # No ambient precised, we store all
+                #     for ambient in ['simtime', 'brightness', 'temperature', 'humidity', 'co2']:
+                #         self.stored_values[ambient] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
+                #         logging.info(f"[VERIF] The world {ambient} is stored.")
+                #         return 1
+            elif command_split[1] == 'device':
+                if len(command_split) > 3: # attribute of device and var name should be given
+                    var_name = command_split[3]
+                    attribute = command_split[2]
+                    # self.stored_values[var_name] = room.get_dev_info() 
+                    ## TODO get correct dev info/attribute
+                    logging.info(f"[VERIF] The device {attribute} is stored in variable {var_name}")
+                    return 1
 
         elif command.startswith('assert'):
-            if command_split[1] == 'world':
-                if len(command_split) >= 4: # assert, world, ambient, up/down/=
-                    ambient = command_split[2]
-                    if ambient in self.stored_values:
-                        old_ambient = self.stored_values[ambient]
-                        new_ambient = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
-                        if command_split[3] == 'up':
-                            assert new_ambient > old_ambient
-                            logging.info(f"[VERIF] The {ambient} has increased.")
-                            print(f"Assertion True")
-                            return 1
-                        elif command_split[3] == 'down':
-                            assert new_ambient < old_ambient
-                            logging.info(f"[VERIF] The {ambient} has decreased.")
-                            print(f"Assertion True")
-                            return 1
-                        elif command_split[3] == '=':
-                            assert new_ambient == old_ambient
-                            logging.info(f"[VERIF] The {ambient} didn't change.")
-                            print(f"Assertion True")
-                            return 1
+            if len(command_split) >= 4: # var name, math operation and value needed
+                var_name = command_split[1]
+                if command_split[3] in self.stored_values: # if we compare to a stored variable
+                    value = self.stored_values[command_split[3]]
+                else:
+                    value = command_split[3]
+                try:
+                    if command_split[2] == '==':
+                        assert self.stored_values[var_name] == value
+                    elif command_split[2] == '!=':
+                        assert self.stored_values[var_name] != value
+                    elif command_split[2] == '<=':
+                        assert self.stored_values[var_name] <= value
+                    elif command_split[2] == '>=':
+                        assert self.stored_values[var_name] >= value
+                    logging.info(f"[VERIF] The comparison is correct")
+                    print(f"Assertion True")
+                except AssertionError:
+                    logging.info(f"[VERIF] The comparison is not correct")
+                    ## TODO: exception handling, terminate test
+            else:
+                ## TODO logging failure
+                return 0
+
+            # if command_split[1] == 'world':
+            #     if len(command_split) >= 4: # assert, world, ambient, up/down/=
+            #         ambient = command_split[2]
+            #         if ambient in self.stored_values:
+            #             old_ambient = self.stored_values[ambient]
+            #             new_ambient = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
+            #             if command_split[3] == 'up':
+            #                 assert new_ambient > old_ambient
+            #                 logging.info(f"[VERIF] The {ambient} has increased.")
+            #                 print(f"Assertion True")
+            #                 return 1
+            #             elif command_split[3] == 'down':
+            #                 assert new_ambient < old_ambient
+            #                 logging.info(f"[VERIF] The {ambient} has decreased.")
+            #                 print(f"Assertion True")
+            #                 return 1
+            #             elif command_split[3] == '=':
+            #                 assert new_ambient == old_ambient
+            #                 logging.info(f"[VERIF] The {ambient} didn't change.")
+            #                 print(f"Assertion True")
+            #                 return 1
         elif command.startswith('end'):
             print("End of verification")
-            print(COMMAND_HELP)
+            # print(COMMAND_HELP)
+            ## TODO, print recap of script test
             return None
 
-        else:
+        elif command.startswith('set') and len(command_split) >= 2 and command_split[1] in ['ON', 'OFF']: # turn on/off device through classcial knx bus way
+            return user_command_parser(command, room)
+        
+        elif command.startswith('set') and len(command_split) >= 3 and command_split[1] in ['Temperature', 'Humidity', 'CO2', 'Brightness', 'Weather']:
+            ## TODO set ambient in world directly
+        
             # print(f"command parser with '{command}'")
-            return user_command_parser(command, room) 
+            # set device
+            
   
 
 

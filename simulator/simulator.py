@@ -42,22 +42,22 @@ EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
 SCRIPT = "FullScript"
 SCRIPT_FILE_PATH = "./docs/scripts/" + SCRIPT + ".txt" 
 # Configure logging messages format
-LOGGING_LEVEL = logging.INFO
+LOGGING_LEVEL = logging.WARNING
 
 
 ## User command mode (script or CLI)
 GUI_MODE = 0
 CLI_MODE = 1
-INTERFACE_MODE = GUI_MODE # or CLI_MODE
+INTERFACE_MODE = CLI_MODE # or CLI_MODE
 ## User interface mode
 SCRIPT_MODE = 0
-CLI_MODE = 1
-COMMAND_MODE = SCRIPT_MODE # only if  INTERFACE_MODE = TERMINAL_MODE
+CLI_MODE    = 1
+COMMAND_MODE = CLI_MODE # only if  INTERFACE_MODE = CLI_MODE
 ## Configuration mode
-FILE_CONFIG = 0   # configuration from json file
-DEFAULT_CONFIG = 1 # configuration from default json file (~3devices)
-EMPTY_CONFIG = 2 # configuration with no devices
-DEV_CONFIG = 3 # configuration from python function
+FILE_CONFIG     = 0   # configuration from json file
+DEFAULT_CONFIG  = 1 # configuration from default json file (~3devices)
+EMPTY_CONFIG    = 2 # configuration with no devices
+DEV_CONFIG      = 3 # configuration from python function
 CONFIG_MODE = FILE_CONFIG
 
 SYSTEM_DT = 1
@@ -170,11 +170,13 @@ def launch_simulation():
             sys.exit(1)
 
 
-def background_loop(loop: asyncio.AbstractEventLoop) -> None:
+async def background_loop(loop: asyncio.AbstractEventLoop) -> None:
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
+
 async def user_input_loop(room):
+    """Asyncio loop to await user command from terminal"""
     while True:
         # global script_mode
         # if verif_mode:
@@ -188,6 +190,7 @@ async def user_input_loop(room):
             # sys.exit(1)
 
 async def simulator_script_loop(room, file_path):
+    """Asyncio loop to await user command from a .txt script"""
     script_parser = system.ScriptParser()
     # global script_mode
     with open(file_path, "r") as f:
@@ -206,6 +209,7 @@ async def simulator_script_loop(room, file_path):
                 # sys.exit(1)
 
 async def kill_tasks():
+    """Function called to kill task when program ended"""
     try:
         pending = asyncio.Task.all_tasks()
         for task in pending:
@@ -215,12 +219,14 @@ async def kill_tasks():
     except AttributeError:
         return None
 
+
 async def async_main(loop, room):
+    """ Manager function of asyncio tasks"""
     tasks = []
     if COMMAND_MODE == CLI_MODE:
         ui_task = loop.create_task(user_input_loop(room))
         tasks.append(ui_task) 
-    if COMMAND_MODE == SCRIPT_MODE:
+    elif COMMAND_MODE == SCRIPT_MODE:
         script_task = loop.create_task(simulator_script_loop(room, SCRIPT_FILE_PATH))
         tasks.append(script_task) 
 
