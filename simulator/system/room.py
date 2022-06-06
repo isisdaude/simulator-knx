@@ -48,16 +48,25 @@ class InRoomDevice:
         # def get_z(self) -> float:
         #     return self.location.z
         
-        def get_irdev_info(self):
+        def get_irdev_info(self, attribute=None):
+            if attribute is not None: # script mode, to store the device attribute in a variable
+                if 'effective' in attribute:
+                    try:
+                        return round(getattr(self.device, attribute)(), 2)
+                    except AttributeError:
+                        logging.error(f"The device {self.name} has no attribute/method '{attribute}'.")
+                        return None
+                attr = getattr(self.device, attribute)
+                if isinstance(attr, numbers.Number):
+                    return round(attr, 2)
             ir_device_dict = {"room_name":self.room.name, "device_name":self.device.name, "location":self.location.pos}
-            # print(f"ir_device_dict: '{ir_device_dict}'")
+            # print(f"ir_device_dict: '{ir_device_dict}'")-------------------
             device_dict = self.device.get_dev_info()
             # print(f"device_dict: '{device_dict}'")
             ir_device_dict.update(device_dict) # concatenate 2 dict by uodating existing keys'value
             # print(f"ir_device_dict(update): '{ir_device_dict}'")
             return ir_device_dict
             
-
 
 
 class Room:
@@ -183,11 +192,11 @@ class Room:
     def get_dim(self):
         return (self.width, self.length, self.height)
 
-    def get_device_info(self, device_name:str):
+    def get_device_info(self, device_name:str, attribute=None):
         for ir_device in self.devices:
             if device_name == ir_device.name:
                 # print(f"ir_device {ir_device.name} found in rooms list")
-                ir_dev_dict = ir_device.get_irdev_info()
+                ir_dev_dict = ir_device.get_irdev_info(attribute=attribute)
                 # print(f"ir_dev_dict: '{ir_dev_dict}'")
                 return ir_dev_dict
         logging.warning(f" Device's name '{device_name}' not found in list of room '{self.name}' ")

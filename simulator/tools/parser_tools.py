@@ -28,40 +28,41 @@ def arguments_parser(argv):
                         default="WARNING",
                         type=str.upper,
                         choices=logging._nameToLevel.keys(), 
-                        help=("Provide logging level. Example -l debug or --log=DEBUG', default='WARNING'."))
+                        help=("Provide logging level. Example '-l debug' or '--log=DEBUG', default='WARNING'."))
+    ## TODO, add log file destination option
     # Interface argument definition
     parser.add_argument("-i", "--interface",
                         action='store',
                         default="gui",
                         type=str.lower,
                         choices=["gui", "cli"],
-                        help=("Provide user interface mode. Example -i cli or --interface=cli, default='gui'."))
+                        help=("Provide user interface mode. Example '-i cli' or '--interface=cli', default='gui'."))
     # Command argument definition
     parser.add_argument("-c", "--command-mode",
                         action='store',
                         default="cli",
                         type=str.lower,
                         choices=["script", "cli"],
-                        help=("Provide command mode. Example -c script or --command-mode=script, default='cli'"))
+                        help=("Provide command mode (Only if interface mode is CLI). Example '-c script' or '--command-mode=script', default='cli'"))
     # Config File Name argument definition 
     parser.add_argument("-f", "--filescript-name",
                         action='store',
                         default="full_script",
                         type=str.lower,
-                        help=("Provide script file name (without .txt extension). Example -F full_script or --file-name=full_script, default='full_script'"))
+                        help=("Provide script file name (without .txt extension). Example '-F full_script' or '--file-name=full_script', default='full_script'"))
     # Config argument definition
     parser.add_argument("-C", "--config-mode",
                         action='store',
                         default="file",
                         type=str.lower,
                         choices=["file", "default", "empty", "dev"],
-                        help=("Provide configuration mode. Example -C file or --command-mode=empty, default='file'"))
+                        help=("Provide configuration mode. Example '-C file' or '--command-mode=empty', default='file'"))
     # Config File Name argument definition 
     parser.add_argument("-F", "--fileconfig-name",
                         action='store',
                         default="sim_config_bedroom",
                         type=str.lower,
-                        help=("Provide configuration file name (without .json extension). Example -F sim_config_bedroom or --file-name=sim_config_bedroom, default='sim_config_bedroom'"))
+                        help=("Provide configuration file name (without .json extension). Example '-F sim_config_bedroom' or '--file-name=sim_config_bedroom', default='sim_config_bedroom'"))
     # SVSHI mode argument definition
     parser.add_argument("-s", "--svshi-mode",
                         action='store_true', # svshi_mode=True if option, False if no -s option
@@ -71,7 +72,7 @@ def arguments_parser(argv):
                         action='store',
                         default=1,
                         type=int,
-                        help=("Provide the system dt, interval in seconds between two consecutive system updates. Example -d 2 or --system-dt=3, default=1"))
+                        help=("Provide the system dt, interval in seconds between two consecutive system updates. Example '-d 2' or '--system-dt=3', default=1"))
 
     # Get the arguments from command line
     options = parser.parse_args()
@@ -118,13 +119,14 @@ def user_command_parser(command, room):
                 if in_room_device.name in name:
                     if not isinstance(in_room_device.device, dev.FunctionalModule):
                         logging.warning("Users can only interact with a Functional Module")
-                        return 1
+                        return 0
                     in_room_device.device.user_input()
                     return 1
         # If user gives ON/OFF state and/or value
         elif len(command_split) >= 3: 
             if command_split[2] not in ['ON', 'OFF']:
-                logging.warning(f"Unrecognised/incomplete command")
+                logging.warning("The command is not recognized by the parser: either wrong or incomplete")
+                print(COMMAND_HELP)
                 return 0
             state = True if command_split[2]=='ON' else False
             for in_room_device in room.devices:
@@ -198,6 +200,7 @@ def user_command_parser(command, room):
                     name = command_split[2]
                 else:
                     logging.warning("The command is not recognized by the parser: either wrong or incomplete")
+                    print(COMMAND_HELP)
                     return 0
             else:
                 name = command_split[1] # user ask for info on a device without using the dev keyword
@@ -207,7 +210,8 @@ def user_command_parser(command, room):
             return device_dict
         else:
             logging.warning("The command is not recognized by the parser: either wrong or incomplete")
-
+            print(COMMAND_HELP)
+            return 0
     elif command_split[0] == 'getvalue': #Sensor
         print(f"\getvalue:> {command[9:]}")
         name = command_split[1]
@@ -225,8 +229,9 @@ def user_command_parser(command, room):
     elif command in ('q','Q','quit','QUIT'):
         return None
     else:
-        logging.warning("Unknown input")
+        logging.warning("The command is not recognized by the parser: either wrong or incomplete")
         print(COMMAND_HELP)
+        return 0
     return 1
 
 
@@ -234,106 +239,127 @@ def user_command_parser(command, room):
 class ScriptParser():
     def __init__(self):
         self.stored_values = {} 
+        self.assertions = {}
+        self.assert_counter = 0
     
     async def script_command_parser(self, room, command):
         command = command.strip().lower() # remove new line symbol and put in lower case
+        if command.startswith('#') or len(command) == 0: # comment line or empty line
+            return 1, self.assertions
         print(f"Command >>> '{command}' <<<")
         command_split = command.split(' ')
-        # wait command
+        # 'wait' command
         if command.startswith('wait'):
-            if len(command_split) > 2 and 'h' in command_split[2]: # time to wait in simulated hours, not computer seconds
-                speed_factor = room.world.time.speed_factor
-                sleep_time = int(int(command_split[1])*3600/speed_factor) # time to wait in computer system seconds
-            elif len(command_split) == 2: # if only 2 keywords
-                sleep_time = int(command_split[1])
+            if len(command_split) == 3:
+                if command_split[2] in ['h', 'hour', 'hours']: # time to wait in simulated hours, not computer seconds
+                    speed_factor = room.world.time.speed_factor
+                    sleep_time = int(int(command_split[1])*3600/speed_factor) # time to wait in computer system seconds
+                else:
+                    logging.error(f"'wait' command expect 'h' or 'hour(s)' as second argument, but {command_split[2]} was given.")
+                    return None, self.assertions
+            elif len(command_split) == 2:
+                try:
+                    sleep_time = int(command_split[1])
+                except (NameError, ValueError):
+                    logging.error(f"A number was excpected for the time to wait, but {command_split[1]} was given.")
+                    return None, self.assertions
             else:
-                logging.warning(f"The last command cannot be parsed, it is skipped.")
+                logging.warning(f"'wait' command expect 1 or 2 arguments, but {len(command_split)-1} was given.")
+                return None, self.assertions
             logging.info(f"[SCRIPT] Wait for {sleep_time} sec")
             await asyncio.sleep(sleep_time)
-            return 1
-        # store command to keep one current system value
+            return 1, self.assertions
+        # 'store' command to keep one current system value in memory
         elif command.startswith('store'):
-            if len(command_split) < 4:
-                logging.error(f"The 'store' command requires 3 argument, but only {len(command_split)-1} were given")
-                sys.exit(1) ### TODO check for correct implementation
+            if len(command_split) != 4:
+                logging.error(f"The 'store' command requires 3 arguments, but only {len(command_split)-1} were given")
+                return None, self.assertions
             if command_split[1] == 'world':
-                if len(command_split) > 3: # ambient and var name should be given
-                    var_name = command_split[3]
-                    ambient = command_split[2]
-                    self.stored_values[var_name] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
-                    logging.info(f"[SCRIPT] The world {ambient} (indoor) is stored in variable {var_name}")
-                    return 1
-                # else: # No ambient precised, we store all
-                #     for ambient in ['simtime', 'brightness', 'temperature', 'humidity', 'co2']:
-                #         self.stored_values[ambient] = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
-                #         logging.info(f"[VERIF] The world {ambient} is stored.")
-                #         return 1
-            elif command_split[1] == 'device':
-                if len(command_split) > 3: # attribute of device and var name should be given
-                    var_name = command_split[3]
-                    attribute = command_split[2]
-                    # self.stored_values[var_name] = room.get_dev_info() 
-                    ## TODO get correct dev info/attribute
-                    logging.info(f"[SCRIPT] The device {attribute} is stored in variable {var_name}")
-                    return 1
+                var_name = command_split[3]
+                ambient = command_split[2].lower()
+                try:
+                    assert ambient in ['simtime', 'temperature', 'humidity', 'co2', 'brightness', 'weather']
+                except AssertionError:
+                    logging.error(f"'store world' command expect ambient argument in ['simtime', 'temperature', 'humidity', 'co2', 'brightness', 'weather'], but {ambient} was given")
+                    return None, self.assertions
+                if ambient == 'weather':
+                    self.stored_values[var_name] = room.get_world_info(ambient)[ambient]
+                else:
+                    self.stored_values[var_name] = round(room.get_world_info(ambient, str_mode=False)[ambient+'_in'],2)
+                if self.stored_values[var_name] is None:
+                    return None, self.assertions
+                logging.info(f"[SCRIPT] The world {ambient} is stored in variable {var_name}={self.stored_values[var_name]}")
+                return 1, self.assertions
+            else: # store a device attribute/method result
+                device_name = command_split[1]
+                var_name = command_split[3]
+                attribute = command_split[2].lower()
+                self.stored_values[var_name] = room.get_device_info(device_name, attribute = attribute) 
+                if self.stored_values[var_name] is None:
+                    return None, self.assertions
+                logging.info(f"[SCRIPT] The device {attribute} is stored in variable {var_name}={self.stored_values[var_name]}")
+                return 1, self.assertions
 
         elif command.startswith('assert'):
-            if len(command_split) >= 4: # var name, math operation and value needed
-                var_name = command_split[1]
-                if command_split[3] in self.stored_values: # if we compare to a stored variable
-                    value = self.stored_values[command_split[3]]
+            if len(command_split) != 4:
+                logging.error(f"The 'assert' command requires 3 arguments, but only {len(command_split)-1} were given")
+                return None, self.assertions
+            var_name = command_split[1]
+
+            if command_split[3] in self.stored_values: # if we compare to a stored variable
+                value = self.stored_values[command_split[3]]
+            else : # if we compare to a value
+                value = command_split[3] # can be a bool, or a str for weather (e.g. 'clear')
+            try:
+                if command_split[2] == '==':
+                    assert self.stored_values[var_name] == value
+                elif command_split[2] == '!=':
+                    assert self.stored_values[var_name] != value
+                elif command_split[2] == '<=':
+                    assert self.stored_values[var_name] <= value
+                elif command_split[2] == '>=':
+                    assert self.stored_values[var_name] >= value
                 else:
-                    value = command_split[3]
-                try:
-                    if command_split[2] == '==':
-                        assert self.stored_values[var_name] == value
-                    elif command_split[2] == '!=':
-                        assert self.stored_values[var_name] != value
-                    elif command_split[2] == '<=':
-                        assert self.stored_values[var_name] <= value
-                    elif command_split[2] == '>=':
-                        assert self.stored_values[var_name] >= value
-                    logging.info(f"[SCRIPT] The comparison is correct")
-                    print(f"Assertion True")
-                except AssertionError:
-                    logging.info(f"[SCRIPT] The comparison is not correct")
-                    ## TODO: exception handling, terminate test
+                    logging.error(f"The comparison sign should be in ['=='/'!='/'<='/'>='], but {command_split[2]} was given.")
+                    return None, self.assertions
+                recap_str = f"{var_name} {command_split[2]} {value}"
+                logging.info(f"[SCRIPT] The comparison '{recap_str}' is correct")
+                print(f"Assertion True")
+                simtime = room.world.time.simulation_time(str_mode=True)
+                self.assertions["Assertion"+str(self.assert_counter)+" at "+str(simtime)] = recap_str
+                self.assert_counter += 1
+                return 1, self.assertions
+            except AssertionError:
+                recap_str = f"{var_name} {command_split[2]} {value}"
+                logging.info(f"[SCRIPT] The comparison '{recap_str}' is not correct")
+                print(f"Assertion False")
+                simtime = room.world.time.simulation_time(str_mode=True)
+                self.assertions["Assertion"+str(self.assert_counter)+" FAILED at "+str(simtime)] = recap_str
+                self.assert_counter += 1
+                return None, self.assertions
+
+        elif command.startswith('set'):
+            if len(command_split) in [3, 4]:
+                if command_split[1] in ['temperature', 'humidity', 'co2level', 'presence', 'weather']: # set ambient state
+                    pass ## TODO create set api methods, check weather and format of value
+                else:
+                    pass ## TODO call user_command parser 
+                    ## TODO or special api set for sensors presence and soil moisture
             else:
-                ## TODO logging failure
-                return 0
-
-            # if command_split[1] == 'world':
-            #     if len(command_split) >= 4: # assert, world, ambient, up/down/=
-            #         ambient = command_split[2]
-            #         if ambient in self.stored_values:
-            #             old_ambient = self.stored_values[ambient]
-            #             new_ambient = room.get_world_info(ambient, str_mode=False)[ambient+'_in']
-            #             if command_split[3] == 'up':
-            #                 assert new_ambient > old_ambient
-            #                 logging.info(f"[VERIF] The {ambient} has increased.")
-            #                 print(f"Assertion True")
-            #                 return 1
-            #             elif command_split[3] == 'down':
-            #                 assert new_ambient < old_ambient
-            #                 logging.info(f"[VERIF] The {ambient} has decreased.")
-            #                 print(f"Assertion True")
-            #                 return 1
-            #             elif command_split[3] == '=':
-            #                 assert new_ambient == old_ambient
-            #                 logging.info(f"[VERIF] The {ambient} didn't change.")
-            #                 print(f"Assertion True")
-            #                 return 1
-        elif command.startswith('end'):
-            print("End of verification")
-            # print(COMMAND_HELP)
-            ## TODO, print recap of script test
-            return None
-
-        elif command.startswith('set') and len(command_split) >= 2 and command_split[1] in ['ON', 'OFF']: # turn on/off device through classcial knx bus way
-            return user_command_parser(command, room)
+                logging.error(f"'set' command reauires 2 or 3 arguments, but {len(command_split)-1} was provided.")
+                return None, self.assertions
         
-        elif command.startswith('set') and len(command_split) >= 3 and command_split[1] in ['Temperature', 'Humidity', 'CO2', 'Brightness', 'Weather']:
-            ## TODO set ambient in world directly
-            pass
-            # print(f"command parser with '{command}'")
-            # set device
+        # and len(command_split) >= 2 and command_split[1] in ['ON', 'OFF']: # turn on/off device through classcial knx bus way
+        #     return None, self.assertions #user_command_parser(command, room)
+        
+        # elif command.startswith('set') and len(command_split) >= 3 and command_split[1] in ['Temperature', 'Humidity', 'CO2', 'Brightness', 'Weather']:
+        #     ## TODO set ambient in world directly
+        #     pass
+        #     # print(f"command parser with '{command}'")
+        #     # set device
+
+        elif command.startswith('end'):
+            print("End of script")
+            return 0, self.assertions
+
+        

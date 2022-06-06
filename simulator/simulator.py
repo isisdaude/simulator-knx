@@ -20,7 +20,8 @@ from contextlib import suppress
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
-
+import pprint
+pp=pprint.PrettyPrinter(compact=True)
 
 # Local application imports
 import gui
@@ -53,7 +54,7 @@ def launch_simulation(argv):
     if INTERFACE_MODE == GUI_MODE:
         window = gui.GUIWindow(CONFIG_PATH, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, rooms) #CONFIG_PATH can be a normal file, default or empty
         window.initialize_system(save_config=True, system_dt=SYSTEM_DT) #system_dt is delta time for scheduling update_world
-        print("\n>>> The simulation is started in GUI Mode <<<\n")
+        print("\n>>> The simulation is started in Graphical User Interface Mode <<<\n")
         start_time = time.time()
         for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
             room.world.time.start_time = start_time
@@ -79,7 +80,7 @@ def launch_simulation(argv):
 
         try:
             loop = asyncio.get_event_loop()
-            print("\n>>> The simulation is started in CLI Mode <<<\n")
+            print("\n>>> The simulation is started in Command Line Interface Mode (no visual feedback) <<<")
             loop.run_until_complete(async_main(loop, room1, COMMAND_MODE, SCRIPT_PATH))
         except (KeyboardInterrupt, SystemExit):
             loop.run_until_complete(kill_tasks())
@@ -107,8 +108,22 @@ async def simulator_script_loop(room, file_path):
     with open(file_path, "r") as f:
         commands = f.readlines()
         for command in commands: 
-            await script_parser.script_command_parser(room, command)
-
+            ret, assertions = await script_parser.script_command_parser(room, command)
+            if ret is None:
+                logging.warning("The script has failed.")
+                print("Failed script recap:")
+                pp.pprint(assertions)
+                return 0
+            elif ret == 0:
+                logging.info("The script has completed successfully.")
+                print("Successful script recap:")
+                pp.pprint(assertions)
+                return 1
+        if ret is not None:
+            logging.info("The script has completed successfully.")
+            print("Successful script recap:")
+            pp.pprint(assertions)
+            return 1
 
 async def kill_tasks():
     """Function called to kill task when program ended"""
@@ -126,10 +141,11 @@ async def async_main(loop, room, command_mode, script_path):
     """ Manager function of asyncio tasks"""
     tasks = []
     if command_mode == CLI_COM_MODE:
+        print(">>>>>> The Command mode is set to CLI (commands through terminal)")
         ui_task = loop.create_task(user_input_loop(room))
         tasks.append(ui_task) 
     elif command_mode == SCRIPT_MODE:
-        print("script mode")
+        print(">>>>>> The Command mode is set to SCRIPT (commands from .txt script file)")
         script_task = loop.create_task(simulator_script_loop(room, script_path))
         tasks.append(script_task) 
 

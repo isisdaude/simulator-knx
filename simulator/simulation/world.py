@@ -122,7 +122,7 @@ class AmbientTemperature:
         from devices import Heater, AC
         from system import INSULATION_TO_TEMPERATURE_FACTOR
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
-        logging.info("Temperature update")
+        logging.debug("Temperature update")
         previous_temp = self.__temperature_in
         if(not self.__temp_sources):
             self.__temperature_in += (self.temperature_out - self.__temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.__room_insulation] 
@@ -174,7 +174,7 @@ class AmbientTemperature:
         if str_mode:
             temp = str(round(self.__temperature_in, 2)) + " °C"
         else:
-            temp = self.__temperature_in
+            temp = round(self.__temperature_in, 2)
         return temp
 
 
@@ -239,7 +239,7 @@ class AmbientLight:
         return brightness
     
     def update(self, date_time): # Updates all brightness sensors of the world (the room)
-        logging.info("Brightness update")
+        logging.debug("Brightness update")
         brightness_levels = []
         self.__lux_out, self.__time_of_day = system.outdoor_light(date_time, self.__weather)
         for window in self.__windows: # update max_lumen
@@ -287,7 +287,7 @@ class AmbientLight:
             bright = str(round(bright, 2)) + " lux"
             return bright
         else:
-            return bright
+            return round(bright, 2)
 
 
 
@@ -337,7 +337,7 @@ class AmbientHumidity:
 
     def update(self, temperature):
         from system import INSULATION_TO_HUMIDITY_FACTOR
-        logging.info("Humidity update")
+        logging.debug("Humidity update")
         # We recompute sat vapor pressure from new temp
         self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(temperature)
         self.__temperature_in = temperature
@@ -360,7 +360,7 @@ class AmbientHumidity:
         if str_mode:
             hum = str(round(self.__humidity_in, 2)) + " %"
         else:
-            hum = self.__humidity_in
+            hum = round(self.__humidity_in, 2)
         return hum
 
 
@@ -389,7 +389,7 @@ class AmbientCO2:
     
     def update(self, temperature, humidity):  ### TODO remove temp et humif not used
         from system import INSULATION_TO_CO2_FACTOR
-        logging.info("CO2 update")
+        logging.debug("CO2 update")
         # self.__co2_in = compute_co2level(temperature, humidity) # totally wrong values...
         ## TODO : change CO2 if window opened, co2 rise until window is opened
         ## TODO: check of presence 
@@ -405,7 +405,7 @@ class AmbientCO2:
         if str_mode:
             co2 = str(round(self.__co2_in, 2)) + " ppm"
         else:
-            co2 = self.__co2_in
+            co2 = round(self.__co2_in, 2)
         return co2
 
 
@@ -421,7 +421,7 @@ class SoilMoisture:
         self.__humiditysoil_sensors.append(humiditysoilsensor)
 
     def update(self): #, humidity_in
-        logging.info("Soil Moisture update")
+        logging.debug("Soil Moisture update")
         moisture_levels = []
         for sensor in self.__humiditysoil_sensors:
             if sensor.device.humiditysoil > SOIL_MOISTURE_MIN:
@@ -457,11 +457,6 @@ class Presence:
             self.update()
         else:
             logging.warning(f"The entity {entity} is not present in the simulation.")
-    
-    # def remove_sensor(self, presencesensor): ## TODO, device removal
-    #     """ presencesensor: InRoomDevice """
-    #     if presencesensor in self.presence_sensors:
-    #         self.presence_sensors.remove(presencesensor)
     
     def update(self):
         presence_sensors_states = []
@@ -529,6 +524,9 @@ class World:
             return basic_dict
         elif 'time' == ambient:
             basic_dict.update({ "speed_factor":self.time.speed_factor})
+            return basic_dict
+        elif 'weather' == ambient:
+            basic_dict.update({ "weather":self.__weather})
             return basic_dict
         elif 'out' == ambient:
             basic_dict.update(basic_dict_out)

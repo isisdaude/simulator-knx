@@ -16,6 +16,7 @@ Presence 55x55
 switch_light 55x55
 Humidity soil 28x70
 co2 60x40
+vacuum 60x59
 drop 40x61
 	color red = (149, 0, 12, 255)
 	color yellow = (172, 144, 25, 255)

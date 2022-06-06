@@ -1,5 +1,37 @@
 wait 3 h
-store world brightness
+# temperature actuators
+store heater1 state h1
+store heater1 max_power h2
+store heater1 effective_power h3
+store heater1 state_ratio h4
+# light actuators
+store led1 state l1
+store led1 max_lumen l2
+store switch1 state sw1
+wait 1
+Store led1 effective_lumen l3
+Wait 1
+store led1 state_ratio l4
+Store led1 beam_angle l5
+store button1 state b1
+store dimmer1 state d1
+store dimmer1 state_ratio d2
+store brightness1 brightness br1
+Store thermometer1 temperature t1
+store humiditysoil1 humiditysoil hs1
+Store humidityair1 humidity hum1
+store co2sensor1 co2level co1
+store airsensor1 temperature ast1
+store airsensor1 humidity ash1
+store airsensor1 co2level asco1
+store presencesensor1 state pr1
+store led1 beam_angle l6
+assert l5 == l6
+Assert l3 >= h3
+End
+assert l3 != l3
+
+Wait 3
 set button1
 wait 2 h
 assert world brightness up

@@ -12,7 +12,7 @@ import numpy as np
 
 
 # from tools import GroupAddress, Location
-from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget, DayTimeWeatherWidget, WindowWidget
+from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget, DayTimeWeatherWidget, WindowWidget, VacuumWidget
 from .gui_config import *
 
 
@@ -487,6 +487,11 @@ class GUIWindow(pyglet.window.Window):
         new_ga = {"address":group_address, "group_devices":[dev_name]}
         gas_config.append(new_ga)
         logging.info(f"The group address {group_address} is added with {dev_name} attached to it in temporary config dict")
+    
+    def __launch_vacuum(self):
+        """ Launch vacuum cleaner animation"""
+        if not hasattr(self, "vacuum_widget"):
+            self.vacuum_widget = VacuumWidget(VACUUM_PATH, 1400, 650, self.__batch, self.__middleground)
 
     
 ## Public methods ##
@@ -686,6 +691,15 @@ class GUIWindow(pyglet.window.Window):
         elif symbol == pyglet.window.key.R:
             if modifiers and pyglet.window.key.MOD_CTRL:
                 self.reload_simulation()
+        # CTRL-SPACE to add the vacuum robot
+        elif symbol == pyglet.window.key.SPACE:
+            if modifiers and pyglet.window.key.MOD_OPTION:
+                if hasattr(self, 'vacuum_widget'):
+                    self.vacuum_widget.delete()
+                    delattr(self, 'vacuum_widget')
+                else:
+                    self.__launch_vacuum()
+
 
     def on_key_release(self, symbol, modifiers): 
         ''' Called when a key is released:
@@ -773,7 +787,6 @@ class GUIWindow(pyglet.window.Window):
                     self.person_moving = self.person_sitting = PersonWidget(PERSON_SITTING_PATH, x, y, self.__batch, self.__foreground)
                     self.room.world.presence.add_entity("person_sitting")
                     self.__switch_sprite()
-
                 
                 
                 
@@ -900,6 +913,7 @@ class GUIWindow(pyglet.window.Window):
 
         # Mouse drag w/o modifiers to move 'moving' device 
         else: 
+            print(f"mouse x:{x}, y:{y}")
             if buttons & pyglet.window.mouse.LEFT:
                 if hasattr(self, '_moving_device'):
                     self._moving_device.update_position(new_x = x, new_y = y) 
@@ -915,11 +929,14 @@ class GUIWindow(pyglet.window.Window):
 def update_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out): 
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
+    if hasattr(window, "vacuum_widget"):
+        window.vacuum_widget.move()
     sim_time = current_str_simulation_time
     datetime_str = date_time.strftime("%Y-%m-%d %H:%M:%S")
     window.simtime_widget.simtime_value.text = f"{sim_time}" 
     window.simtime_widget.date_value.text = f"{datetime_str}"
     window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
+    
     print(f"World state update at simulation time: {sim_time}", end='\r') #[:-5]
 
 

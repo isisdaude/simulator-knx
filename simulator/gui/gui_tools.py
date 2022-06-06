@@ -522,6 +522,92 @@ class PersonWidget(object):
     def delete(self):
         self.__sprite.delete()
 
+class VacuumWidget(object):
+    def __init__(self, img_path, x, y, batch, group):
+        self.__batch, self.__group = batch, group
+        self.__pos_x, self.__pos_y = x, y
+        self.__img = pyglet.image.load(img_path)
+        self.__width, self.__length = self.__img.width, self.__img.height
+        self.__origin_x, self.__origin_y = self.__pos_x - self.__width//2, self.__pos_y - self.__length//2
+        self.__sprite = pyglet.sprite.Sprite(self.__img, self.__origin_x, self.__origin_y, batch=self.__batch, group=self.__group)
+        self.__orientation = 0
+        self.__step = 0
+        self.__directions = ['north', 'west', 'south', 'east']
+    
+    def hit_test(self, x, y): # to check if mouse click is on the Room widget
+        return (self.__origin_x < x < (self.__origin_x + self.__width) and
+                self.__origin_y < y < (self.__origin_y + self.__length))
+    
+    def update_position(self, new_x, new_y):
+        """ Doct string"""
+        self.__pos_x, self.__pos_y = new_x, new_y
+        self.__origin_x, self.__origin_y = self.__pos_x - self.__width//2, self.__pos_y - self.__length//2
+        self.__sprite.update(x=self.__origin_x, y=self.__origin_y)
+    
+    def move(self):
+        # print(f"step:{self.__step} // x:{self.__pos_x}, y:{self.__pos_y}, orientation:{self.__orientation}")
+        if self.__step == 0:
+            self.__orientation = 0
+            self.__sprite.rotation = 0
+            self.__step += 1
+        elif self.__step == 1:
+            self.__sprite.rotation = self.__orientation-45
+            self.__orientation -= 45
+            if self.__orientation == -90:
+                self.__step += 1
+        elif self.__step == 2:
+            self.update_position(self.__pos_x - 30, self.__pos_y)
+            if self.__pos_x < 700:
+                self.__step += 1
+        elif self.__step == 3:
+            self.__sprite.rotation = self.__orientation-45
+            self.__orientation -= 45
+            if self.__orientation == -180:
+                self.__step += 1
+        elif self.__step == 4:
+            self.update_position(self.__pos_x, self.__pos_y - 30)
+            if self.__pos_y < 300:
+                self.__step += 1
+        elif self.__step == 5:
+            self.__sprite.rotation = self.__orientation-45
+            self.__orientation -= 45
+            if self.__orientation == -270:
+                self.__step += 1
+        elif self.__step == 6:
+            self.update_position(self.__pos_x + 30, self.__pos_y)
+            if self.__pos_x > 980:
+                self.__step += 1
+        elif self.__step == 7:
+            self.__sprite.rotation = self.__orientation-45
+            self.__orientation -= 45
+            if self.__orientation == 0 or self.__orientation == -360:
+                self.__step += 1
+        elif self.__step == 8:
+            self.update_position(self.__pos_x, self.__pos_y + 30)
+            if self.__pos_y > 450:
+                self.__step += 1
+        elif self.__step == 9:
+            self.__sprite.rotation = self.__orientation+45
+            self.__orientation += 45
+            if self.__orientation == 90 or self.__orientation == -270:
+                self.__step += 1
+        elif self.__step == 10:
+            self.update_position(self.__pos_x + 30, self.__pos_y)
+            if self.__pos_x > 1350:
+                self.__step += 1
+        elif self.__step == 11:
+            self.__sprite.rotation = self.__orientation-45
+            self.__orientation -= 45
+            if self.__orientation == 0 or self.__orientation == -360:
+                self.__step += 1
+        elif self.__step == 12:
+            self.update_position(self.__pos_x , self.__pos_y + 30)
+            if self.__pos_y > 625:
+                self.__step = 0
+        return 0
+    def delete(self):
+        self.__sprite.delete()
+
    
 
 # Useful functions
