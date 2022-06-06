@@ -29,9 +29,10 @@ If device is a Sensor, no ['on'/'off'] argument (other sensors can not be set in
 - Sets an [ambient sate] to a value, [ambient_state] can be:
   - Temperature (in/out): sets temperature for all sensors
   - Humidity (in/out): sets humidity for all sensors
-  - CO2level (in/out): sets co2level for all sensors
+  - CO2 (in/out): sets co2 for all sensors
   - Presence: sets presence for all sensors
     - [value] must be 'True' or 'False', as if we add/remove a person from the simulation
+    - there should be no ['in'/'out'] argument
   - Weather
     - [value] must be 'clear', 'overcast' or 'dark'
     - there should be no ['in'/'out'] argument
@@ -41,7 +42,7 @@ If device is a Sensor, no ['on'/'off'] argument (other sensors can not be set in
 Store a system value into the [variable_name], to check it later in the script
 
 - world : [ambient] can be 'SimTime', 'Temperature', 'Humidity', 'CO2', 'Brightness', 'Weather'
-- device : [device] is the device's name,h [state] can be the state (ON/OFF) of the device, or a characteristic attribute of this device. Possible attributes:
+- device : [device] is the device's name, [state] can be the state (ON/OFF) of the device, or a characteristic attribute of this device. Possible attributes:
   - **Temperature Actuators**: state, max_power, effective_power, state_ratio
   - **Light Actuator** : state, max_lumen, effective_lumen, state_ratio, beam_angle
   - **Switch** : state
@@ -57,6 +58,11 @@ Store a system value into the [variable_name], to check it later in the script
 ## assert [variable_name]['=='/'!='/'<='/'>='][value/variable_name]
 
 Compare a stored variable [variable_name] to a [value] or other variable
+
+## show <[variable_name/'all']>
+
+Prints the value of the variable_name specified.
+Prints all stored variable if 'all' given or if nothing is given
 
 ## end
 

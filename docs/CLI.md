@@ -24,7 +24,7 @@ Prints a dict representation of the physical state measured by the sensor (e.g. 
     - If [option] = 'time', print a dict representation of the **simulation time** and **speed factor**
     - If [option] = 'temperature', print a dict representation of the system **temperature** indoor and outdoor, with **simtime** as time reference
     - If [option] = 'humidity', print a dict representation of the system **humidity** indoor and outdoor, with **simtime** as time reference (soil moisture can be get through the sensor device)
-    - If [option] = 'co2level', print a dict representation of the system **co2** levels indoor and outdoor, with **simtime** as time reference
+    - If [option] = 'co2', print a dict representation of the system **co2** levels indoor and outdoor, with **simtime** as time reference
     - If [option] = 'brightness', print a dict representation of the system **brightness** indoor and outdoor, with **simtime** as time reference
     - If [option] = 'weather', prints a dict representation of the system **weather**, with **simtime** as time reference
     * If [option] = 'out', print a dict representation of the system outdoor states (**brightness**, **co2**, **humidity** and **temperature**), of **room insulation** and **simtime** as time reference

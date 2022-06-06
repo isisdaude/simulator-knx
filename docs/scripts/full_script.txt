@@ -1,4 +1,5 @@
 wait 3 h
+# store device values
 # temperature actuators
 store heater1 state h1
 store heater1 max_power h2
@@ -28,16 +29,42 @@ store presencesensor1 state pr1
 store led1 beam_angle l6
 assert l5 == l6
 Assert l3 >= h3
-End
-assert l3 != l3
+# end
+# store world values
+Store world simtime st34
+Store world temperature tempw23
+Store world humidity hum345
+Store world co2 co2w56
+Store world brightness brw15
+Store world weather wea1
 
-Wait 3
-set button1
-wait 2 h
-assert world brightness up
+# set devices (sensors and functional modules)
+Wait 1
+set button1 ON
 wait 2
-store world temperature
-set button2 
-wait 2
-assert world temperature up
+set dimmer1 ON 45
+Wait 1
+Set humiditysoil1 57
+Wait 1
+Set presencesensor1 True
+Wait 1 
+
+# set world ambient
+Set temperature 35.0 in
+Set temperature 45.0 out
+Wait 1
+Set humidity 67 out
+Set humidity 25 in
+Wait 1
+Set co2level 450 out
+Set co2level 320 in
+Wait 1
+Set presence true
+Wait 1
+Set weather dark
+Wait 1
+Store world weather wea2
+Show wea1
+Show all
+Assert wea2 != wea1
 end

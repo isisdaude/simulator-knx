@@ -28,7 +28,7 @@ class Time:
         self.speed_factor = simulation_speed_factor
         self.__system_dt = system_dt
         self.__datetime_init = date_time
-        self.__date_time = date_time
+        self.date_time = date_time
         self.__simtim_tick_counter = 0
         # ratio for physical state update, pro rata per hour
         self.update_rule_ratio = (self.__system_dt * self.speed_factor)/3600
@@ -67,9 +67,9 @@ class Time:
     
     def update_datetime(self):
         self.__simtim_tick_counter += self.__system_dt # Increment simtime with system_dt=interval between two tick/updates
-        self.__date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
+        self.date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
         # print(self.__date_time.strftime("%Y-%m-%d %H:%M:%S"))
-        return self.__date_time
+        return self.date_time
 
 
 class AmbientTemperature:
@@ -117,6 +117,16 @@ class AmbientTemperature:
     #     from system import INSULATION_TO_CORRECTION_FACTOR
     #     watts = max_power/((1+INSULATION_TO_CORRECTION_FACTOR[self.__room_insulation])*volume)
     #     return self.watts_to_temp(watts)
+
+    def set_temperature(self, location, value): # location is 'in' or 'out'
+        if location == 'in': ## TODO check if number
+            self.__temperature_in = float(value)
+            for sensor in self.__temp_sensors:
+                sensor.device.temperature = self.__temperature_in
+        elif location == 'out':
+            self.temperature_out = float(value)
+        return 1
+
 
     def update(self):
         from devices import Heater, AC
@@ -235,9 +245,22 @@ class AmbientLight:
             partial_illuminance = self.__lux_from_lightsource(source, distance)
             # We can linearly add lux values
             brightness += partial_illuminance
-        
         return brightness
     
+    def set_weather(self, date_time, value):
+        if value not in ['clear', 'overcast', 'dark']:
+            logging.warning(f"The weather value should be in ['clear', 'overcast', 'dark'], but {value} was given.")
+            return None
+        else:
+            self.__weather = value
+            self.__lux_out, self.__time_of_day = system.outdoor_light(date_time, self.__weather)
+            for window in self.__windows: # update max_lumen
+                window.device.max_lumen_from_out_lux(self.__lux_out)
+            for sensor in self.__light_sensors:
+                sensor.device.brightness = self.__compute_sensor_brightness(sensor)
+            return 1
+
+
     def update(self, date_time): # Updates all brightness sensors of the world (the room)
         logging.debug("Brightness update")
         brightness_levels = []
@@ -335,6 +358,18 @@ class AmbientHumidity:
 
     # def read_humidity(self, humidity_sensor):
 
+    def set_humidity(self, location, value): # location is 'in' or 'out'
+        if location == 'in': ## TODO check if number
+            self.__humidity_in = float(value)
+            self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(self.__temperature_in)
+            self.__vapor_pressure = round(self.__saturation_vapour_pressure_in * self.__humidity_in/100, 8)
+            for sensor in self.__humidity_sensors:
+                sensor.device.humidity = round(self.__humidity_in, 2)
+        elif location == 'out':
+            self.humidity_out = float(value)
+            self.saturation_vapour_pressure_out = self.compute_saturation_vapor_pressure_water(self.__temperature_out )
+        return 1
+
     def update(self, temperature):
         from system import INSULATION_TO_HUMIDITY_FACTOR
         logging.debug("Humidity update")
@@ -387,6 +422,15 @@ class AmbientCO2:
         """ co2sensor: InRoomDevice """
         self.__co2_sensors.append(co2sensor)
     
+    def set_co2level(self, location, value):
+        if location == 'in': ## TODO check if number
+            self.__co2_in = float(value)
+            for sensor in self.__co2_sensors:
+                sensor.device.co2level = int(self.__co2_in)
+        elif location == 'out':
+            self.co2_out = float(value)
+        return 1
+    
     def update(self, temperature, humidity):  ### TODO remove temp et humif not used
         from system import INSULATION_TO_CO2_FACTOR
         logging.debug("CO2 update")
@@ -400,6 +444,7 @@ class AmbientCO2:
             sensor.device.co2level = int(self.__co2_in)
             co2_levels.append((sensor.device.name, sensor.device.co2level))
         return co2_levels
+    
     
     def get_co2level(self, str_mode=False):
         if str_mode:
@@ -458,6 +503,17 @@ class Presence:
         else:
             logging.warning(f"The entity {entity} is not present in the simulation.")
     
+    def set_presence(self, value):
+        value_bool = bool(value)
+        if value_bool not in [True, False]:
+            logging.warning(f"The presence value should be in [True, False], but {value} was given.")
+            return None
+        else:
+            self.presence = value_bool
+            for sensor in self.presence_sensors:
+                sensor.device.state = self.presence
+            return 1
+    
     def update(self):
         presence_sensors_states = []
         for sensor in self.presence_sensors:
@@ -503,6 +559,29 @@ class World:
     #     print(f" Temperature: {self.ambient_temperature.temperature_in}")
     #     #TODO: add others when availaible
     #     print("+----------------------------+")
+    def set_ambient_value(self, ambient, value):
+        if 'temperature' in ambient:
+            if ambient == 'temperature_in':
+                ret = self.ambient_temperature.set_temperature('in', value)
+            elif ambient == 'temperature_out':
+                ret = self.ambient_temperature.set_temperature('out', value)
+        elif 'humidity' in ambient:
+            if ambient == 'humidity_in':
+                ret = self.ambient_humidity.set_humidity('in', value)
+            elif ambient == 'humidity_out':
+                ret = self.ambient_humidity.set_humidity('out', value)
+        elif 'co2level' in ambient:
+            if ambient == 'co2level_in':
+                ret = self.ambient_co2.set_co2level('in', value)
+            elif ambient == 'co2level_out':
+                ret = self.ambient_co2.set_co2level('out', value)
+        elif 'presence' in ambient:
+            ret = self.presence.set_presence(value)
+        elif 'weather' in ambient:
+            ret = self.ambient_light.set_weather(self.time.date_time, value)
+            if ret is not None:
+                self.__weather = value
+        return ret # None or 1
     
     def get_info(self, ambient, room, str_mode):
         basic_dict_out = {"room_insulation":self.__room_insulation, "temperature_out":str(self.__temp_out)+" °C", "humidity_out":str(self.__hum_out)+" %", "co2_out":str(self.__co2_out)+" ppm", "brightness_out":self.ambient_light.get_global_brightness(room, str_mode=str_mode, out=True)}
@@ -515,14 +594,14 @@ class World:
             basic_dict.update({"humidity_in": self.ambient_humidity.get_humidity(str_mode=str_mode)})
             basic_dict.update({"humidity_out": basic_dict_out["humidity_out"]})
             return basic_dict
-        elif 'co2level' == ambient:
+        elif 'co2' in ambient: # just in case co2level is given
             basic_dict.update({"co2_in": self.ambient_co2.get_co2level(str_mode=str_mode)})
             basic_dict.update({"co2_out": basic_dict_out["co2_out"]})
             return basic_dict
         elif 'brightness' == ambient:
             basic_dict.update({"brightness_in": self.ambient_light.get_global_brightness(room, str_mode=str_mode), "brightness_out":self.ambient_light.get_global_brightness(room, str_mode=str_mode, out=True)}) # NOTE room can be None, average of bright sensors is then computed
             return basic_dict
-        elif 'time' == ambient:
+        elif 'time' in ambient: # can be simtime
             basic_dict.update({ "speed_factor":self.time.speed_factor})
             return basic_dict
         elif 'weather' == ambient:

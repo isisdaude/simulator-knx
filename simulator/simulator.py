@@ -114,12 +114,12 @@ async def simulator_script_loop(room, file_path):
                 print("Failed script recap:")
                 pp.pprint(assertions)
                 return 0
-            elif ret == 0:
+            elif ret == 0: # ret=0 is signal from end command to termninate script
                 logging.info("The script has completed successfully.")
                 print("Successful script recap:")
                 pp.pprint(assertions)
                 return 1
-        if ret is not None:
+        if ret is not None: # of no end command, script ends when no more commands/lines
             logging.info("The script has completed successfully.")
             print("Successful script recap:")
             pp.pprint(assertions)

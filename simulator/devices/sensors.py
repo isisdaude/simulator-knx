@@ -51,6 +51,15 @@ class HumiditySoil(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    def set_value(self, value):
+        value = float(value)
+        ## TODO check if its a number
+        if value < 0 or value > 100:
+            logging.warning(f"The soil humidity value shoudl be in (0-100), but {value} was given>=.")
+            return None
+        else:
+            self.humiditysoil = value
+            return 1
 
 class HumidityAir(Sensor):
     """Concrete class to represent a Humidity sensor"""
@@ -101,6 +110,14 @@ class PresenceSensor(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    def set_value(self, value):
+        value_bool = bool(value)
+        if value_bool not in [True, False]:
+            logging.warning(f"The presence value should be in [True, False], but {value} was given.")
+            return None
+        else:
+            self.state = value_bool
+            return 1
 
 # class MovementDetector(Sensor):
 #     """Concrete class to represent a CO2 Sensor"""

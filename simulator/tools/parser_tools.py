@@ -122,13 +122,16 @@ def user_command_parser(command, room):
                         return 0
                     in_room_device.device.user_input()
                     return 1
+            # If device not found
+            logging.warning(f"The device {name} is not found in room's devices list.")
+            return 0
         # If user gives ON/OFF state and/or value
         elif len(command_split) >= 3: 
-            if command_split[2] not in ['ON', 'OFF']:
+            if command_split[2].lower() not in ['on', 'off']:
                 logging.warning("The command is not recognized by the parser: either wrong or incomplete")
                 print(COMMAND_HELP)
                 return 0
-            state = True if command_split[2]=='ON' else False
+            state = True if command_split[2].lower()=='on' else False
             for in_room_device in room.devices:
                     if in_room_device.name in name:
                         if not isinstance(in_room_device.device, dev.FunctionalModule):
@@ -145,6 +148,9 @@ def user_command_parser(command, room):
                         else:
                             in_room_device.device.user_input(state=state)
                         return 1
+            # If device not found
+            logging.warning(f"The device {name} is not found in room's devices list.")
+            return 0
     # System information asked by the user
     elif command_split[0] == 'getinfo' or command.strip() == 'getinfo':
         # Global info info asked by user
@@ -282,10 +288,12 @@ class ScriptParser():
                 except AssertionError:
                     logging.error(f"'store world' command expect ambient argument in ['simtime', 'temperature', 'humidity', 'co2', 'brightness', 'weather'], but {ambient} was given")
                     return None, self.assertions
-                if ambient == 'weather':
-                    self.stored_values[var_name] = room.get_world_info(ambient)[ambient]
+                if ambient == 'weather' or ambient == 'simtime':
+                    self.stored_values[var_name] = room.get_world_info(ambient=ambient)[ambient]
+                    # print(f"ambient:{ambient}, value stored:{self.stored_values[var_name]}")
                 else:
-                    self.stored_values[var_name] = round(room.get_world_info(ambient, str_mode=False)[ambient+'_in'],2)
+                    # print(f"ambient: {ambient}")
+                    self.stored_values[var_name] = round(room.get_world_info(ambient=ambient, str_mode=False)[ambient+'_in'],2)
                 if self.stored_values[var_name] is None:
                     return None, self.assertions
                 logging.info(f"[SCRIPT] The world {ambient} is stored in variable {var_name}={self.stored_values[var_name]}")
@@ -341,22 +349,51 @@ class ScriptParser():
         elif command.startswith('set'):
             if len(command_split) in [3, 4]:
                 if command_split[1] in ['temperature', 'humidity', 'co2level', 'presence', 'weather']: # set ambient state
-                    pass ## TODO create set api methods, check weather and format of value
+                    value = command_split[2]
+                    if command_split[1] == 'presence':
+                        ret = room.world.set_ambient_value('presence', value)
+                    elif command_split[1] == 'weather':
+                        ret = room.world.set_ambient_value('weather', value)
+                    else:
+                        if len(command_split) == 4:
+                            ambient = command_split[1]+"_"+command_split[3] # we add '_in' or '_out'
+                            ret = room.world.set_ambient_value(ambient, value)
+                        else:
+                            logging.warning(f"No specification of indoor/outdoor ambient to set, the third argument of 'set' command should be 'in' or 'out' with temperature, humidity and co2level")
+                            return None, self.assertions
+                    return ret, self.assertions # ret is None or 1
                 else:
-                    pass ## TODO call user_command parser 
-                    ## TODO or special api set for sensors presence and soil moisture
+                    # Sensors humiditysoil and presence or ON/OFF a functional module -> user command parser
+                    if len(command_split) >= 3: 
+                        # set sensor value
+                        if 'humiditysoil' in command_split[1] or 'presence' in command_split[1]:
+                            value = command_split[2]
+                            for ir_device in room.devices:
+                                if command_split[1] == ir_device.name:
+                                    ret = ir_device.device.set_value(value)
+                                    return ret, self.assertions # ret is None or 1
+                            # If device not found
+                            logging.warning(f"The device {command_split[1]} is not found in room's devices list.")
+                            return None, self.assertions
+                        # set functional module on or off, with possible value for state_ratio
+                        elif 'button' in command_split[1] or 'dimmer' in command_split[1]:
+                            if not user_command_parser(command, room): # return 0
+                                return None, self.assertions
+                            else: # return 1
+                                return 1, self.assertions
             else:
-                logging.error(f"'set' command reauires 2 or 3 arguments, but {len(command_split)-1} was provided.")
+                logging.error(f"'set' command requires 2 or 3 arguments, but {len(command_split)-1} was provided.")
                 return None, self.assertions
-        
-        # and len(command_split) >= 2 and command_split[1] in ['ON', 'OFF']: # turn on/off device through classcial knx bus way
-        #     return None, self.assertions #user_command_parser(command, room)
-        
-        # elif command.startswith('set') and len(command_split) >= 3 and command_split[1] in ['Temperature', 'Humidity', 'CO2', 'Brightness', 'Weather']:
-        #     ## TODO set ambient in world directly
-        #     pass
-        #     # print(f"command parser with '{command}'")
-        #     # set device
+        elif command.startswith('show'):
+            if len(command_split) == 1 or command_split[1].lower() == 'all':
+                pp.pprint(self.stored_values)
+            elif len(command_split) == 2:
+                if command_split[1] in self.stored_values:
+                    print(f"{command_split[1]} = {self.stored_values[command_split[1]]}")
+            else:
+                logging.warning(f"'show' command requires 0 or 1 argument.")
+                return None, self.assertions
+            return 1, self.assertions
 
         elif command.startswith('end'):
             print("End of script")
