@@ -23,105 +23,41 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
 # Local application imports
-# import devices as dev
-# import simulation as sim
 import gui
 import system
-from interface.main import Interface
-
-# SCRIPT_DIR = os.path.dirname(__file__)
-# SAVED_CONFIG_PATH = os.path.join(SCRIPT_DIR,"/docs/config/")
-
-SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
-# print(SAVED_CONFIG_PATH)
-CONFIG_PATH = "./docs/config/sim_config_bedroom.json"
-# CONFIG_PATH = "./docs/config/saved_config_09052022_042903"
-DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
-EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
-
-SCRIPT = "FullScript"
-SCRIPT_FILE_PATH = "./docs/scripts/" + SCRIPT + ".txt" 
-# Configure logging messages format
-LOGGING_LEVEL = logging.WARNING
+import tools
+from svshi_interface.main import Interface
+from tools.config_tools import * # GUI_MODE, CLI_INT_MODE, SAVED_CONFIG_PATH, ...
 
 
-## User command mode (script or CLI)
-GUI_MODE = 0
-CLI_MODE = 1
-INTERFACE_MODE = CLI_MODE # or CLI_MODE
-## User interface mode
-SCRIPT_MODE = 0
-CLI_MODE    = 1
-COMMAND_MODE = CLI_MODE # only if  INTERFACE_MODE = CLI_MODE
-## Configuration mode
-FILE_CONFIG     = 0   # configuration from json file
-DEFAULT_CONFIG  = 1 # configuration from default json file (~3devices)
-EMPTY_CONFIG    = 2 # configuration with no devices
-DEV_CONFIG      = 3 # configuration from python function
-CONFIG_MODE = FILE_CONFIG
-SVSHI_MODE = False
-SYSTEM_DT = 1
 
-def launch_simulation():
-    # GUI_MODE = True 
-    ## TODO implement  kind of a switch for config (flag config_mode that wan be equak tto DEFAUK, FILE, or EMPTY)
-    default_mode = False
-    empty_mode = False
+def launch_simulation(argv):
+    # Parser CLI arguments given by the user when launching the program
+    INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, SYSTEM_DT = tools.arguments_parser(argv)
     
-    logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s | [%(levelname)s] -- %(message)s') #%(name)s : username (e.g. root)
-
-    # System configuration based on a JSON config file
-    if CONFIG_MODE == FILE_CONFIG:
-        rooms = system.configure_system_from_file(CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
-
     # System configuration from function configure_system
-    elif CONFIG_MODE == DEV_CONFIG:
+    if CONFIG_MODE == DEV_CONFIG:
         while(True): # Waits for the input to be a correct speed factor, before starting the simulation
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
-            if system.check_simulation_speed_factor(simulation_speed_factor):
+            if tools.check_simulation_speed_factor(simulation_speed_factor):
                 break
-        rooms = system.configure_system(simulation_speed_factor, SYSTEM_DT, svshi_mode=SVSHI_MODE)
-
-    # System configuration based on a default JSON config file
-    elif CONFIG_MODE == DEFAULT_CONFIG:
-        default_mode = True
-        rooms = system.configure_system_from_file(DEFAULT_CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
-    
-    # System configuration based on a default JSON config file
-    elif CONFIG_MODE  == EMPTY_CONFIG:
-        empty_mode = True
-        rooms = system.configure_system_from_file(EMPTY_CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
-
-    # System configuration based on a simple Room with no devices
+        rooms = tools.configure_system(simulation_speed_factor, SYSTEM_DT, svshi_mode=SVSHI_MODE)
+    # Default, empty or file config
     else:
-        while(True): # Waits for the input to be a correct speed factor, before starting the simulation
-            try:
-                simulation_speed_factor = float(input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n"))
-                break
-            except ValueError:
-                logging.warning("The simulation speed should be a number")
-                continue
-        rooms = [system.Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', svshi_mode=SVSHI_MODE)]
+        CONFIG_PATH = DEFAULT_CONFIG_PATH if CONFIG_MODE == DEFAULT_CONFIG else CONFIG_PATH
+        CONFIG_PATH = EMPTY_CONFIG_PATH if CONFIG_MODE == EMPTY_CONFIG else CONFIG_PATH
+        rooms = tools.configure_system_from_file(CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
 
-    # # We save the config path to further reload the simulation
-    # for room in rooms:
-    #     room.SAVED_CONFIG_PATH = SAVED_CONFIG_PATH
-    # room1 = rooms[0] # for now only one room
 
     # GUI interface with the user
     if INTERFACE_MODE == GUI_MODE:
-        if default_mode:
-            config_path = DEFAULT_CONFIG_PATH
-        elif empty_mode:
-            config_path = EMPTY_CONFIG_PATH
-        else:
-            config_path = CONFIG_PATH
-        window = gui.GUIWindow(config_path, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, rooms)###
+        window = gui.GUIWindow(CONFIG_PATH, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, rooms) #CONFIG_PATH can be a normal file, default or empty
         window.initialize_system(save_config=True, system_dt=SYSTEM_DT) #system_dt is delta time for scheduling update_world
+        print("\n>>> The simulation is started in GUI Mode <<<\n")
         start_time = time.time()
-        for room in rooms:
+        for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
             room.world.time.start_time = start_time
-        room1 = rooms[0] # NOTE: further implementation for multiple rooms can use the rooms list
+        room1 = rooms[0] 
         try:
             loop = asyncio.new_event_loop()
             pyglet.app.run()
@@ -131,22 +67,20 @@ def launch_simulation():
         print("The GUI window has been closed and the simulation terminated.")
 
     # Terminal interface with the user (no visual feedback)
-    elif INTERFACE_MODE == CLI_MODE: # run the simulation without the GUI window
+    elif INTERFACE_MODE == CLI_INT_MODE: # run the simulation without the GUI window
         # Configure the start_time attribute of rooms' Time object
         start_time = time.time()
-        for room in rooms:
+        for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
             room.world.time.start_time = start_time
-        # TODO: implement for multiple rooms
         room1 = rooms[0]
         room1.world.time.scheduler_init()
-        room1.world.time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object
+        room1.world.time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object for scheduling
         room1.world.time.scheduler_start()
 
         try:
             loop = asyncio.get_event_loop()
-
-            # TODO: implement for multiple rooms
-            loop.run_until_complete(async_main(loop, room1))
+            print("\n>>> The simulation is started in CLI Mode <<<\n")
+            loop.run_until_complete(async_main(loop, room1, COMMAND_MODE, SCRIPT_PATH))
         except (KeyboardInterrupt, SystemExit):
             loop.run_until_complete(kill_tasks())
         finally:
@@ -160,35 +94,21 @@ def launch_simulation():
 async def user_input_loop(room):
     """Asyncio loop to await user command from terminal"""
     while True:
-        # global script_mode
-        # if verif_mode:
-        #     message = ''
-        # else:
         message = ">>> What do you want to do?\n"
         command = await aioconsole.ainput(message)
-        if system.user_command_parser(command, room) is None:
-            # await kill_tasks()
-            return None
-            # sys.exit(1)
+        if tools.user_command_parser(command, room) is None:
+            # # await kill_tasks()
+            # return None
+            sys.exit(1)
 
 async def simulator_script_loop(room, file_path):
     """Asyncio loop to await user command from a .txt script"""
-    script_parser = system.ScriptParser()
-    # global script_mode
+    script_parser = tools.ScriptParser()
     with open(file_path, "r") as f:
         commands = f.readlines()
-        for command in commands:
-            if SCRIPT_MODE:
-                print("\n>>> Next command?")
-            command = command.strip().lower() # remove new line symbol and put in lower case
-            print(f"Command >>> '{command}' <<<")
+        for command in commands: 
             await script_parser.script_command_parser(room, command)
-            # script_state = 
-            # if script_state is None:
-            #     # await kill_tasks()
-            #     script_mode = False
-            #     return None
-                # sys.exit(1)
+
 
 async def kill_tasks():
     """Function called to kill task when program ended"""
@@ -202,14 +122,15 @@ async def kill_tasks():
         return None
 
 
-async def async_main(loop, room):
+async def async_main(loop, room, command_mode, script_path):
     """ Manager function of asyncio tasks"""
     tasks = []
-    if COMMAND_MODE == CLI_MODE:
+    if command_mode == CLI_COM_MODE:
         ui_task = loop.create_task(user_input_loop(room))
         tasks.append(ui_task) 
-    elif COMMAND_MODE == SCRIPT_MODE:
-        script_task = loop.create_task(simulator_script_loop(room, SCRIPT_FILE_PATH))
+    elif command_mode == SCRIPT_MODE:
+        print("script mode")
+        script_task = loop.create_task(simulator_script_loop(room, script_path))
         tasks.append(script_task) 
 
     await asyncio.wait(tasks)

@@ -14,7 +14,7 @@ from numpy import mean
 # sys.path.append("core")
 #
 # from devices import *
-import system
+import system, tools
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -53,35 +53,22 @@ class Time:
         except AttributeError:
             logging.warning("The Scheduler is not initialized and cannot be started")
 
-    # Simulation time management  ##TODO increment a counter every tick (system_dt) and compute correspondign timedelta wit hspeed factor, do not consider time() function 
+    # Simulation time management 
     def simulation_time(self, str_mode=False):
         try:
-            # if hasattr(self, 'pause_time'): # if system was paused, we consider only the active simulation time 
-            #     elapsed_time = (self.pause_time - self.start_time)*self.speed_factor
-            #     print(f"elapsed time when paused: {elapsed_time}")
-            # else:
-            # Elapsed time from simulation point-of-view (not real seconds but simulated seconds)
             elapsed_time = (self.__simtim_tick_counter)*self.speed_factor
-            # print(f"elapsed_time system : {self.__simtim_tick_counter}, simulation : {elapsed_time}")
-            # elapsed_time = (time.time() - self.start_time)*self.speed_factor
             if str_mode:
-                str_elapsed_time = str(timedelta(seconds=round(elapsed_time, 2)))#[:-5]
-                # print(f"str_simtime : {str_elapsed_time}")
+                str_elapsed_time = str(timedelta(seconds=round(elapsed_time, 2)))
                 return str_elapsed_time
             else:
-                return elapsed_time # in seconds
+                return elapsed_time 
         except AttributeError:
             logging.warning("The Simulation time is not initialized")
     
     def update_datetime(self):
-        # if not hasattr(self, "_last_tick_time"):
-        #     self._last_tick_time = time.time()
-        # else:
-        #     print(f"time since last tick : {time.time() - self._last_tick_time}")
-        #     self._last_tick_time = time.time()
         self.__simtim_tick_counter += self.__system_dt # Increment simtime with system_dt=interval between two tick/updates
         self.__date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
-        print(self.__date_time.strftime("%Y-%m-%d %H:%M:%S"))
+        # print(self.__date_time.strftime("%Y-%m-%d %H:%M:%S"))
         return self.__date_time
 
 
@@ -149,10 +136,10 @@ class AmbientTemperature:
             for source in self.__temp_sources: # sources of heat or cold
                 if source.device.status and source.device.state: # if source enabled
                     if isinstance(source.device, Heater):
-                        source.device.update_rule = source.device.effective_power/self.total_max_power 
+                        source.device.update_rule = source.device.effective_power()/self.total_max_power 
                         self.__temperature_in += source.device.update_rule*self.__update_rule_ratio
                     if isinstance(source.device, AC):
-                        source.device.update_rule = - source.device.effective_power/self.total_max_power
+                        source.device.update_rule = - source.device.effective_power()/self.total_max_power
                         self.__temperature_in += source.device.update_rule*self.__update_rule_ratio # The ac update rule is <0
             # Compute max temp
             #relative_max_power = self.__max_power_heater - self.__max_power_ac
@@ -281,7 +268,13 @@ class AmbientLight:
         return global_brightness
 
 
-    def get_global_brightness(self, room = None, str_mode=False):
+    def get_global_brightness(self, room = None, str_mode=False, out=False):
+        if out == True:
+            if str_mode:
+                bright = str(round(self.__lux_out, 2)) + " lux"
+                return bright
+            else:
+                return self.__lux_out
         if room is None: # simply make an average of all sensors' brightness
             brightness_levels = []
             for sensor in self.__light_sensors:
@@ -486,7 +479,7 @@ class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
     def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt, room_insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather): #date_time is simply a string keyword from config file at this point
-        self.__date_time, self.__weather = system.check_wheater_date(date_time, weather) # self.__date_time is a datetime.datetime instance, self.__weather is a string
+        self.__date_time, self.__weather = tools.check_wheater_date(date_time, weather) # self.__date_time is a datetime.datetime instance, self.__weather is a string
         self.time = Time(simulation_speed_factor, system_dt, self.__date_time) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.__room_insulation = room_insulation
         self.__temp_out, self.__hum_out, self.__co2_out = temp_out, hum_out, co2_out # does not change during simulation
@@ -508,61 +501,44 @@ class World:
         co2_levels = self.ambient_co2.update(self.ambient_temperature.get_temperature(str_mode=False), self.ambient_humidity.get_humidity(str_mode=False))
         humiditysoil_levels = self.soil_moisture.update() #self.ambient_humidity.get_humidity(str_mode=False)
         presence_sensors_states = self.presence.update()
-        # humidity_levels = self.ambient_humidity.update()
         return date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states
 
-    def get_world_state(self): # one world per room, so status of the room
-        print("+---------- STATUS ----------+")
-        print(f" Temperature: {self.ambient_temperature.temperature_in}")
-        #TODO: add others when availaible
-        print("+----------------------------+")
+    # def get_world_state(self): # one world per room, so status of the room
+    #     print("+---------- STATUS ----------+")
+    #     print(f" Temperature: {self.ambient_temperature.temperature_in}")
+    #     #TODO: add others when availaible
+    #     print("+----------------------------+")
     
     def get_info(self, ambient, room, str_mode):
-        basic_dict = {"room_insulation":self.__room_insulation, "temperature_out":str(self.__temp_out)+" °C", "humidity_out":str(self.__hum_out)+" %", "co2_out":str(self.__co2_out)+" ppm"}
+        basic_dict_out = {"room_insulation":self.__room_insulation, "temperature_out":str(self.__temp_out)+" °C", "humidity_out":str(self.__hum_out)+" %", "co2_out":str(self.__co2_out)+" ppm", "brightness_out":self.ambient_light.get_global_brightness(room, str_mode=str_mode, out=True)}
+        basic_dict = {"simtime": self.time.simulation_time(str_mode=str_mode)}
         if 'temperature' == ambient:
             basic_dict.update({"temperature_in": self.ambient_temperature.get_temperature(str_mode=str_mode)})
+            basic_dict.update({"temperature_out": basic_dict_out["temperature_out"]})
             return basic_dict
         elif 'humidity' == ambient:
             basic_dict.update({"humidity_in": self.ambient_humidity.get_humidity(str_mode=str_mode)})
+            basic_dict.update({"humidity_out": basic_dict_out["humidity_out"]})
             return basic_dict
         elif 'co2level' == ambient:
             basic_dict.update({"co2_in": self.ambient_co2.get_co2level(str_mode=str_mode)})
+            basic_dict.update({"co2_out": basic_dict_out["co2_out"]})
             return basic_dict
         elif 'brightness' == ambient:
-            basic_dict.update({"brightness_in": self.ambient_light.get_global_brightness(room, str_mode=str_mode)}) # room can be None, average of bright sensors is then computed
+            basic_dict.update({"brightness_in": self.ambient_light.get_global_brightness(room, str_mode=str_mode), "brightness_out":self.ambient_light.get_global_brightness(room, str_mode=str_mode, out=True)}) # NOTE room can be None, average of bright sensors is then computed
             return basic_dict
         elif 'time' == ambient:
-            basic_dict.update({"simtime_in": self.time.simulation_time(str_mode=str_mode), "speed_factor":self.time.speed_factor})
+            basic_dict.update({ "speed_factor":self.time.speed_factor})
+            return basic_dict
+        elif 'out' == ambient:
+            basic_dict.update(basic_dict_out)
             return basic_dict
         elif 'all' == ambient:
             ambient_dict = {"temperature_in": self.ambient_temperature.get_temperature(str_mode=str_mode),
                             "humidity_in": self.ambient_humidity.get_humidity(str_mode=str_mode),
                             "co2_in": self.ambient_co2.get_co2level(str_mode=str_mode),
-                            "brightness_in": self.ambient_light.get_global_brightness(room, str_mode=str_mode),
-                            "simtime": self.time.simulation_time(str_mode=str_mode), "speed_factor":self.time.speed_factor}
+                            "brightness_in": self.ambient_light.get_global_brightness(room, str_mode=str_mode)}
             basic_dict.update(ambient_dict)
+            basic_dict.update(basic_dict_out)
             return basic_dict
         
-
-
-
-
-
-
-
-# def compute_co2level(temperature, humidity):
-#     # https://iopscience.iop.org/article/10.1088/1755-1315/81/1/012083/pdf
-#     p1 = -122304.827954597
-#     p2 = 5420.9575012248 
-#     p3 = -195.944936343794 
-#     p4 = 2.36182806127216 
-#     p5 = 634340.418393413
-#     p6 = -1884046.22528529
-#     p7 = 1749351.78760737
-#     p8 = 1191371.85647522
-#     p9 = -2122702.79768627
-#     h = temperature # in °C
-#     t = humidity/100 # 0<h<1
-#     co2_ppm = p1 + p2*t + p3*math.pow(t,2) + p4*math.pow(t,3)
-#     co2_ppm += p5*h + p6*math.pow(t,2) + p7*math.pow(t,3) + p8*math.pow(t,4) + p9*math.pow(t,5)
-#     return co2_ppm

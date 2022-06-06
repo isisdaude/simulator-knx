@@ -12,10 +12,9 @@ class Button(FunctionalModule):
         self.state = False
         self.__str_state = "OFF"
 
-    def user_input(self, state=None):
-        # logging.info(f"The {self.name} has been pressed")
+    def user_input(self, state=None, state_ratio=None): # state_ratio is only for command parser, to be able to call the function with this argument without errors
         self.state = not self.state
-        if state is not None: # if user gives the wanted state
+        if state is not None: # if user specifies the wanted state (ON/OFF)
             self.state = state
         self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
         logging.info(f"The {self.name} has been turned {self.__str_state}")
@@ -37,7 +36,6 @@ class Dimmer(FunctionalModule):
         self.state_ratio = 100
 
     def user_input(self, state=None, state_ratio=100, switch_state=False, keep_on=False):
-        # logging.info(f"The {self.name} has been pressed")
         if keep_on: # If switch state but we want the dimmer to be on anyway
             self.state = True
             self.__str_state = "ON"

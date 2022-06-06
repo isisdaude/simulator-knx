@@ -47,7 +47,7 @@ class SimTimeWidget(object):
                                             color=COLOR_BOX_SIMTIME, border_color=COLOR_BOX_SIMTIME_BORDER,
                                             batch=batch, group=group_box)
         self.simtime_label = pyglet.text.Label("SimTime:", # init the simulation time title
-                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATE, bold=True,
+                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATETIME_TITLE, bold=True,
                                     color = COLOR_FONT_SIMTIME_LABEL,
                                     x=x+OFFSET_SIMTIME_BOX, y=y,
                                     anchor_x='left', anchor_y='bottom',
@@ -60,7 +60,7 @@ class SimTimeWidget(object):
                                     batch=batch, group=group_label)
         
         self.date_label = pyglet.text.Label("Date: ", # init the simulation date display
-                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATE, bold=True,
+                                    font_name=FONT_SYSTEM_TITLE, font_size=FONT_SIZE_DATETIME_TITLE, bold=True,
                                     color = COLOR_FONT_SIMTIME_LABEL,
                                     x=x+OFFSET_SIMTIME_BOX, y=y-OFFSET_SIMTIME_DATE,
                                     anchor_x='left', anchor_y='bottom',
@@ -319,8 +319,8 @@ class DeviceWidget(object):
         
         ## Thermometer
         if img_neutral is not None: # for thermometer when no change in temperature
-            self.__img_neutral = pyglet.image.load(img_neutral)
-            self.sprite = pyglet.sprite.Sprite(self.__img_neutral, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
+            self._img_neutral = pyglet.image.load(img_neutral)
+            self.sprite = pyglet.sprite.Sprite(self._img_neutral, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
         else:
             self.sprite = pyglet.sprite.Sprite(self.img_OFF, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
         self.label = pyglet.text.Label(self.label_name,
@@ -394,9 +394,9 @@ class DeviceWidget(object):
     
     def update_thermometer_sprite(self, rising_temp):
         if 'thermometer' in self.label_name:
-            if rising_temp is None and hasattr(self, 'img_neutral'):
+            if rising_temp is None and hasattr(self, '_img_neutral'):
                 self.sprite.delete()
-                self.sprite = pyglet.sprite.Sprite(self.__img_neutral, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
+                self.sprite = pyglet.sprite.Sprite(self._img_neutral, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image
             elif rising_temp:
                 self.sprite.delete()
                 self.sprite = pyglet.sprite.Sprite(self.img_ON, x=self.origin_x, y=self.origin_y, batch=self.__batch, group=self.__group) # x,y of sprite is bottom left of image

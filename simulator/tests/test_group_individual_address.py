@@ -3,7 +3,7 @@
 import pytest
 from _pytest.logging import LogCaptureFixture
 
-import system
+import system, tools
 
 
 gas = {
@@ -32,12 +32,12 @@ encoding_style_wrong = ['0-levels', '1-levels', '2-level', '2levels', '3level', 
 def test_correct_style_name(): 
     for s in range(len(encoding_styles)):
         encoding_style = encoding_styles[s]
-        ga_style = system.check_group_address(encoding_style, style_check=True)
+        ga_style = tools.check_group_address(encoding_style, style_check=True)
         assert ga_style == encoding_style
 
 def test_wrong_style_name(): 
     for encoding_style in encoding_style_wrong:
-        ga = system.check_group_address(encoding_style, '1/1/1')
+        ga = tools.check_group_address(encoding_style, '1/1/1')
         assert ga is None
 
 # Test group addresses
@@ -47,7 +47,7 @@ def test_correct_group_address():
         group_addresses = gas[encoding_style]['gas']
         group_addresses_split = gas[encoding_style]['gas_split']
         for group_address in group_addresses:
-            ga = system.check_group_address(encoding_style, group_address)
+            ga = tools.check_group_address(encoding_style, group_address)
             assert ga is not None
             if encoding_style == '3-levels':
                 assert ga.main == group_addresses_split[gc][0]
@@ -65,7 +65,7 @@ def test_wrong_group_address():
         group_addresses = gas[encoding_style]['gas_wrong']
         # Out-of-bounds address
         for group_address in group_addresses:
-            ga = system.check_group_address(encoding_style, group_address)
+            ga = tools.check_group_address(encoding_style, group_address)
             assert ga is None
 
 def test_false_group_address():
@@ -73,7 +73,7 @@ def test_false_group_address():
         group_addresses = gas[encoding_style]['gas_false']
         # Totally false group addresses
         for group_address in group_addresses:
-            ga = system.check_group_address(encoding_style, group_address)
+            ga = tools.check_group_address(encoding_style, group_address)
             assert ga is None
   
 # Test individual addresses

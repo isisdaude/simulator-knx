@@ -1,4 +1,4 @@
-wait 3
+wait 3 h
 store world brightness
 set button1
 wait 2 h

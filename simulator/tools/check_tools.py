@@ -62,10 +62,15 @@ def check_individual_address(area, line, device):
     else:
         return area, line, device
 
-
+# Constants for Group Addresses check
+MAX_MAIN = 31
+MAX_MIDDLE = 7
+MAX_SUB_LONG = 255
+MAX_SUB_SHORT = 2047
+MAX_FREE = 65535
 
 def check_group_address(group_address_style, text='', style_check=False): ## TODO: verify if the group address entered in text box is correct
-        from .tools import GroupAddress
+        from system import GroupAddress
         ''' Verify that the group address entered by the user is correct (2, 3-levels or free) '''
         if not style_check:
             text_split = text.split('/')
@@ -87,7 +92,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
                     logging.warning(f"'3-levels' group address {text} has wrong value type, should be int: 0/0/0 -> 31/7/255")
                     return None
                 try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 31 and middle >= 0 and middle <= 7 and sub >= 0 and sub <= 255)
+                    assert (main >= 0 and main <= MAX_MAIN and middle >= 0 and middle <= MAX_MIDDLE and sub >= 0 and sub <= MAX_SUB_LONG)
                     return GroupAddress('3-levels', main = main, middle = middle, sub = sub)
                 except AssertionError:
                     logging.warning(f"'3-levels' group address {text} is out of bounds, should be in 0/0/0 -> 31/7/255")
@@ -105,7 +110,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
                     logging.warning(f"'2-levels' group address {text} has wrong value type, should be int: 0/0 -> 31/2047")
                     return None
                 try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 31 and sub >= 0 and sub <= 2047)
+                    assert (main >= 0 and main <= MAX_MAIN and sub >= 0 and sub <= MAX_SUB_SHORT)
                     return GroupAddress('2-levels', main = main, sub = sub)
                 except AssertionError:
                     logging.warning(f"'2-levels' group address {text} is out of bounds, should be in 0/0 -> 31/2047")
@@ -123,7 +128,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
                     logging.warning(f"'free' group address {text} has wrong value type, should be int: 0 -> 65535")
                     return None
                 try: # test if the group address has the correct format
-                    assert (main >= 0 and main <= 65535)
+                    assert (main >= 0 and main <= MAX_FREE)
                     return GroupAddress('free', main = main)
                 except AssertionError:
                     logging.warning(f"'free' group address {text} is out of bounds, should be in 0 -> 65535")

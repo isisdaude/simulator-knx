@@ -42,7 +42,7 @@ class TelegramParser:
 
     def from_knx_telegram(self, telegram: Telegram):
         '''Creates a simulator telegram from a knx telegram'''
-        from system.tools import GroupAddress, IndividualAddress
+        from system import GroupAddress, IndividualAddress
         payload = telegram.payload
         
         ga_split = str(telegram.destination_address).split('/')
@@ -123,8 +123,8 @@ class TelegramParser:
             return None
 
 def main():
-    from system.telegrams import HeaterPayload, BinaryPayload
-    from system.tools import GroupAddress, IndividualAddress
+    # from system.telegrams import HeaterPayload, BinaryPayload
+    from system import GroupAddress, IndividualAddress, HeaterPayload, BinaryPayload
 
     group_address_to_payload_example = {
         '0/0': BinaryPayload,

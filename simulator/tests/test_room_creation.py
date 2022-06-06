@@ -2,7 +2,7 @@
 import pytest
 import logging
 
-import system
+import system, tools
 from devices import Button
 
 

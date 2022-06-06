@@ -2,7 +2,7 @@
 import logging, sys
 from typing import List
 
-from .tools import GroupAddress
+from system.system_tools import GroupAddress
 from devices import Actuator, Sensor, FunctionalModule
 from .telegrams import Telegram
 
@@ -12,7 +12,7 @@ class KNXBus:
     '''Class that implements the transmission over the KNX Bus, between Actuators and FuntionalModules'''
 
     def __init__(self):
-        # self.name = "KNX Bus"
+        self.name = "KNX Bus"
         self.group_addresses = []  # list of group addresses
         # list of group address buses
         self.__ga_buses: List[GroupAddressBus] = []

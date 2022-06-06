@@ -45,7 +45,7 @@ class LED(LightActuator):
         return self.max_lumen*(self.state_ratio/100)
 
     def get_dev_info(self):
-        dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "beam_angle":self.beam_angle, "state_ratio":self.state_ratio}
+        dev_specific_dict = {"state":self.state, "max_lumen":self.max_lumen, "effective_lumen": self.effective_lumen(), "beam_angle":self.beam_angle, "state_ratio":self.state_ratio}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
@@ -59,12 +59,14 @@ class TemperatureActuator(Actuator, ABC):
         self.max_power = max_power
         """Power of the device in Watts"""
         self.state_ratio = 100 # Percentage of 'amplitude'
-        self.effective_power = self.max_power * self.state_ratio/100
         """Power really used, max by default"""
+    
+    def effective_power(self):
+        return self.max_power * self.state_ratio/100
     
     def get_dev_info(self):
         self.__str_state = "ON" if self.state else "OFF"
-        dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "power":self.effective_power}
+        dev_specific_dict = {"state":self.state, "update_rule":self.update_rule, "max_power":self.max_power, "state_ratio":self.state_ratio, "effective_power":self.effective_power()}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
@@ -105,12 +107,10 @@ class Heater(TemperatureActuator):
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.content
-                self.effective_power = self.max_power
             if isinstance(telegram.payload, DimmerPayload):
                 self.state = telegram.payload.content
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
-                    self.effective_power = self.max_power * self.state_ratio/100
 
 
 
@@ -131,12 +131,10 @@ class AC(TemperatureActuator):
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
                 self.state = telegram.payload.content
-                self.effective_power = self.max_power
             if isinstance(telegram.payload, DimmerPayload):
                 self.state = telegram.payload.content
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
-                    self.effective_power = self.max_power * self.state_ratio/100
     
 
 
@@ -159,7 +157,7 @@ class Switch(Actuator):
 
 class IPInterface(Actuator):
     """Concrete class to represent an IP interface to communicate with external interfaces"""
-    from interface.main import Interface
+    from svshi_interface.main import Interface
     def __init__(self, name, refid, individual_addr, default_status, interface: Interface, state=False):
         super().__init__('IPInterface', name, refid, individual_addr, default_status, 'ip_interface', state)
         self.interface = interface

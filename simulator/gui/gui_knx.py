@@ -1,7 +1,7 @@
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 import pyglet
 import copy
-import logging
+import logging, sys
 import shutil
 from typing import List
 import json
@@ -11,7 +11,7 @@ import numpy as np
 
 
 
-from system.tools import configure_system_from_file, DEV_CLASSES, GroupAddress, Location
+# from tools import GroupAddress, Location
 from .gui_tools import ButtonPause, ButtonStop, ButtonReload, ButtonSave, ButtonDefault, DeviceWidget, AvailableDevices, RoomWidget, system_loc_to_gui_pos, gui_pos_to_system_loc, DimmerSetterWidget, dimmer_ratio_from_mouse_pos, SimTimeWidget, DeviceListWidget, PersonWidget, DayTimeWeatherWidget, WindowWidget
 from .gui_config import *
 
@@ -20,7 +20,7 @@ class GUIWindow(pyglet.window.Window):
     ''' Class to define the GUI window, the widgets and text displayed in it and the functions reactign to the user actions (mouse click, input text,...) '''
     def __init__(self, config_path, default_config_path, empty_config_path, saved_config_path, rooms=None):
         super(GUIWindow, self).__init__(WIN_WIDTH, WIN_LENGTH, caption='KNX Simulation Window', resizable=False)
-        from system import configure_system_from_file
+        from tools import configure_system_from_file
         # Configure batch of modules to draw on events (mouse click, moving,...)
         self.__batch = pyglet.graphics.Batch()
         # Create multiple layers to superpose the graphical elements
@@ -383,7 +383,7 @@ class GUIWindow(pyglet.window.Window):
 ### Devices and configuration file management methods ###
     def __add_device_to_simulation(self, room, pos_x, pos_y):
         """ Add a device to the system after user added it via the GUI"""
-        from system.tools import IndividualAddress
+        from system import IndividualAddress, DEV_CLASSES
         new_device_class = self._moving_device.device_class
         area, line, dev_number = [self.__individual_address_default[i] for i in range(3)]#, self.__individual_address_default[1], self.__individual_address_default[2]
         individual_address = IndividualAddress(area, line, dev_number)
@@ -508,12 +508,12 @@ class GUIWindow(pyglet.window.Window):
         self.__room_width_ratio = ROOM_WIDTH / self.room.width
         self.__room_length_ratio = ROOM_LENGTH / self.room.length
 
-        print(" ------- Initialization of the KNX System's GUI representation ------- ")
+        logging.info(" ------- Initialization of the KNX System's GUI representation ------- ")
         for in_room_device in self.room.devices:
             # Supported instances: Button, Dimmer, LED, Heater, AC, Brightness, Thermometer, AirSensor Humidity? CO2? ##TODO
             gui_device = getattr(self.__available_devices, in_room_device.device.class_name.lower())
             pos_x, pos_y = system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.__room_width_ratio, self.__room_length_ratio, self.__room_widget.origin_x, self.__room_widget.origin_y)
-            print(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
+            logging.info(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
             if 'thermometer' in gui_device.label_name:
                 img_neutral = DEVICE_THERMO_NEUTRAL_PATH
             else: 
@@ -595,6 +595,7 @@ class GUIWindow(pyglet.window.Window):
 
     def reload_simulation(self, default_config = False, empty_config = False):
         """ Reload the simulation from initial configuration file """
+        from tools import configure_system_from_file
         
         # Remove the update function from schedule
         pyglet.clock.unschedule(self.room.update_world)
@@ -667,8 +668,9 @@ class GUIWindow(pyglet.window.Window):
             self.__input_label.text = self.__input_label.text[:-1] # Remove last character
         # ENTER to parse the command input by the user and erase it from the text box
         elif symbol == pyglet.window.key.ENTER:
-            from system import user_command_parser
-            user_command_parser(self.__input_label.text, self.room)
+            from tools import user_command_parser
+            if user_command_parser(self.__input_label.text, self.room) is None:
+                pyglet.app.exit() # If user quit the simulation through CLI (q or quit)
             self.__switch_sprite()
             self.__input_label.text = ''
         # CTRL-ESCAPE to end the simulation
@@ -909,7 +911,7 @@ class GUIWindow(pyglet.window.Window):
             self.__display_devices_list(scroll=np.sign(scroll_y))
 
 
-# Cannot be a class method because first argument must be dt, and thus cannot be self.
+# Cannot be a class method because first argument must be dt for scheduling, and thus cannot be self.
 def update_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out): 
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
@@ -918,15 +920,6 @@ def update_window(dt, window, date_time, current_str_simulation_time, weather, t
     window.simtime_widget.simtime_value.text = f"{sim_time}" 
     window.simtime_widget.date_value.text = f"{datetime_str}"
     window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
-    print(f"doing simtime update at {sim_time} \n") #[:-5]
-    ## TODO print out lux at top left of window
+    print(f"World state update at simulation time: {sim_time}", end='\r') #[:-5]
 
-# if __name__ == '__main__':
-#     speed_factor = 180
-#     window = GUIWindow()
-#     start_time = time()
-#     pyglet.clock.schedule_interval(update_window, 1, window, speed_factor, start_time)
-#     pyglet.app.run()
-#
-#     print("The simulation has been ended.\n")
 

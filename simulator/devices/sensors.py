@@ -23,9 +23,10 @@ class Brightness(Sensor):
         super().__init__('Brightness', name, refid, location, default_status, "brightness")
         self.brightness = 0
     
-    def get_dev_info(self):
-        dev_specific_dict = {"brightness":self.brightness}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"brightness":str(round(self.brightness, 2))+" lux"}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 class Thermometer(Sensor):
@@ -34,9 +35,10 @@ class Thermometer(Sensor):
         super().__init__('Thermometer', name, refid, location, default_status, "temperature")
         # DTP
         self.temperature = 0
-    def get_dev_info(self):
-        dev_specific_dict = {"temperature":self.temperature}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"temperature":str(round(self.temperature, 2))+" °C"}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 class HumiditySoil(Sensor):
@@ -44,9 +46,10 @@ class HumiditySoil(Sensor):
     def __init__(self, name, refid, location, default_status):
         super().__init__('HumiditySoil', name, refid, location, default_status, "humiditysoil")
         self.humiditysoil = 10 # arbitrary init of soil humidity
-    def get_dev_info(self):
-        dev_specific_dict = {"humiditysoil":self.humiditysoil}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"humiditysoil":str(round(self.humiditysoil, 2))+" %"}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 class HumidityAir(Sensor):
@@ -54,9 +57,10 @@ class HumidityAir(Sensor):
     def __init__(self, name, refid, location, default_status):
         super().__init__('HumidityAir', name, refid, location, default_status, "humidity")
         self.humidity = 0
-    def get_dev_info(self):
-        dev_specific_dict = {"humidity":self.humidity}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"humidity":str(round(self.humidity, 2))+" %"}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 class CO2Sensor(Sensor):
@@ -64,9 +68,10 @@ class CO2Sensor(Sensor):
     def __init__(self, name, refid, location, default_status):
         super().__init__('CO2Sensor', name, refid, location, default_status, "co2")
         self.co2level = 0
-    def get_dev_info(self):
-        dev_specific_dict = {"co2level":self.co2level}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"co2level":str(round(self.co2level, 2))+" ppm"}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 class AirSensor(Sensor):
@@ -79,9 +84,10 @@ class AirSensor(Sensor):
             self.humidity = None
         if co2_supported:
             self.co2level = None
-    def get_dev_info(self):
-        dev_specific_dict = {"temperature":self.temperature, "humidity":self.humidity, "co2level":self.co2level}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"temperature":str(round(self.temperature, 2))+" °C", "humidity":str(round(self.humidity, 2))+" %", "co2level":str(round(self.co2level, 2))+" ppm"}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 class PresenceSensor(Sensor):
@@ -90,9 +96,10 @@ class PresenceSensor(Sensor):
         super().__init__('PresenceSensor', name, refid, location, default_status, "presence")
         # self.presence = False
         self.state = False
-    def get_dev_info(self):
-        dev_specific_dict = {"presence":self.presence}
-        dev_specific_dict.update(self._dev_basic_dict)
+    def get_dev_info(self, value=False):
+        dev_specific_dict = {"presence":self.state}
+        if not value:
+            dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 # class MovementDetector(Sensor):

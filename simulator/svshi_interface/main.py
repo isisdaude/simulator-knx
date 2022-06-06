@@ -27,7 +27,7 @@ import system.telegrams as sim_t
 class Interface:
 
     def __init__(self, knxbus):
-        from interface.telegram_parser import TelegramParser
+        from svshi_interface.telegram_parser import TelegramParser
         self.sequence_number = 0
         self.__not_acked_telegrams = {}
         self.__sending_queue: queue.Queue[sim_t.Telegram] = queue.Queue()
@@ -156,7 +156,7 @@ class Interface:
 
 def test():
     i = Interface(1)
-    from system.tools import GroupAddress, IndividualAddress
+    from system import GroupAddress, IndividualAddress
 
     ga = GroupAddress("2-levels", 0, 0)
     ia = IndividualAddress(0, 0, 1)

@@ -1,9 +1,9 @@
 import sys
 sys.path.append('..')
 import system.telegrams as sim_t
-import system.tools as sim_addr
+import system.system_tools as sim_addr
 from system.telegrams import HeaterPayload, TempControllerPayload
-from interface.telegram_parser import *
+from svshi_interface.telegram_parser import *
 import pytest
 
 

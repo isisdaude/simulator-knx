@@ -4,7 +4,7 @@ import logging
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""
     def __init__(self, control_field, source_individual_addr, destination_group_addr, payload):
-        from system.tools import IndividualAddress, GroupAddress
+        from system import IndividualAddress, GroupAddress
         self.control_field = control_field
         self.source: IndividualAddress = source_individual_addr
         self.destination: GroupAddress = destination_group_addr

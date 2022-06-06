@@ -14,7 +14,7 @@ class Device(ABC):
     """ Root Class module for KNX Devices (Sensors, Actuators and System devices)
     """
     def __init__(self, class_name, name, refid, individual_addr, default_status, dev_type): #The constructor is also a good place for imposing various checks on attribute values
-        from system import check_device_config
+        from tools import check_device_config
         self.class_name, self.name, self.refid, self.individual_addr, self.status = check_device_config(class_name, name, refid, individual_addr, default_status)
         # dict to prepare data for API to get dev info from room 
         self._dev_basic_dict = {"class_name":self.class_name, "refid":self.refid, "individual_address":self.individual_addr.ia_str, "status":self.status}
