@@ -21,7 +21,8 @@
             "class": "Brightness",
             "refid": "M-0_S1",
             "knx_location": "0.0.5",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           }
         }
       }

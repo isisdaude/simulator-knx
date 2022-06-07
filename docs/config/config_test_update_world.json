@@ -9,13 +9,15 @@
             "class": "Brightness",
             "refid": "M-O_X100",
             "knx_location": "0.0.100",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "airsensor1": {
             "class": "AirSensor",
             "refid": "M-O_X101",
             "knx_location": "0.0.101",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "button1": {
             "class": "Button",

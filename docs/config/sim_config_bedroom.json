@@ -45,13 +45,15 @@
             "class": "Brightness",
             "refid": "M-0_S1",
             "knx_location": "0.0.5",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "brightness2": {
             "class": "Brightness",
             "refid": "M-0_S2",
             "knx_location": "0.0.6",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "heater1": {
             "class": "Heater",
@@ -63,7 +65,8 @@
             "class": "Thermometer",
             "refid": "M-0_T1",
             "knx_location": "0.0.12",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "led4": {
             "class": "LED",
@@ -99,25 +102,29 @@
             "class": "AirSensor",
             "refid": "M-O_X108",
             "knx_location": "0.0.18",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "humiditysoil1": {
             "class": "HumiditySoil",
             "refid": "M-O_X100",
             "knx_location": "0.0.19",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "co2sensor1": {
             "class": "CO2Sensor",
             "refid": "M-O_X100",
             "knx_location": "0.0.20",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "humidityair1": {
             "class": "HumidityAir",
             "refid": "M-O_X100",
             "knx_location": "0.0.21",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           },
           "switch1": {
             "class": "Switch",
@@ -129,7 +136,8 @@
             "class": "PresenceSensor",
             "refid": "M-O_X100",
             "knx_location": "0.0.23",
-            "status": "enabled"
+            "status": "enabled",
+            "send_state_interval":1
           }
         }
       }
