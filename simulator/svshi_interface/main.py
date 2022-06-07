@@ -87,6 +87,7 @@ class Interface:
                 telegram
             )
             print("Received a telegram :\n", sim_telegram)
+            ## TODO log telegrams
 
             knxbus.transmit_telegram(sim_telegram)
 
@@ -149,7 +150,7 @@ class Interface:
                         self.rsock.recv(1)  # Dump the ready mark
                         # Send the data.
                         self.__process_telegram_queue(addr)
-        
+
         main_functions = threading.Thread(target=threaded, args=())
         main_functions.start()
 

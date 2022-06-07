@@ -28,6 +28,14 @@ class Brightness(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    
+    def send_state(self):
+        from system import Telegram, GroupAddress, FloatPayload
+        if self.interface is not None:
+            # ga = GroupAddress('3-levels', 0, 0, 3)
+            payload = FloatPayload(self.brightness)
+            telegram = Telegram(False, self.individual_addr, self.group_addresses[0], payload)
+            self.interface.add_to_sending_queue([telegram])
 
 class Thermometer(Sensor):
     """Concrete class to represent a thermometer"""
@@ -40,6 +48,13 @@ class Thermometer(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    def send_state(self):
+        from system import Telegram, GroupAddress, FloatPayload
+        if self.interface is not None:
+            # ga = GroupAddress('3-levels', 0, 0, 3)
+            payload = FloatPayload(self.temperature)
+            telegram = Telegram(False, self.individual_addr, self.group_addresses[0], payload)
+            self.interface.add_to_sending_queue([telegram])
 
 class HumiditySoil(Sensor):
     """Concrete class to represent a Humidity sensor"""
@@ -60,6 +75,8 @@ class HumiditySoil(Sensor):
         else:
             self.humiditysoil = value
             return 1
+    def send_state(self):
+        return
 
 class HumidityAir(Sensor):
     """Concrete class to represent a Humidity sensor"""
@@ -71,6 +88,8 @@ class HumidityAir(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    def send_state(self):
+        return
 
 class CO2Sensor(Sensor):
     """Concrete class to represent a CO2 Sensor"""
@@ -82,6 +101,8 @@ class CO2Sensor(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    def send_state(self):
+        return
 
 class AirSensor(Sensor):
     """Concrete class to represent am Air Sensor: CO2, Humidity and/or Temperature"""
@@ -98,6 +119,8 @@ class AirSensor(Sensor):
         if not value:
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
+    def send_state(self):
+        return
 
 class PresenceSensor(Sensor):
     """Concrete class to represent a Presence Detector"""
@@ -118,6 +141,8 @@ class PresenceSensor(Sensor):
         else:
             self.state = value_bool
             return 1
+    def send_state(self):
+        return
 
 # class MovementDetector(Sensor):
 #     """Concrete class to represent a CO2 Sensor"""

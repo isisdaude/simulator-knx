@@ -166,6 +166,7 @@ class AmbientTemperature:
         for sensor in self.__temp_sensors: # temp sensors are in room devices
             # print(f"sensor {sensor.device.name} temp= {round(self.temperature, 2)}")
             sensor.device.temperature = self.__temperature_in
+            sensor.device.send_state()
             temperature_levels.append((sensor.name, sensor.device.temperature))
         # for controller in self.__temp_controllers:#
         #     controller.temperature = self.temperature ##TODO: notify the bus with a telegram to heat sources

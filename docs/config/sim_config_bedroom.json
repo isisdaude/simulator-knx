@@ -137,11 +137,15 @@
     "group_address_style": "3-levels",
     "group_addresses": [
       {
-        "address": "1/1/1",
+        "address": "0/0/2",
         "group_devices": [
-          "led1",
-          "led2",
           "button1"
+        ]
+      },
+      {
+        "address": "0/0/1",
+        "group_devices": [
+          "led1"
         ]
       },
       {
@@ -168,8 +172,13 @@
       {
         "address": "2/2/3",
         "group_devices": [
-          "button3",
-          "led1"
+          "button3"
+        ]
+      },
+      {
+        "address": "0/0/3",
+        "group_devices": [
+          "thermometer1"
         ]
       },
       {
@@ -190,7 +199,7 @@
     "outside_co2": 300,
     "inside_co2": 800.0,
     "datetime": "today",
-    "weather": "clear",
+    "weather": "dark",
     "number_of_rooms": 1,
     "rooms": {
       "room1": {

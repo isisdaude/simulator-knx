@@ -21,7 +21,7 @@ class TelegramParser:
         self.group_address_to_payload: Dict[str,
                                             sim_t.Payload] = group_address_to_payload
         self.payload_to_dpt: Dict[sim_t.Payload, Union[DPTBinary, DPTArray]] = {
-            sim_t.HeaterPayload: DPTArray,
+            sim_t.FloatPayload: DPTArray,
             sim_t.BinaryPayload: DPTBinary
         }
 
@@ -95,10 +95,10 @@ class TelegramParser:
         #     dpt = self.payload_to_dpt.get(sim_t.ButtonPayload)
         #     value = payload.state
 
-        elif isinstance(payload, sim_t.HeaterPayload):
-            dpt = self.payload_to_dpt.get(sim_t.HeaterPayload)
+        elif isinstance(payload, sim_t.FloatPayload):
+            dpt = self.payload_to_dpt.get(sim_t.FloatPayload)
             decoder = DPT2ByteFloat()
-            value = decoder.to_knx(payload.max_power)
+            value = decoder.to_knx(payload.content)
 
 
         if dpt != None and value != None:
@@ -123,17 +123,17 @@ class TelegramParser:
             return None
 
 def main():
-    # from system.telegrams import HeaterPayload, BinaryPayload
-    from system import GroupAddress, IndividualAddress, HeaterPayload, BinaryPayload
+    # from system.telegrams import FloatPayload, BinaryPayload
+    from system import GroupAddress, IndividualAddress, FloatPayload, BinaryPayload
 
     group_address_to_payload_example = {
-        '0/0': BinaryPayload,
+        '0/0/0': FloatPayload,
     }
 
     parser = TelegramParser(group_address_to_payload_example)
-    ga = GroupAddress('2-levels', 0,0)
+    ga = GroupAddress('3-levels', 0,0,0)
     ia = IndividualAddress(0,0,1)
-    test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
+    test_sim = sim_t.Telegram(0, ia, ga, sim_t.FloatPayload(3.2))
     print(test_sim)
     knx_t = parser.from_simulator_telegram(test_sim)
 

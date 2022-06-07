@@ -71,7 +71,7 @@ class FunctionalModule(Device, ABC):
     # state is not for all functional module as it could be possible to implement a temperature controller with more complex state than button and dimmer
     @abstractmethod # must be implemented independantly for each particular functional module device
     def user_input(self):
-        """ Interpret the user input (set button ON/OFF, set temperature,...)"""
+        """ Interpret the user input (set button ON/OFF, set temperature,...) and send telegram"""
 
     # should be an abstract method
     def receive_telegram(self, telegram):
@@ -81,6 +81,12 @@ class FunctionalModule(Device, ABC):
 class Sensor(Device, ABC):
     def __init__(self, class_name, name, refid, individual_addr, default_status, sensor_type):
         super().__init__(class_name, name, refid, individual_addr, default_status, "sensor")
+        self.interface = None
+    @abstractmethod
+    def send_state(self):
+        """ Send periodically its state to external interface (svshi)"""
+  
+
 
 
 class Actuator(Device, ABC):

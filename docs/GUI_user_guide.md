@@ -6,7 +6,9 @@
 - Stop [CTRL+ESCAPE] : Stop the simulation and terminate the program
 - Reload [CTRL+R] : Reload the simulation from the initial config file (or None if None was given)
 - Save : Save the current system configuration (devices, their location and group addresses) to a JSON file
-- Default : - LEFT click : reload with a default config (~3 devices) - RIGHT click : reload with an empty config (no devices)
+- Default :
+  - LEFT click : reload with a default config (~3 devices)
+  - RIGHT click : reload with an empty config (no devices)
 
 ## Command Box:
 

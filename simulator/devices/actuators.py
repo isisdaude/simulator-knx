@@ -2,7 +2,7 @@
 Some class definitions for the simulated KNX actuators.
 """
 
-from system.telegrams import HeaterPayload, Payload, Telegram, BinaryPayload, DimmerPayload
+from system.telegrams import FloatPayload, Payload, Telegram, BinaryPayload, DimmerPayload
 from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 import sys, logging
@@ -28,17 +28,19 @@ class LED(LightActuator):
 
     def update_state(self, telegram):
         if telegram.control_field == True: # Control field bit
-
+            print(f"telegram received: {telegram}")
             if isinstance(telegram.payload, BinaryPayload):
+                print("binary telegram")
                 self.state = telegram.payload.content
 
             elif isinstance(telegram.payload, DimmerPayload):
+                print("dimmer telegram")
                 self.state = telegram.payload.content
                 if self.state:
                     self.state_ratio = telegram.payload.state_ratio
 
-            self.__str_state = 'ON' if self.state else 'OFF'
-            logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
+                self.__str_state = 'ON' if self.state else 'OFF'
+                logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
     
     def effective_lumen(self):
         # Lumen quantity rationized with the state ratio (% of source's max lumens)

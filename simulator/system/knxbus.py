@@ -81,17 +81,17 @@ class KNXBus:
     # notifier is a functional module (e.g. button)
     def transmit_telegram(self, telegram):
         '''Transmits a telegram through the bus'''
-        # print("telegram in transmission")
-        # print(telegram)
+        print("knx_bus: telegram in transmission")
+        print(telegram)
         for ga_bus in self.__ga_buses:
-            # print(f"ga_bus : {ga_bus.group_address}")
-            # print(f"telegram has attr destination : {hasattr(telegram, 'destination')}")
+            print(f"ga_bus : {ga_bus.group_address}")
+            # print(f"telegram has attr destination : {hasattr(telegram, 'destination')}, dest:{telegram.destination}")
             if telegram.destination == ga_bus.group_address:
                 # Sending to external applications
                 # self.communication_interface.add_telegram_to_send(telegram)
                 # TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators:  # loop on actuator linked to this group address
-                    # print(f"actuator: {actuator.name}")
+                    print(f"actuator: {actuator.name}")
                     # print(f"actuator {actuator.name} hasattr update_state : {hasattr(actuator, 'update_state')}")
                     try:
                         actuator.update_state(telegram)

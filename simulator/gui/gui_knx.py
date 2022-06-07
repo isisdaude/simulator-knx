@@ -378,12 +378,13 @@ class GUIWindow(pyglet.window.Window):
                     room_device.sprite.opacity = new_opacity
             except AttributeError: #if no state attribute (e.g. sensor)
                 pass
-    
+
     
 ### Devices and configuration file management methods ###
     def __add_device_to_simulation(self, room, pos_x, pos_y):
         """ Add a device to the system after user added it via the GUI"""
-        from system import IndividualAddress, DEV_CLASSES
+        from system import IndividualAddress
+        from tools import DEV_CLASSES
         new_device_class = self._moving_device.device_class
         area, line, dev_number = [self.__individual_address_default[i] for i in range(3)]#, self.__individual_address_default[1], self.__individual_address_default[2]
         individual_address = IndividualAddress(area, line, dev_number)
@@ -913,7 +914,7 @@ class GUIWindow(pyglet.window.Window):
 
         # Mouse drag w/o modifiers to move 'moving' device 
         else: 
-            print(f"mouse x:{x}, y:{y}")
+            # print(f"mouse x:{x}, y:{y}")
             if buttons & pyglet.window.mouse.LEFT:
                 if hasattr(self, '_moving_device'):
                     self._moving_device.update_position(new_x = x, new_y = y) 

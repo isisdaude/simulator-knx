@@ -31,7 +31,7 @@ async def main():
     xknx.telegram_queue.register_telegram_received_cb(telegram_received_cb)
 
     telegram = Telegram(
-                destination_address=GroupAddress("1/1/56"),
+                destination_address=GroupAddress("1/1/1"),
                 payload=GroupValueWrite(DPTBinary(1)),
             )
     

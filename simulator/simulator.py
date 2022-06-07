@@ -60,7 +60,7 @@ def launch_simulation(argv):
             room.world.time.start_time = start_time
         room1 = rooms[0] 
         try:
-            loop = asyncio.new_event_loop()
+            #loop = asyncio.new_event_loop()
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")

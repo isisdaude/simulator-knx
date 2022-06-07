@@ -56,13 +56,16 @@ class DimmerPayload(BinaryPayload):
     def __str__(self) -> str:
         return f" DimmerPayload: state={self.content} | ratio={self.state_ratio}"
 
-class HeaterPayload(Payload):
-    """Class to represent the payload of a heater, fields are none if unused"""
 
-    def __init__(self, max_power: float):
+    
+
+class FloatPayload(Payload):
+    """Class to represent the payload of a float, fields are none if unused"""
+
+    def __init__(self, value: float):
         super().__init__()
-        self.content: float = max_power
+        self.content: float = value
 
-    def __str__(self) -> str:
-        ## TODO: display a more truthful payload
-        return f"The maximum power of this heater is {self.content}."
+    # def __str__(self) -> str:
+    #     ## TODO: display a more truthful payload
+    #     return f"The maximum power of this heater is {self.content}."

@@ -116,6 +116,7 @@ class Room:
             elif isinstance(device, TemperatureActuator):
                 self.world.ambient_temperature.add_source(in_room_device)
         elif isinstance(device, Sensor):
+            in_room_device.device.interface = self.__interface
             if isinstance(device, Brightness):
                 self.world.ambient_light.add_sensor(in_room_device)
             elif isinstance(device, Thermometer):

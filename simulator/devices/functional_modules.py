@@ -4,7 +4,7 @@ Some class definitions for the simulated KNX functional modules (button, switch,
 
 import logging
 from .device_abstractions import FunctionalModule
-from system.telegrams import BinaryPayload, DimmerPayload, HeaterPayload, Payload, Telegram
+from system.telegrams import BinaryPayload, DimmerPayload, FloatPayload, Payload, Telegram
 
 class Button(FunctionalModule):
     def __init__(self, name, refid, location, default_status):
