@@ -51,21 +51,23 @@ class Interface:
     # INITIALIZATION OF THE CONNECTION #
     def __create_connection(self, xknx: XKNX):
         """Creates a connection between a client and ourselves, with sequence number 0 and individual address 0.0.0"""
-        while True:
-            data, addr = self.sock.recvfrom(1024)
+        # while True:
 
-            if data:
-                print("Address of the sender:", addr)
-                # Initializing the KNX/IP Frame to be sent
-                frame = KNXIPFrame(xknx)
-                frame.from_knx(data)
-                frame.init(KNXIPServiceType.CONNECT_RESPONSE)
-                frame.header.set_length(frame.body)
+        data, addr = self.sock.recvfrom(1024)
 
-                # Sending the response
-                data_to_send = bytes(frame.to_knx())
-                self.sock.sendto(data_to_send, addr)
-                break
+        print("Address of the sender:", addr)
+        # Initializing the KNX/IP Frame to be sent
+        frame = KNXIPFrame(xknx)
+        frame.from_knx(data)
+        frame.init(KNXIPServiceType.CONNECT_RESPONSE)
+        frame.header.set_length(frame.body)
+
+        # Sending the response
+        data_to_send = bytes(frame.to_knx())
+        self.sock.sendto(data_to_send, addr)
+
+        # while True:
+        
         return (frame, addr)
 
     def __create_ack_data(self, frame: KNXIPFrame):
@@ -93,6 +95,27 @@ class Interface:
 
             self.sock.sendto(self.__create_ack_data(frame), addr)
 
+        elif isinstance(frame.body, ConnectionStateRequest):
+            frame.init(KNXIPServiceType.CONNECTIONSTATE_RESPONSE)
+            frame.body.communication_channel_id = 0
+            frame.header.set_length(frame.body)
+            self.sock.sendto(bytes(frame.to_knx()), addr)
+        #     data, addr = self.sock.recvfrom(1024)
+
+        #     frame.from_knx(data)
+        #     if isinstance(frame.body, TunnellingRequest):
+        #         self.sock.sendto(self.__create_ack_data(frame), addr)
+            
+        #     elif isinstance(frame.body, DisconnectRequest):
+        #         frame = KNXIPFrame(xknx)
+        #         frame.from_knx(data)
+        #         frame.init(KNXIPServiceType.DISCONNECT_RESPONSE)
+        #         frame.header.set_length(frame.body)
+
+        #         data_to_send = bytes(frame.to_knx())
+        #         self.sock.sendto(data_to_send, addr)
+        #         break
+
         elif isinstance(frame.body, TunnellingAck):
             self.__not_acked_telegrams.pop(frame.body.sequence_counter, None)
 
@@ -117,8 +140,15 @@ class Interface:
             req.sequence_counter = self.sequence_number
             self.sequence_number += 1
 
+            # Wait to receive the ACK
             sender = sender.init_from_body(req)
             self.sock.sendto(bytes(sender.to_knx()), addr)
+            data, addr = self.sock.recvfrom(1024)
+
+            sender.from_knx(data)
+            if isinstance(sender.body, TunnellingAck):
+                self.__not_acked_telegrams.pop(sender.body.sequence_counter, None)
+            
             self.__not_acked_telegrams[req.sequence_counter] = bytes(sender.to_knx()) # TODO: when do we resend?
 
     # MAIN
@@ -155,14 +185,15 @@ class Interface:
         main_functions.start()
 
 
-def test():
-    i = Interface(1)
-    from system import GroupAddress, IndividualAddress
+# def test():
+#     i = Interface(1)
+#     from system.system_tools import GroupAddress, IndividualAddress
 
-    ga = GroupAddress("2-levels", 0, 0)
-    ia = IndividualAddress(0, 0, 1)
-    test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
-    time.sleep(5)
-    for _ in range(3):
-        i.add_to_sending_queue([test_sim])
+#     ga = GroupAddress("2-levels", 0, 0)
+#     ia = IndividualAddress(0, 0, 1)
+#     test_sim = sim_t.Telegram(0, ia, ga, sim_t.BinaryPayload(True))
+#     time.sleep(5)
+#     for _ in range(3):
+#         i.add_to_sending_queue([test_sim])
         
+# test()
