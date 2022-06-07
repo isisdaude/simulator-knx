@@ -8,7 +8,7 @@
           "led1": {
             "class": "LED",
             "refid": "M-0_L1",
-            "knx_location": "0.0.1",
+            "knx_location": "1.1.1",
             "status": "enabled"
           },
           "led2": {
@@ -20,7 +20,7 @@
           "button1": {
             "class": "Button",
             "refid": "M-0_B1",
-            "knx_location": "0.0.21",
+            "knx_location": "1.1.1",
             "status": "enabled"
           },
           "button2": {
@@ -54,21 +54,15 @@
     "group_address_style": "3-levels",
     "group_addresses": [
       {
-        "address": "0/0/2",
+        "address": "0/0/1",
         "group_devices": [
           "button1"
         ]
       },
       {
-        "address": "0/0/1",
+        "address": "0/0/2",
         "group_devices": [
           "led1"
-        ]
-      },
-      {
-        "address": "0/0/3",
-        "group_devices": [
-          "thermometer1"
         ]
       }
     ]
