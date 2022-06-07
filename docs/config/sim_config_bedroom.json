@@ -207,7 +207,7 @@
     "outside_co2": 300,
     "inside_co2": 800.0,
     "datetime": "today",
-    "weather": "dark",
+    "weather": "overcast",
     "number_of_rooms": 1,
     "rooms": {
       "room1": {

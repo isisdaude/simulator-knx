@@ -261,28 +261,3 @@ def outdoor_light(date_time:datetime, weather:str):
     # print(f"{dawn_datetime}:dawn_datetime, \n{sunrise_datetime}:sunrise_datetime, \n{noon_datetime}:noon_datetime, \n{sunset_datetime}:sunset_datetime, \n{dusk_datetime}:dusk_datetime")
     return lux_out, time_of_day
 
-
-
-
-
-
-
-# """Tools used by the devices to perform update calculations"""
-# # def required_power(desired_temperature=20, volume=1, insulation_state="good"):
-# #     def temp_to_watts(temp):  # Useful watts required to heat 1m3 to temp
-# #         dist = 18 - temp
-# #         return 70 - (dist * 7)/2
-# #     desired_wattage = volume*temp_to_watts(desired_temperature)
-# #     desired_wattage += desired_wattage * \
-# #         INSULATION_TO_CORRECTION_FACTOR[insulation_state]
-# #     return desired_wattage
-
-
-# # def max_temperature_in_room(power, volume=1.0, insulation_state="good"):
-# #     """Maximum reachable temperature for this heater in the specified room"""
-
-# #     def watts_to_temp(watts):
-# #         return ((watts - 70)*2)/7 + 18
-
-# #     watts = power / ((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
-# #     return watts_to_temp(watts)

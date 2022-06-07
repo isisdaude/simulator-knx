@@ -3,6 +3,7 @@ Some class definitions for the simulated KNX actuators.
 """
 
 from system.telegrams import FloatPayload, Payload, Telegram, BinaryPayload, DimmerPayload
+from system.system_tools import  IndividualAddress
 from .device_abstractions import Actuator
 from abc import ABC, abstractclassmethod, abstractmethod
 import sys, logging
@@ -12,7 +13,7 @@ sys.path.append("core")
 class LightActuator(Actuator, ABC):
     """Abstract class to represent light devices"""
 
-    def __init__(self, class_name, name, refid, individual_addr, default_status, state, lumen, beam_angle):
+    def __init__(self, class_name: str, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, state: bool, lumen: float, beam_angle: float):
         super().__init__(class_name, name, refid, individual_addr, default_status, "light", state)
         self.max_lumen = lumen # Luminous flux of device = quantity of visible light emitted from a source per unit of time
         self.beam_angle = beam_angle # angle at which the light is emitted (e.g. 180° for a LED bulb)
@@ -22,11 +23,11 @@ class LED(LightActuator):
     """Concrete class to represent LED lights"""
 
     # state is ON/OFF=True/False
-    def __init__(self, name, refid, individual_addr, default_status, state=False):
+    def __init__(self, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, state: bool=False):
         super().__init__('LED', name, refid, individual_addr, default_status, state, lumen=800, beam_angle=180)
         self.state_ratio = 100 # Percentage of 'amplitude'
 
-    def update_state(self, telegram):
+    def update_state(self, telegram: Telegram):
         if telegram.control_field == True: # Control field bit
             print(f"telegram received: {telegram}")
             if isinstance(telegram.payload, BinaryPayload):
@@ -54,8 +55,7 @@ class LED(LightActuator):
 
 class TemperatureActuator(Actuator, ABC):
     """Abstract class to represent temperature devices"""
-
-    def __init__(self, class_name, name, refid, individual_addr, default_status, actuator_type, state, update_rule, max_power=0):
+    def __init__(self, class_name: str, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, actuator_type, state: bool, update_rule: float, max_power: float=0):
         super().__init__(class_name, name, refid, individual_addr, default_status, actuator_type, state)
         self.update_rule = update_rule
         self.max_power = max_power
@@ -76,8 +76,7 @@ class TemperatureActuator(Actuator, ABC):
 
 class Heater(TemperatureActuator):
     """Concrete class to represent a heating device"""
-
-    def __init__(self, name, refid, individual_addr, default_status, max_power=400, state=False, update_rule=1):
+    def __init__(self, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, max_power: float=400, state: bool=False, update_rule: float=1):
         # Verification of update_rule sign
         try:
             assert update_rule >= 0
@@ -86,25 +85,24 @@ class Heater(TemperatureActuator):
             sys.exit()
         super().__init__('Heater', name, refid, individual_addr, default_status, "heater", state, update_rule, max_power)
         
+    # NOTE: for further improvements :)
+    # def watts_to_temp(self, watts):
+    #     return ((watts - 70)*2)/7 + 18
 
-    def watts_to_temp(self, watts):
-        return ((watts - 70)*2)/7 + 18
+    # def required_power(self, desired_temperature=20, volume=1, insulation_state="good"):
+    #     from system import INSULATION_TO_CORRECTION_FACTOR
+    #     assert desired_temperature >= 10 and desired_temperature <= 40
+    #     desired_wattage = volume*self.temp_to_watts(desired_temperature)
+    #     desired_wattage += desired_wattage*INSULATION_TO_CORRECTION_FACTOR[insulation_state]
+    #     return desired_wattage
 
-    def required_power(self, desired_temperature=20, volume=1, insulation_state="good"):
-        from system import INSULATION_TO_CORRECTION_FACTOR
-        assert desired_temperature >= 10 and desired_temperature <= 40
-        desired_wattage = volume*self.temp_to_watts(desired_temperature)
-        desired_wattage += desired_wattage*INSULATION_TO_CORRECTION_FACTOR[insulation_state]
-        return desired_wattage
+    # def max_temperature_in_room(self, volume=1, insulation_state="good"):
+    #     """Maximum reachable temperature for this heater in the specified room"""
+    #     from system import INSULATION_TO_CORRECTION_FACTOR
+    #     watts = self.power/((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
+    #     return self.watts_to_temp(watts)
 
-    def max_temperature_in_room(self, volume=1, insulation_state="good"):
-        """Maximum reachable temperature for this heater in the specified room"""
-        from system import INSULATION_TO_CORRECTION_FACTOR
-        watts = self.power/((1+INSULATION_TO_CORRECTION_FACTOR[insulation_state])*volume)
-        return self.watts_to_temp(watts)
-
-
-    def update_state(self, telegram):
+    def update_state(self, telegram: Telegram):
          if telegram.control_field == True:  # Control field bit
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
@@ -119,7 +117,7 @@ class Heater(TemperatureActuator):
 class AC(TemperatureActuator):
     """Concrete class to represent a cooling device"""
 
-    def __init__(self, name, refid, individual_addr, default_status, max_power=400, state=False, update_rule=-1):
+    def __init__(self, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, max_power: float=400, state: bool=False, update_rule: float=-1):
         # Verification of update_rule sign
         try:
             assert update_rule <= 0
@@ -128,7 +126,7 @@ class AC(TemperatureActuator):
             sys.exit()
         super().__init__('AC', name, refid, individual_addr, default_status, "ac", state, update_rule, max_power)
 
-    def update_state(self, telegram):
+    def update_state(self, telegram: Telegram):
         if telegram.control_field == True:  # Control field bit
             # If simple binary telegram payload, we turn heater ON at max power
             if isinstance(telegram.payload, BinaryPayload):
@@ -143,10 +141,10 @@ class AC(TemperatureActuator):
 
 class Switch(Actuator):
     """Concrete class to represent a swicth indicator, to be linked to a physical device to turn ON/OFF"""
-    def __init__(self, name, refid, individual_addr, default_status, state=False ):
+    def __init__(self, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, state: bool=False ):
         super().__init__('Switch', name, refid, individual_addr, default_status, 'switch', state)
 
-    def update_state(self, telegram):
+    def update_state(self, telegram: Telegram):
         if isinstance(telegram.payload, BinaryPayload):
             self.state = telegram.payload.content
         if isinstance(telegram.payload, DimmerPayload):
@@ -160,11 +158,11 @@ class Switch(Actuator):
 class IPInterface(Actuator):
     """Concrete class to represent an IP interface to communicate with external interfaces"""
     from svshi_interface.main import Interface
-    def __init__(self, name, refid, individual_addr, default_status, interface: Interface, state=False):
+    def __init__(self, name: str, refid: str, individual_addr: IndividualAddress, default_status: str, interface: Interface, state: bool=False):
         super().__init__('IPInterface', name, refid, individual_addr, default_status, 'ip_interface', state)
         self.interface = interface
 
-    def update_state(self, telegram):
+    def update_state(self, telegram: Telegram):
         # TODO: For the moment, retransmit only Binary Telegrams!
         if isinstance(telegram.payload, BinaryPayload):
             self.interface.add_to_sending_queue([telegram])

@@ -90,10 +90,9 @@ class Interface:
             )
             print("Received a telegram :\n", sim_telegram)
             ## TODO log telegrams
-
-            knxbus.transmit_telegram(sim_telegram)
-
-            self.sock.sendto(self.__create_ack_data(frame), addr)
+            if sim_telegram is not None:
+                knxbus.transmit_telegram(sim_telegram)
+                self.sock.sendto(self.__create_ack_data(frame), addr)
 
         elif isinstance(frame.body, ConnectionStateRequest):
             frame.init(KNXIPServiceType.CONNECTIONSTATE_RESPONSE)
