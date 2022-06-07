@@ -96,6 +96,8 @@ def arguments_parser(argv):
     CONFIG_PATH = "./docs/config/" + FILECONFIG_NAME + ".json"
     # SVSHI mode argument parser
     SVSHI_MODE = options.svshi_mode
+    if SVSHI_MODE:
+        CONFIG_PATH = SVSHI_CONFIG_PATH
     # System dt argument parser
     SYSTEM_DT = options.system_dt
 

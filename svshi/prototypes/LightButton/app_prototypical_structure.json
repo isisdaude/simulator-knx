@@ -1,0 +1,16 @@
+{
+    "permissionLevel": "Privileged",
+    "timer": 0,
+    "files": [
+    ],
+    "devices": [
+      {
+        "name": "led",
+        "deviceType": "switch"
+      },
+      {
+        "name": "button",
+        "deviceType": "binary"
+      }
+    ]
+  }

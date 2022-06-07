@@ -29,6 +29,7 @@ SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
 COMPLETE_FILE_PATH = "./docs/config/sim_config_bedroom.json"
 DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
 EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
+SVSHI_CONFIG_PATH = "./docs/config/svshi_config.json"
 
 
 def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False):

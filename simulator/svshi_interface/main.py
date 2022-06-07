@@ -83,6 +83,19 @@ class Interface:
                 data_to_send = bytes(frame.to_knx())
                 self.sock.sendto(data_to_send, addr)
                 break
+        
+        data, addr = self.sock.recvfrom(1024)
+
+        print("Address of the sender:", addr)
+        # Initializing the KNX/IP Frame to be sent
+        frame = KNXIPFrame(xknx)
+        frame.from_knx(data)
+        frame.init(KNXIPServiceType.CONNECT_RESPONSE)
+        frame.header.set_length(frame.body)
+
+        # Sending the response
+        data_to_send = bytes(frame.to_knx())
+        self.sock.sendto(data_to_send, addr)
 
         return (frame, addr)
 
@@ -143,11 +156,11 @@ class Interface:
             # Wait to receive the ACK
             sender = sender.init_from_body(req)
             self.sock.sendto(bytes(sender.to_knx()), addr)
-            data, addr = self.sock.recvfrom(1024)
+            # data, addr = self.sock.recvfrom(1024)
 
-            sender.from_knx(data)
-            if isinstance(sender.body, TunnellingAck):
-                self.__not_acked_telegrams.pop(sender.body.sequence_counter, None)
+            # sender.from_knx(data)
+            # if isinstance(sender.body, TunnellingAck):
+            #     self.__not_acked_telegrams.pop(sender.body.sequence_counter, None)
             
             self.__not_acked_telegrams[req.sequence_counter] = bytes(sender.to_knx()) # TODO: when do we resend?
 
@@ -176,6 +189,7 @@ class Interface:
                         # Do stuff with data, fill this up with your code
                         self.__receiving_telegrams(frame, data, addr, knxbus)
                     else:
+                        # print("on est dans le coing")
                         # Ready_socket is rsock
                         self.rsock.recv(1)  # Dump the ready mark
                         # Send the data.

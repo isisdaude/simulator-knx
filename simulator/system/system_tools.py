@@ -113,18 +113,8 @@ class GroupAddress:
             return (self.main < ga_to_compare.main)
 
     def __eq__(self, ga_to_compare):
-        if self.main == ga_to_compare.main:
-            if self.encoding_style == 'free':
-                return True
-            else: # if encoding style is 2 or 3-levels
-                if self.sub == ga_to_compare.sub:
-                    if self.encoding_style == '2-levels':
-                        return True
-                    else: # if encoding style is 3-levels
-                        if self.middle == ga_to_compare.middle:
-                            return True
-                        else:
-                            return False
+        return self.__str__() == str(ga_to_compare)
+
 
 
 

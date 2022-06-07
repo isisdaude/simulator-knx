@@ -1,26 +1,14 @@
 {
   "knx": {
-    "number_of_areas": 1,
+    "number_of_areas": 2,
     "area0": {
       "number_of_lines": 1,
       "line0": {
         "devices": {
-          "led1": {
-            "class": "LED",
-            "refid": "M-0_L1",
-            "knx_location": "1.1.1",
-            "status": "enabled"
-          },
           "led2": {
             "class": "LED",
             "refid": "M-0_L2",
             "knx_location": "0.0.2",
-            "status": "enabled"
-          },
-          "button1": {
-            "class": "Button",
-            "refid": "M-0_B1",
-            "knx_location": "1.1.1",
             "status": "enabled"
           },
           "button2": {
@@ -51,18 +39,46 @@
         }
       }
     },
+    "area1":{
+      "number_of_lines": 2,
+      "line0":{
+        "devices": {}
+      },
+      "line1": {
+        "devices": {
+          "led1": {
+            "class": "LED",
+            "refid": "M-0_L1",
+            "knx_location": "1.1.2",
+            "status": "enabled"
+          },
+          "button1": {
+            "class": "Button",
+            "refid": "M-0_B1",
+            "knx_location": "1.1.1",
+            "status": "enabled"
+          }
+        }
+      }
+    },
     "group_address_style": "3-levels",
     "group_addresses": [
       {
-        "address": "0/0/1",
+        "address": "0/0/2",
         "group_devices": [
           "button1"
         ]
       },
       {
-        "address": "0/0/2",
+        "address": "0/0/1",
         "group_devices": [
           "led1"
+        ]
+      },
+      {
+        "address": "0/0/3",
+        "group_devices": [
+          "thermometer1"
         ]
       }
     ]

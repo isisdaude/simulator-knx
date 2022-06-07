@@ -50,7 +50,7 @@ class Thermometer(Sensor):
         return dev_specific_dict
     def send_state(self):
         from system import Telegram, GroupAddress, FloatPayload
-        if self.interface is not None:
+        if self.interface is not None and self.group_addresses:
             # ga = GroupAddress('3-levels', 0, 0, 3)
             payload = FloatPayload(self.temperature)
             telegram = Telegram(False, self.individual_addr, self.group_addresses[0], payload)

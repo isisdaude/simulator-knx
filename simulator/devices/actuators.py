@@ -28,20 +28,21 @@ class LED(LightActuator):
         self.state_ratio = 100 # Percentage of 'amplitude'
 
     def update_state(self, telegram: Telegram):
-        if telegram.control_field == True: # Control field bit
-            print(f"telegram received: {telegram}")
-            if isinstance(telegram.payload, BinaryPayload):
-                print("binary telegram")
-                self.state = telegram.payload.content
+        # if telegram.control_field == True: # Control field bit
+        # print(f"telegram received: {telegram}")
+        # print("receive telegram led")
+        if isinstance(telegram.payload, BinaryPayload):
+            # print("binary telegram")
+            self.state = telegram.payload.content
 
-            elif isinstance(telegram.payload, DimmerPayload):
-                print("dimmer telegram")
-                self.state = telegram.payload.content
-                if self.state:
-                    self.state_ratio = telegram.payload.state_ratio
+        elif isinstance(telegram.payload, DimmerPayload):
+            # print("dimmer telegram")
+            self.state = telegram.payload.content
+            if self.state:
+                self.state_ratio = telegram.payload.state_ratio
 
-                self.__str_state = 'ON' if self.state else 'OFF'
-                logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
+            self.__str_state = 'ON' if self.state else 'OFF'
+            logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
     
     def effective_lumen(self):
         # Lumen quantity rationized with the state ratio (% of source's max lumens)
@@ -103,14 +104,14 @@ class Heater(TemperatureActuator):
     #     return self.watts_to_temp(watts)
 
     def update_state(self, telegram: Telegram):
-         if telegram.control_field == True:  # Control field bit
-            # If simple binary telegram payload, we turn heater ON at max power
-            if isinstance(telegram.payload, BinaryPayload):
-                self.state = telegram.payload.content
-            if isinstance(telegram.payload, DimmerPayload):
-                self.state = telegram.payload.content
-                if self.state:
-                    self.state_ratio = telegram.payload.state_ratio
+        #  if telegram.control_field == True:  # Control field bit
+        # If simple binary telegram payload, we turn heater ON at max power
+        if isinstance(telegram.payload, BinaryPayload):
+            self.state = telegram.payload.content
+        if isinstance(telegram.payload, DimmerPayload):
+            self.state = telegram.payload.content
+            if self.state:
+                self.state_ratio = telegram.payload.state_ratio
 
 
 
@@ -127,14 +128,14 @@ class AC(TemperatureActuator):
         super().__init__('AC', name, refid, individual_addr, default_status, "ac", state, update_rule, max_power)
 
     def update_state(self, telegram: Telegram):
-        if telegram.control_field == True:  # Control field bit
-            # If simple binary telegram payload, we turn heater ON at max power
-            if isinstance(telegram.payload, BinaryPayload):
-                self.state = telegram.payload.content
-            if isinstance(telegram.payload, DimmerPayload):
-                self.state = telegram.payload.content
-                if self.state:
-                    self.state_ratio = telegram.payload.state_ratio
+        # if telegram.control_field == True:  # Control field bit
+        # If simple binary telegram payload, we turn heater ON at max power
+        if isinstance(telegram.payload, BinaryPayload):
+            self.state = telegram.payload.content
+        if isinstance(telegram.payload, DimmerPayload):
+            self.state = telegram.payload.content
+            if self.state:
+                self.state_ratio = telegram.payload.state_ratio
     
 
 
@@ -164,8 +165,11 @@ class IPInterface(Actuator):
 
     def update_state(self, telegram: Telegram):
         # TODO: For the moment, retransmit only Binary Telegrams!
+        # print(f"update state IP interface, telegram: {telegram}")
         if isinstance(telegram.payload, BinaryPayload):
+            # print("Binary payload")
             self.interface.add_to_sending_queue([telegram])
+        ### TODO float payload
 
     def get_dev_info(self):
         dev_specific_dict = {"state":self.state}

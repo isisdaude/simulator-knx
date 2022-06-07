@@ -50,7 +50,7 @@ class TelegramParser:
         if telegram.destination_address.levels == self.__sim_encoding_to_xknx.get('free'):
             address = GroupAddress('free', ga_split[0])
         elif telegram.destination_address.levels == self.__sim_encoding_to_xknx.get('2-levels'):
-            address = GroupAddress('2-levels', ga_split[0], 0, ga_split[1])
+            address = GroupAddress('2-levels', ga_split[0], sub=ga_split[1])
         else:
             address = GroupAddress('3-levels', ga_split[0], ga_split[1], ga_split[2])
 
