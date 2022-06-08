@@ -5,4 +5,4 @@ from simulator import launch_simulation #simulator.
 
 
 if __name__ == "__main__":
-    launch_simulation()
+    launch_simulation(sys.argv)

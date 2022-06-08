@@ -112,12 +112,11 @@ class TelegramParser:
      
             ga = GroupAddress(address)
             ga.levels = self.__sim_encoding_to_xknx.get(encoding)
- 
+            # print(f"source telegram: {telegram.source}, dest: {telegram.destination}")
             telegram = Telegram(source_address=IndividualAddress(f"{telegram.source.area}.{telegram.source.device}.{telegram.source.line}"),
                 destination_address=ga,
                 payload=GroupValueWrite(write_content)
             )
-
             return telegram
         else:    
             return None

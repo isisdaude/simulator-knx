@@ -1,10 +1,10 @@
 """
-Gather the abstract class definitions for the simulated KNX devices.
+Definition of the abstract classes Device, FunctionalModule, Sensor and Actuator to create simulated KNX devices instances.
 """
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging, sys
+import sys
+import logging
 from abc import ABC, abstractmethod
-# from system import Telegram  #IndividualAddress, GroupAddress,
 
 FUNCTIONAL_MODULE_TYPES = ["button", "switch", "dimmer"]
 SENSOR_TYPES = ["button", "brightness", "temperature", "humidity", "co2"]

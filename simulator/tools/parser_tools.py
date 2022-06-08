@@ -68,6 +68,10 @@ def arguments_parser(argv):
     parser.add_argument("-s", "--svshi-mode",
                         action='store_true', # svshi_mode=True if option, False if no -s option
                         help=("Specifies that SVSHI will be used (-s option) or not (no option)."))
+    # Telegram logging mode argument definition
+    parser.add_argument("-t", "--telegram-logging",
+                        action='store_true', # telegram_logging=True if option, False if no -t option
+                        help=("Specifies that the telegrams sent and received should be logged in a file located in logs/ folder"))
 
 
     # Get the arguments from command line
@@ -84,18 +88,19 @@ def arguments_parser(argv):
     COMMAND_MODE = options.command_mode.lower()
     # Script File Name argument parser
     FILESCRIPT_NAME = options.filescript_name
-    SCRIPT_PATH = "./docs/scripts/" + FILESCRIPT_NAME + ".txt"
+    SCRIPT_PATH = "./scripts/" + FILESCRIPT_NAME + ".txt"
     # Config mode argument parser
     CONFIG_MODE = options.config_mode.lower()
     # Config File Name argument parser
     FILECONFIG_NAME = options.fileconfig_name
-    CONFIG_PATH = "./docs/config/" + FILECONFIG_NAME + ".json"
+    CONFIG_PATH = "./config/" + FILECONFIG_NAME + ".json"
     # SVSHI mode argument parser
     SVSHI_MODE = options.svshi_mode
     # if SVSHI_MODE:
     #     CONFIG_PATH = SVSHI_CONFIG_PATH
+    TELEGRAM_LOGGING = options.telegram_logging
 
-    return INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE
+    return INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, TELEGRAM_LOGGING
 
 
 

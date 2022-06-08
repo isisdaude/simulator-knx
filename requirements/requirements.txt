@@ -4,6 +4,7 @@ aioconsole==0.4.1
 aioreactive==0.15.0
 apscheduler==3.9.1
 pynput==1.7.6
+astral==2.2
 
 pyglet==1.5.23
 xknx==0.19.2
@@ -16,5 +17,3 @@ pytest==7.1.1
 pytest-asyncio==0.18.2
 pytest-mock==3.7.0
 pytest-cov==3.0.0
-
-astral==2.2

@@ -291,7 +291,7 @@ def check_location(bounds, x, y, z):
         new_y = (max_y if max_y<new_y else new_y)
         new_z = (min_z if z<min_z else z)
         new_z = (max_z if max_z<new_z else new_z)
-        logging.info(f"The device's location is replaced in the rooms's bounds: '({x},{y},{z})' -> '({new_x},{new_y},{new_z})'")
+        logging.info(f"The device's location is replaced in the 's bounds: '({x},{y},{z})' -> '({new_x},{new_y},{new_z})'")
         return new_x, new_y, new_z
     else:
         return x, y, z

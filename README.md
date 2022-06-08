@@ -14,3 +14,5 @@ Config file json:
 
 launch pytest command
 pytest -q --log-cli-level error simulator/tests/
+
+Code conventions: black formatting (for alignement mainly), PEP8(spaces and names conventions) and PEP257 (docstring)

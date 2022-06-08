@@ -26,13 +26,13 @@ DEV_CONFIG      = 'dev'     # configuration from python function
 # Path to save system configuration when modified using the GUI
 SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
 # Config file paths
-COMPLETE_FILE_PATH = "./docs/config/sim_config_bedroom.json"
-DEFAULT_CONFIG_PATH = "./docs/config/default_config.json"
-EMPTY_CONFIG_PATH = "./docs/config/empty_config.json"
-SVSHI_CONFIG_PATH = "./docs/config/svshi_config.json"
+COMPLETE_FILE_PATH = "./config/sim_config_bedroom.json"
+DEFAULT_CONFIG_PATH = "./config/default_config.json"
+EMPTY_CONFIG_PATH = "./config/empty_config.json"
+SVSHI_CONFIG_PATH = "./config/svshi_config.json"
 
 
-def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False):
+def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False, telegram_logging=False):
     from system import Room
     system_dt=1
     # Declaration of sensors, actuators and functional modules
@@ -51,7 +51,8 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     room_insulation = 'good'
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
-                room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode, svshi_mode=svshi_mode) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+                room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode, 
+                svshi_mode=svshi_mode, telegram_logging=telegram_logging) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
     # room1.__.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -69,9 +70,9 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     room1.attach(led1, ga1) # Actuator is linked to the group address ga1 through the KNXBus
     room1.attach(button1, ga1)
     # return the room object to access all elements of the room (world included)
-    return [room1], system_dt
+    return room1, system_dt
 
-def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, svshi_mode=False):
+def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, svshi_mode=False, telegram_logging=False):
     from system import Room
     with open(config_file_path, "r") as file:
         config_dict = json.load(file) ###
@@ -120,7 +121,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
                     room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
-                    datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode)
+                    datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode, telegram_logging=telegram_logging)
         windows = []
         for window in room_config["windows"]:
             wall = room_config["windows"][window]["wall"]
@@ -203,4 +204,4 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                             room.attach(dev_object, group_address)
     else:
         logging.info("No group address is defined in config file.")
-    return rooms, system_dt
+    return rooms[0], system_dt # only one room

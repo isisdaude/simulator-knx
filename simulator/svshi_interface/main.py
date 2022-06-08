@@ -1,5 +1,7 @@
 import sys
+import os
 import time
+from datetime import datetime
 from typing import List
 
 sys.path.append(".")
@@ -28,8 +30,14 @@ import system.telegrams as sim_t
 
 class Interface:
 
-    def __init__(self, knxbus):
+    def __init__(self, knxbus, telegram_logging: bool):
         from svshi_interface.telegram_parser import TelegramParser
+        self.__telegram_logging = telegram_logging
+        self.__last_tel_logged = None
+        if self.__telegram_logging:
+            logging_path = "./logs/" + datetime.now().strftime("%d-%m-%Y_%H%M")
+            os.mkdir(logging_path)
+            self.__logging_file_path = logging_path + "/telegram_logs.txt" # path to txt file for telegram logs
         self.sequence_number = 0
         self.__not_acked_telegrams = {}
         self.__sending_queue: queue.Queue[sim_t.Telegram] = queue.Queue()
@@ -57,7 +65,7 @@ class Interface:
         #while True:
         data, addr = self.sock.recvfrom(1024)
 
-        print("Address of the sender:", addr)
+        print("Address of SVSHI program:", addr)
         # Initializing the KNX/IP Frame to be sent
         frame = KNXIPFrame(xknx)
         frame.from_knx(data)
@@ -88,7 +96,6 @@ class Interface:
         
         data, addr = self.sock.recvfrom(1024)
 
-        # print("Address of the sender:", addr)
         # Initializing the KNX/IP Frame to be sent
         frame = KNXIPFrame(xknx)
         frame.from_knx(data)
@@ -120,6 +127,12 @@ class Interface:
                 telegram
             )
             print("Received a telegram :\n", sim_telegram)
+            if self.__telegram_logging:
+                with open(self.__logging_file_path, "a+") as log_file:
+                    if self.__last_tel_logged is None or self.__last_tel_logged == 'sent':
+                        log_file.write("\n++++ Telegram received ++++")
+                        self.__last_tel_logged = 'recv'
+                    log_file.write(f"\nSVSHI -> Simulator: {telegram}")
             ## TODO log telegrams
             if sim_telegram is not None:
                 knxbus.transmit_telegram(sim_telegram)
@@ -156,12 +169,18 @@ class Interface:
             sender = KNXIPFrame(self.xknx)
             cemif = CEMIFrame(self.xknx).init_from_telegram(self.xknx, teleg)
             req = TunnellingRequest(self.xknx, cemi=cemif)
-            req.sequence_counter = self.sequence_number
-            self.sequence_number += 1
+            # req.sequence_counter = self.sequence_number
+            # self.sequence_number += 1
 
             # Wait to receive the ACK
             sender = sender.init_from_body(req)
             self.sock.sendto(bytes(sender.to_knx()), addr)
+            if self.__telegram_logging:
+                with open(self.__logging_file_path, "a+") as log_file:
+                    if self.__last_tel_logged is None or self.__last_tel_logged == 'recv':
+                        log_file.write("\n---- Telegram sent ----")
+                        self.__last_tel_logged = 'sent'
+                    log_file.write(f"\nSimulator -> SVSHI: {teleg}")
             # data, addr = self.sock.recvfrom(1024)
 
             # sender.from_knx(data)

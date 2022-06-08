@@ -1,4 +1,4 @@
-# __init__.py
+# __init__.py for devices package
 from .device_abstractions import *
 from .actuators import *
 from .sensors import *

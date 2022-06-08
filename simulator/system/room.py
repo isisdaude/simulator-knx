@@ -1,5 +1,5 @@
 """
-Some class definitions for the rooms contained in the system
+Some class definitions for the room(s) contained in the system
 """
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 import logging, sys
@@ -73,7 +73,7 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False, svshi_mode=False): # system_dt is delta t in seconds between updates # TODO script mode remove print telegrams
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False, svshi_mode=False, telegram_logging=False): # system_dt is delta t in seconds between updates # TODO script mode remove print telegrams
         self.__test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
@@ -91,11 +91,12 @@ class Room:
         
         """if SVSHI mode activated, waits for a connection and starts the communication"""
         self.svshi_mode = svshi_mode
+        self.telegram_logging = telegram_logging
         if self.svshi_mode:
             from svshi_interface.main import Interface
             from devices.actuators import IPInterface
             from system import IndividualAddress
-            self.__interface = Interface(self.knxbus)
+            self.__interface = Interface(self.knxbus, self.telegram_logging)
             self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
 
 
@@ -215,22 +216,7 @@ class Room:
             room_dict['devices'].append(ir_dev.name)
         return room_dict
 
-    # def __str__(self): # TODO: write str representation of room
-        # str_repr =  f"# {self.name} is a room of dimensions {self.width} x {self.length} m2 and {self.height}m of height with devices:\n"
-        # for room_device in self.devices:
-        #     str_repr += f"-> {room_device.name} at location ({room_device.get_x()}, {room_device.get_y()})"
-        #     if room_device.type == Actuator:
-        #         str_repr += "ON" if room_device.device.state else "OFF"
-        #         str_repr += f" is {room_device.device.state}"
-        #     str_repr += "\n"
-        # return str_repr
-
     def __repr__(self):
         return f"Room {self.name}"
     
 
-
-
-
-# class System:
-#     pass #TODO: further in time, should be the class used for instantiation, should contain list of rooms + a world so that it is common to all rooms

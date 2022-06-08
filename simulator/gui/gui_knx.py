@@ -19,7 +19,7 @@ from .gui_config import *
 
 class GUIWindow(pyglet.window.Window):
     ''' Class to define the GUI window, the widgets and text displayed in it and the functions reactign to the user actions (mouse click, input text,...) '''
-    def __init__(self, config_path, default_config_path, empty_config_path, saved_config_path, rooms=None):
+    def __init__(self, config_path, default_config_path, empty_config_path, saved_config_path, room=None, svshi_mode=False, telegram_logging=False):
         super(GUIWindow, self).__init__(WIN_WIDTH, WIN_LENGTH, caption='KNX Simulation Window', resizable=False)
         from tools import configure_system_from_file
         # Configure batch of modules to draw on events (mouse click, moving,...)
@@ -34,12 +34,15 @@ class GUIWindow(pyglet.window.Window):
         self.__DEFAULT_CONFIG_PATH = default_config_path
         self.__EMPTY_CONFIG_PATH = empty_config_path
         self.SAVED_CONFIG_PATH = saved_config_path + "saved_config_" # used by Save Button
+
+        self.__svshi_mode = svshi_mode
+        self.__telegram_logging = telegram_logging
         # Room object to represent the KNX System
         try:
-            self.room = rooms[0]
+            self.room = room
         except TypeError:
-            logging.info("No room is defined, the rooms default characteristics are applied")
-            self.room = configure_system_from_file(self.__DEFAULT_CONFIG_PATH)
+            logging.info("No room is defined, the room's default characteristics are applied")
+            self.room = configure_system_from_file(self.__DEFAULT_CONFIG_PATH, svshi_mode=self.__svshi_mode, telegram_logging=self.__telegram_logging)
 
         # Array to store the devices added to the room (e.g., by dragging them in)
         self.__room_devices : List[DeviceWidget] = []  
@@ -631,12 +634,10 @@ class GUIWindow(pyglet.window.Window):
             config_path = self.__EMPTY_CONFIG_PATH
         else:
             config_path = self.__CONFIG_PATH
-        rooms, system_dt = configure_system_from_file(config_path) 
-        self.room = rooms[0] # only one room for now
+        self.room, self.__SYSTEM_DT = configure_system_from_file(config_path, self.__svshi_mode, self.__telegram_logging) 
         # re init of day time and weather
         self.daytimeweather_widget = DayTimeWeatherWidget(TIMEWEATHER_POS[0], TIMEWEATHER_POS[1], self.__batch, group_box=self.__background, group_daytime=self.__middleground, group_weather=self.__foreground, temp_out=self.room.world.ambient_temperature.temperature_out, hum_out=self.room.world.ambient_humidity.humidity_out, co2_out=self.room.world.ambient_co2.co2_out )
         self.room.world.time.start_time = time()
-        self.__SYSTEM_DT = system_dt
         self.initialize_system(save_config=True, config_path = config_path, system_dt=self.__SYSTEM_DT)
 
 

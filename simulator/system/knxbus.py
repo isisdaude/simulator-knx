@@ -86,7 +86,7 @@ class KNXBus:
                 #     functional_module.function_to_call(telegram)
                 # for functional in ga_bus.functional_modules:
                 #     functional.function_to_call(telegram)
-        
+
 
     def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
         from system.telegrams import BinaryPayload

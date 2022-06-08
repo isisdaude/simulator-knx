@@ -34,7 +34,7 @@ from tools.config_tools import * # GUI_MODE, CLI_INT_MODE, SAVED_CONFIG_PATH, ..
 
 def launch_simulation(argv):
     # Parser CLI arguments given by the user when launching the program
-    INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE = tools.arguments_parser(argv)
+    INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, TELEGRAM_LOGGING = tools.arguments_parser(argv)
     
     # System configuration from function configure_system
     if CONFIG_MODE == DEV_CONFIG:
@@ -42,23 +42,21 @@ def launch_simulation(argv):
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
             if tools.check_simulation_speed_factor(simulation_speed_factor):
                 break
-        rooms, system_dt = tools.configure_system(simulation_speed_factor, svshi_mode=SVSHI_MODE)
+        room1, system_dt = tools.configure_system(simulation_speed_factor, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING)
     # Default, empty or file config
     else:
         CONFIG_PATH = DEFAULT_CONFIG_PATH if CONFIG_MODE == DEFAULT_CONFIG else CONFIG_PATH
         CONFIG_PATH = EMPTY_CONFIG_PATH if CONFIG_MODE == EMPTY_CONFIG else CONFIG_PATH
-        rooms, system_dt = tools.configure_system_from_file(CONFIG_PATH, svshi_mode=SVSHI_MODE)
+        room1, system_dt = tools.configure_system_from_file(CONFIG_PATH, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING)
 
 
     # GUI interface with the user
     if INTERFACE_MODE == GUI_MODE:
-        window = gui.GUIWindow(CONFIG_PATH, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, rooms) #CONFIG_PATH can be a normal file, default or empty
+        window = gui.GUIWindow(CONFIG_PATH, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, room1, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING) #CONFIG_PATH can be a normal file, default or empty
         window.initialize_system(save_config=True, system_dt=system_dt) #system_dt is delta time for scheduling update_world
         print("\n>>> The simulation is started in Graphical User Interface Mode <<<\n")
         start_time = time.time()
-        for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
-            room.world.time.start_time = start_time
-        room1 = rooms[0] 
+        room1.world.time.start_time = start_time 
         try:
             #loop = asyncio.new_event_loop()
             pyglet.app.run()
@@ -69,11 +67,9 @@ def launch_simulation(argv):
 
     # Terminal interface with the user (no visual feedback)
     elif INTERFACE_MODE == CLI_INT_MODE: # run the simulation without the GUI window
-        # Configure the start_time attribute of rooms' Time object
+        # Configure the start_time attribute of room's Time object
         start_time = time.time()
-        for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
-            room.world.time.start_time = start_time
-        room1 = rooms[0]
+        room1.world.time.start_time = start_time
         room1.world.time.scheduler_init()
         room1.world.time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object for scheduling
         room1.world.time.scheduler_start()
