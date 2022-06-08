@@ -8,6 +8,7 @@ import json
 from time import time, sleep
 from datetime import timedelta, datetime
 import numpy as np
+from pynput.keyboard import Key, Controller
 
 
 
@@ -366,7 +367,7 @@ class GUIWindow(pyglet.window.Window):
         for room_device in self.__room_devices:
             try:
                 if room_device.sprite_state != room_device.in_room_device.device.state: # sprite representation is not the same as real state
-                    room_device.sprite_state = not room_device.sprite_state
+                    room_device.sprite_state = room_device.in_room_device.device.state
                     room_device.sprite.delete()
                     if room_device.sprite_state: # device turned ON
                         room_device.sprite = pyglet.sprite.Sprite(room_device.img_ON, x=room_device.origin_x, y=room_device.origin_y, batch=self.__batch, group=self.__foreground)
@@ -378,7 +379,6 @@ class GUIWindow(pyglet.window.Window):
                     room_device.sprite.opacity = new_opacity
             except AttributeError: #if no state attribute (e.g. sensor)
                 pass
-
     
 ### Devices and configuration file management methods ###
     def __add_device_to_simulation(self, room, pos_x, pos_y):
@@ -642,14 +642,16 @@ class GUIWindow(pyglet.window.Window):
         if not self.room.simulation_status:
             logging.info("The simulation is paused")
             self.__sleep_time_till_next_update = pyglet.clock.get_sleep_time(True) # get time before next scheduled update
-            # self.room.world.time.pause_time = time() # save current time to update start_time when
         else:
             if self.__sleep_time_till_next_update:
                 sleep(self.__sleep_time_till_next_update) # waits before updating again when simulation resumed, to respect simulation time in system
             logging.info("The simulation is resumed")
-            # paused_time = time() - self.room.world.time.pause_time
-            # self.room.world.time.start_time += paused_time
-            # delattr(self.room.world.time, 'pause_time')
+        
+    def redraw(self):
+        """ When SVSHI_MODE, device sprites need to be redrawn if telegram takes time to be received"""
+        self.__switch_sprite()
+        self.clear()
+        self.__batch.draw()
 
 
 ## Pyglet 'on-event' methods ##
@@ -666,7 +668,6 @@ class GUIWindow(pyglet.window.Window):
 
 ### Key events ###
     def on_key_press(self, symbol, modifiers):
-        # from system.tools import configure_system_from_file
         ''' Called when any key is pressed:
             Define special action to modify text, save input text or end the simulation'''
         # BACKSPACE to erase a character from the user input textbox
@@ -701,7 +702,6 @@ class GUIWindow(pyglet.window.Window):
                 else:
                     self.__launch_vacuum()
 
-
     def on_key_release(self, symbol, modifiers): 
         ''' Called when a key is released:
             Define actions to take when specific keys are released'''
@@ -716,6 +716,7 @@ class GUIWindow(pyglet.window.Window):
             if hasattr(self, '_dimmer_being_set'):
                 self._dimmer_being_set.delete()
                 delattr(self, '_dimmer_being_set')
+            # self.__switch_sprite() #for shsvi mode
 
 ### Mouse events ###
     def on_mouse_press(self, x, y, button, modifiers):
@@ -724,8 +725,6 @@ class GUIWindow(pyglet.window.Window):
         if button == pyglet.window.mouse.LEFT:
             # LEFT click + SHIFT : activate functional module (e.g. turn button ON/OFF)
             if modifiers & pyglet.window.key.MOD_SHIFT:
-                # from devices.device_abstractions import FunctionalModule
-                # from devices.functional_modules import Button, Dimmer
                 from devices import HumiditySoil, FunctionalModule, Button, Dimmer
                 for room_device in self.__room_devices:
                     # Test if the user clicked on a room device instanciated
@@ -736,8 +735,6 @@ class GUIWindow(pyglet.window.Window):
                                 self._dimmer_being_set = DimmerSetterWidget(room_device)
                                 return
                             elif isinstance(room_device.in_room_device.device, Button):
-                                # user_input() will send the telegram with the appropriate payload on the bus
-                                # print(f"room_device name: {room_device.label_name} user input")
                                 room_device.in_room_device.device.user_input() 
                                 self.__switch_sprite()
                         if isinstance(room_device.in_room_device.device, HumiditySoil): # We put water in pot
@@ -788,8 +785,6 @@ class GUIWindow(pyglet.window.Window):
                     self.person_moving = self.person_sitting = PersonWidget(PERSON_SITTING_PATH, x, y, self.__batch, self.__foreground)
                     self.room.world.presence.add_entity("person_sitting")
                     self.__switch_sprite()
-                
-                
                 
             # LEFT click on device w/o modifiers : click on GUI Buttons or move/add devices in room
             else:
@@ -927,9 +922,11 @@ class GUIWindow(pyglet.window.Window):
 
 
 # Cannot be a class method because first argument must be dt for scheduling, and thus cannot be self.
-def update_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out): 
+def update_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out, svshi_mode): 
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
+    if svshi_mode: # redraw images to take into account delay of telegram from svshi
+        window.redraw() 
     if hasattr(window, "vacuum_widget"):
         window.vacuum_widget.move()
     sim_time = current_str_simulation_time

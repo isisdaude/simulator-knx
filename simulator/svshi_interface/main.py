@@ -20,6 +20,8 @@ import queue
 from _thread import *
 import threading
 
+from pynput.keyboard import Key, Controller
+
 import system.telegrams as sim_t
 
 # TODO: when to resend unacked?
@@ -86,7 +88,7 @@ class Interface:
         
         data, addr = self.sock.recvfrom(1024)
 
-        print("Address of the sender:", addr)
+        # print("Address of the sender:", addr)
         # Initializing the KNX/IP Frame to be sent
         frame = KNXIPFrame(xknx)
         frame.from_knx(data)
@@ -122,6 +124,10 @@ class Interface:
             if sim_telegram is not None:
                 knxbus.transmit_telegram(sim_telegram)
                 self.sock.sendto(self.__create_ack_data(frame), addr)
+                # keyboard = Controller()
+                # print("======== press enter keyboard controller ===========")
+                # keyboard.press(Key.enter)
+                # keyboard.release(Key.enter)
 
         elif isinstance(frame.body, ConnectionStateRequest):
             frame.init(KNXIPServiceType.CONNECTIONSTATE_RESPONSE)

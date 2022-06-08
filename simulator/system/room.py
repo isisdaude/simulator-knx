@@ -80,7 +80,7 @@ class Room:
         """Creation of the world object from room config"""
         self.world = sim.World(self.width, self.length, self.height, self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
         """Representation of the KNX Bus"""
-        self.knxbus= KNXBus()
+        self.knxbus= KNXBus(svshi_mode)
         """List of all devices in the room"""
         self.devices: List[InRoomDevice] = []
         self.windows: List[InRoomDevice] = []
@@ -169,7 +169,7 @@ class Room:
                 date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
                 if gui_mode:
                     try: # attributes are created in main (proto_simulator)
-                        gui.update_window(interval, self.window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux)
+                        gui.update_window(interval, self.window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux, self.svshi_mode)
                     except AttributeError:
                         logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
                     except Exception:

@@ -58,6 +58,7 @@ def launch_simulation(argv):
         start_time = time.time()
         for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
             room.world.time.start_time = start_time
+            room.knxbus.gui_window = window
         room1 = rooms[0] 
         try:
             #loop = asyncio.new_event_loop()

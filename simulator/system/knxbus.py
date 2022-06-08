@@ -1,6 +1,7 @@
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging, sys
+import logging, sys, time
 from typing import List
+from pynput.keyboard import Key, Controller
 
 from system.system_tools import GroupAddress
 from devices import Actuator, Sensor, FunctionalModule
@@ -11,8 +12,10 @@ from .telegrams import Telegram
 class KNXBus:
     '''Class that implements the transmission over the KNX Bus, between Actuators and FuntionalModules'''
 
-    def __init__(self):
+    def __init__(self, svshi_mode: bool):
         self.name = "KNX Bus"
+        self.gui_window = None
+        self.__svshi_mode = svshi_mode
         self.group_addresses = []  # list of group addresses
         # list of group address buses
         self.__ga_buses: List[GroupAddressBus] = []
@@ -33,16 +36,7 @@ class KNXBus:
         else:
             if isinstance(device, FunctionalModule):
                 self.__update_group_address_to_payload(device, group_address)
-                # try:
-                ### NOTE: Already done when calling room.add_device(FunctionalModule)
-                    # device.knxbus == self
-                # except AttributeError:  # if bus is not connected yet
-                    # store KNX Bus object in functional module class
-                ### NOTE: Already done when calling room.add_device(FunctionalModule)
-                    # device.connect_to(self)
-                    # logging.info(
-                    #     f"Functional Module {device.name} establish connection to the bus (KNXBus object stored in device's class)")
-            
+  
             if group_address not in self.group_addresses:  # if ga not in group_addresses of KNXBus
                 logging.info(
                     f"Creation of a ga_bus ({group_address.name}) for {device.name}")
@@ -81,32 +75,24 @@ class KNXBus:
     # notifier is a functional module (e.g. button)
     def transmit_telegram(self, telegram):
         '''Transmits a telegram through the bus'''
-        # print("knx_bus: telegram in transmission")
-        # print(telegram)
         for ga_bus in self.__ga_buses:
-            # print(f"ga_bus : {ga_bus.group_address}")
-            # print(f"telegram has attr destination : {hasattr(telegram, 'destination')}, dest:{telegram.destination}")
-            # print(f"teleg received dest: {telegram.destination}, type: {type(telegram.destination)}")
-            # print(f"gabus ga : {ga_bus.group_address}")
-            # print(f"test eq ga:{telegram.destination == ga_bus.group_address}")
             if telegram.destination == ga_bus.group_address:
-                # print(len(ga_bus.actuators))
                 # Sending to external applications
-                # self.communication_interface.add_telegram_to_send(telegram)
                 # TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators:  # loop on actuator linked to this group address
                     print(f"actuator: {actuator.name}")
-                    # print(f"actuator {actuator.name} hasattr update_state : {hasattr(actuator, 'update_state')}")
                     try:
                         actuator.update_state(telegram)
                     except AttributeError:
                         logging.warning(f"The actuator {actuator.name} or the telegram created is missing an Attribute.")
                     except:
                         logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
+                # NOTE: for further implementation with functional_modules and sensors receiving telegrams
                 # for functional_module in ga_bus.functional_modules:
-                #     functional_module.update_state(telegram)
+                #     functional_module.function_to_call(telegram)
                 # for functional in ga_bus.functional_modules:
-                #     functional.receive_telegram(telegram)
+                #     functional.function_to_call(telegram)
+        
 
     def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
         from system.telegrams import BinaryPayload

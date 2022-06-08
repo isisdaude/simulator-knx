@@ -107,8 +107,10 @@ def arguments_parser(argv):
 
 def user_command_parser(command, room):
     """ Parser function for CLI communication with the user through the terminal or GUI command box"""
-    command = command.strip() # remove start and end spaces
+    command = " ".join(command.strip()) # remove start and end spaces and space duplicates
     command_split = command.split(' ')
+    if command.isspace() or len(command) == 0: # if we just pressed enter without any command
+        return 1
     if len(command):
         print(f"\nCommand >>>'{command}'<<<", flush=True)
     # User action on Functional Module
