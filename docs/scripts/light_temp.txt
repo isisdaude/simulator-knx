@@ -1,11 +1,29 @@
+
 wait 3
-store world brightness
-set button1
-wait 2
-assert world brightness up
-wait 2
-store world temperature
-set button2 
-wait 2
-assert world temperature up
+
+# Store initial states and values
+store world temperature temp_1
+store heater1 state heat_state1
+store led1 state led1_state1
+set button1 ON
+
+wait 10
+
+# Assert heater on and temp rose
+store heater1 state heat_state2
+Show heat_state1
+Show heat_state2
+assert heat_state2 != heat_state1
+store world temperature temp_2
+Assert temp_2 >= temp_1
+
+wait 10
+
+# Assert temp above 21 and led on
+store world temperature temp_3
+Assert temp_3 >= 21
+store led1 state led1_state2
+Assert led1_state2 != led1_state1
+
+Wait 2
 end

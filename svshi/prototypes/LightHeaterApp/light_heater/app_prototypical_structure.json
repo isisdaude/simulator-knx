@@ -1,0 +1,22 @@
+{
+  "permissionLevel": "privileged",
+  "timer": 0,
+  "devices": [
+    {
+      "name": "led",
+      "deviceType": "switch"
+    },
+    {
+      "name": "button",
+      "deviceType": "binary"
+    },
+    {
+      "name": "thermometer",
+      "deviceType": "temperature"
+    },
+    {
+      "name": "heater",
+      "deviceType": "switch"
+    }
+  ]
+}

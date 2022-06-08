@@ -7,7 +7,7 @@ from typing import List
 import time, math, schedule
 import sys, logging
 from datetime import timedelta, datetime
-from numpy import mean
+from numpy import mean, sign
 
 #from soupsieve import escape
 # sys.path.append("..") # Adds higher directory to python modules path, for relative includes
@@ -80,6 +80,7 @@ class AmbientTemperature:
         # self.simulated_dt = system_dt * simulation_speed_factor # e.g., update called every 1*180seconds = 3min
         self.__update_rule_ratio = update_rule_ratio # update rules are per hour, ratio translate it to the system dt
         self.__temperature_in = temp_in 
+        # print("________ init temp_in: ", temp_in)
         self.temperature_out = temp_out
         self.__room_insulation = room_insulation
         # self.__room_volume = room_volume
@@ -127,15 +128,16 @@ class AmbientTemperature:
             self.temperature_out = float(value)
         return 1
 
-
     def update(self):
         from devices import Heater, AC
         from system import INSULATION_TO_TEMPERATURE_FACTOR
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         logging.debug("Temperature update")
         previous_temp = self.__temperature_in
+        max_temp = 30.0 #self.max_temperature_in_room(self.__room_volume, self.__max_power_heater, "good") ##mean(max_temps)
+        min_temp = 10.0
         if(not self.__temp_sources):
-            self.__temperature_in += (self.temperature_out - self.__temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.__room_insulation] 
+            self.__temperature_in += (self.temperature_out - self.__temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.__room_insulation]
         else:
             self.total_max_power = self.__max_power_heater + self.__max_power_ac
             #### actual power would allow to compute concrete max temp
@@ -154,14 +156,13 @@ class AmbientTemperature:
             # Compute max temp
             #relative_max_power = self.__max_power_heater - self.__max_power_ac
             # Apply temp factor from outside temp and insulation
-            self.__temperature_in += (self.temperature_out - self.__temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.__room_insulation]
+            self.__temperature_in += (self.temperature_out - self.__temperature_in) * INSULATION_TO_TEMPERATURE_FACTOR[self.__room_insulation] #+ 0.15*sign((self.temperature_out - self.__temperature_in))
             #TODO: compute max and min temp!!!
-            max_temp = 30.0 #self.max_temperature_in_room(self.__room_volume, self.__max_power_heater, "good") ##mean(max_temps)
-            min_temp = 10.0
-            self.__temperature_in = max(min_temp, min(max_temp, self.__temperature_in)) # temperature cannot exceed max temp and be less than min_temp
+            # print(f"------- temp in update : {self.__temperature_in}")
             # print(f"system temp= {round(self.temperature, 2)}")
             # self.temperature = max(min_temp, self.temperature)
                 # self.temperature = (self.temperature + max_temp) // 2 # Decreases by the average of temp and outside_temp, is a softer slope
+        self.__temperature_in = max(min_temp, min(max_temp, self.__temperature_in)) # temperature cannot exceed max temp and be less than min_temp
         temperature_levels = []
         for sensor in self.__temp_sensors: # temp sensors are in room devices
             # print(f"sensor {sensor.device.name} temp= {round(self.temperature, 2)}")

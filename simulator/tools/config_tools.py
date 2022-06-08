@@ -95,6 +95,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     # Physical initial states indoor/outdoor
     temperature_out = world_config["outside_temperature"]
     temperature_in = world_config["inside_temperature"]
+    # print(f"++++++++ config init temp in: {temperature_in}")
     humidity_out = world_config["outside_relativehumidity"]
     humidity_in = world_config["inside_relativehumidity"]
     co2_out = world_config["outside_co2"]

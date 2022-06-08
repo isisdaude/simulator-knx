@@ -652,7 +652,6 @@ class GUIWindow(pyglet.window.Window):
             logging.info("The simulation is resumed")
         
     def redraw(self):
-        print("redraw")
         """ When SVSHI_MODE, device sprites need to be redrawn if telegram have delay from svshi"""
         self.__switch_sprite()
         self.clear()

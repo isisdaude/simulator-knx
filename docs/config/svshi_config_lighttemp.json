@@ -22,19 +22,6 @@
             "refid": "M-0_D2",
             "knx_location": "0.0.41",
             "status": "enabled"
-          },
-          "heater1": {
-            "class": "Heater",
-            "refid": "M-0_H1",
-            "knx_location": "0.0.11",
-            "status": "enabled"
-          },
-          "thermometer1": {
-            "class": "Thermometer",
-            "refid": "M-0_T1",
-            "knx_location": "0.0.12",
-            "status": "enabled",
-            "send_state_interval":4
           }
         }
       }
@@ -56,6 +43,19 @@
             "class": "Button",
             "refid": "M-0_B1",
             "knx_location": "1.1.1",
+            "status": "enabled"
+          },
+          "thermometer1": {
+            "class": "Thermometer",
+            "refid": "M-0_T1",
+            "knx_location": "1.1.3",
+            "status": "enabled",
+            "send_state_interval":4
+          },
+          "heater1": {
+            "class": "Heater",
+            "refid": "M-0_H1",
+            "knx_location": "1.1.2",
             "status": "enabled"
           }
         }
@@ -91,9 +91,9 @@
   },
   "world": {
     "system_dt":1,
-    "simulation_speed_factor": 360,
+    "simulation_speed_factor": 900,
     "outside_temperature": 20.0,
-    "inside_temperature": 20.0,
+    "inside_temperature": 19.0,
     "outside_relativehumidity": 50.0,
     "inside_relativehumidity": 35.0,
     "outside_co2": 300,

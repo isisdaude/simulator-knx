@@ -1,6 +1,7 @@
 #pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 import asyncio
 import logging, sys
+import numbers
 import argparse
 import pprint
 pp=pprint.PrettyPrinter(compact=True)
@@ -91,8 +92,8 @@ def arguments_parser(argv):
     CONFIG_PATH = "./docs/config/" + FILECONFIG_NAME + ".json"
     # SVSHI mode argument parser
     SVSHI_MODE = options.svshi_mode
-    if SVSHI_MODE:
-        CONFIG_PATH = SVSHI_CONFIG_PATH
+    # if SVSHI_MODE:
+    #     CONFIG_PATH = SVSHI_CONFIG_PATH
 
     return INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE
 
@@ -312,22 +313,40 @@ class ScriptParser():
             var_name = command_split[1]
 
             if command_split[3] in self.stored_values: # if we compare to a stored variable
-                value = self.stored_values[command_split[3]]
+                var = str(self.stored_values[command_split[3]])
             else : # if we compare to a value
-                value = command_split[3] # can be a bool, or a str for weather (e.g. 'clear')
+                var = str(command_split[3]) # can be a bool, or a str for weather (e.g. 'clear')
             try:
+                if 'false' in var:
+                    var = False
+                elif 'true' in var:
+                    var = True
+                elif var in ['clear', 'overcast', 'dark']:
+                    pass
+                else:
+                    var = float(var)
+                    value = float(self.stored_values[var_name])
+
                 if command_split[2] == '==':
-                    assert self.stored_values[var_name] == value
+                    assert value == var
                 elif command_split[2] == '!=':
-                    assert self.stored_values[var_name] != value
+                    assert value != var
                 elif command_split[2] == '<=':
-                    assert self.stored_values[var_name] <= value
+                    if type(var) == float:
+                        assert value <= var
+                    else:
+                        logging.warning(f"Cannot compare string or bool with inequality symbols")
+                        return None, self.assertions
                 elif command_split[2] == '>=':
-                    assert self.stored_values[var_name] >= value
+                    if type(var) == float:
+                        assert value >= var
+                    else:
+                        logging.warning(f"Cannot compare string or bool with inequality symbols")
+                        return None, self.assertions
                 else:
                     logging.error(f"The comparison sign should be in ['=='/'!='/'<='/'>='], but {command_split[2]} was given.")
                     return None, self.assertions
-                recap_str = f"{var_name} {command_split[2]} {value}"
+                recap_str = f"{var_name} {command_split[2]} {var}"
                 logging.info(f"[SCRIPT] The comparison '{recap_str}' is correct")
                 print(f"Assertion True")
                 simtime = room.world.time.simulation_time(str_mode=True)
