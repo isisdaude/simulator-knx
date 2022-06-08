@@ -98,10 +98,6 @@ class Room:
             self.__interface = Interface(self.knxbus)
             self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
 
-        ### TODO windows if not None
-        ## implement add_window method
-        ### add to ambient light sources with correct computations
-
 
     def add_device(self, device: Device, x: float, y: float, z:float):
         from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor, HumiditySoil, HumidityAir, CO2Sensor, PresenceSensor
@@ -169,13 +165,13 @@ class Room:
                 date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
                 if gui_mode:
                     try: # attributes are created in main (proto_simulator)
-                        gui.update_window(interval, self.window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux, self.svshi_mode)
-                    except AttributeError:
-                        logging.error("Cannot update GUI window due to Room/World attributes missing (not defined)")
+                        gui.update_gui_window(interval, self.gui_window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux, self.svshi_mode)
+                    except AttributeError as msg:
+                        logging.error(f"Cannot update GUI window due to Room/World attributes missing : '{msg}'")
                     except Exception:
                         logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
                     try: # update gui devices instances
-                        self.window.update_sensors(brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
+                        self.gui_window.update_sensors(brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
                     except Exception:
                         logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
                 elif gui_mode == False:

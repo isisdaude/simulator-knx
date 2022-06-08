@@ -67,12 +67,7 @@ def arguments_parser(argv):
     parser.add_argument("-s", "--svshi-mode",
                         action='store_true', # svshi_mode=True if option, False if no -s option
                         help=("Specifies that SVSHI will be used (-s option) or not (no option)."))
-    # System dt argument definition
-    parser.add_argument("-d", "--system-dt",
-                        action='store',
-                        default=1,
-                        type=int,
-                        help=("Provide the system dt, interval in seconds between two consecutive system updates. Example '-d 2' or '--system-dt=3', default=1"))
+
 
     # Get the arguments from command line
     options = parser.parse_args()
@@ -98,16 +93,14 @@ def arguments_parser(argv):
     SVSHI_MODE = options.svshi_mode
     if SVSHI_MODE:
         CONFIG_PATH = SVSHI_CONFIG_PATH
-    # System dt argument parser
-    SYSTEM_DT = options.system_dt
 
-    return INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, SYSTEM_DT
+    return INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE
 
 
 
 def user_command_parser(command, room):
     """ Parser function for CLI communication with the user through the terminal or GUI command box"""
-    command = " ".join(command.strip()) # remove start and end spaces and space duplicates
+    command = command.strip() # remove start and end spaces 
     command_split = command.split(' ')
     if command.isspace() or len(command) == 0: # if we just pressed enter without any command
         return 1

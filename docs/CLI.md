@@ -73,4 +73,3 @@ Prints a dict representation of the physical state measured by the sensor (e.g. 
         - Temperature, CO2 level and Humidity for AirSensor, and respectively for Thermometer, CO2Sensor and HumidityAir sensors
         - Soil Moisture for HumiditySoil sensor
         - Brightness for Brightness sensors
-        -

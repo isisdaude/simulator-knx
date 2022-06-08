@@ -199,6 +199,7 @@
     ]
   },
   "world": {
+    "system_dt":1,
     "simulation_speed_factor": 3600,
     "outside_temperature": 20.0,
     "inside_temperature": 25.0,

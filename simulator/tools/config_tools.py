@@ -34,6 +34,7 @@ SVSHI_CONFIG_PATH = "./docs/config/svshi_config.json"
 
 def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False):
     from system import Room
+    system_dt=1
     # Declaration of sensors, actuators and functional modules
     led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
     led2 = dev.LED("led2", "M-0_L1", IndividualAddress(0,0,2), "enabled")
@@ -68,7 +69,7 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     room1.attach(led1, ga1) # Actuator is linked to the group address ga1 through the KNXBus
     room1.attach(button1, ga1)
     # return the room object to access all elements of the room (world included)
-    return [room1]
+    return [room1], system_dt
 
 def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, svshi_mode=False):
     from system import Room
@@ -100,7 +101,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     co2_in = world_config["inside_co2"]
     datetime = world_config["datetime"]
     weather = world_config["weather"]
-
+    system_dt = world_config["system_dt"]
 
     rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
     rooms = []
@@ -201,4 +202,4 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                             room.attach(dev_object, group_address)
     else:
         logging.info("No group address is defined in config file.")
-    return rooms
+    return rooms, system_dt

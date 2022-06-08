@@ -14,17 +14,11 @@ class KNXBus:
 
     def __init__(self, svshi_mode: bool):
         self.name = "KNX Bus"
-        self.gui_window = None
         self.__svshi_mode = svshi_mode
         self.group_addresses = []  # list of group addresses
         # list of group address buses
         self.__ga_buses: List[GroupAddressBus] = []
-        # self.__temp_actuators = []
-        # self.__temp_functional = []
         self.__group_address_to_payload_type = {}
-        # TODO: add this to the bus with proper variables
-        # self.communication_interface = CommunicationInterface('localhost', '???', self.__group_address_to_payload_type)
-        # self.communication_interface.start_communication()
 
     # If not in list, add the observer to the list
     def attach(self, device, group_address: GroupAddress):
@@ -80,7 +74,7 @@ class KNXBus:
                 # Sending to external applications
                 # TODO: send telegrams to all devices connected to this group address (not only actuators), and let them manage and interpret it
                 for actuator in ga_bus.actuators:  # loop on actuator linked to this group address
-                    print(f"actuator: {actuator.name}")
+                    # print(f"actuator: {actuator.name}")
                     try:
                         actuator.update_state(telegram)
                     except AttributeError:

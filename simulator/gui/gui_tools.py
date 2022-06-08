@@ -109,6 +109,8 @@ class DayTimeWeatherWidget(object):
                             "moon":{"img":self.__moon_img, "offset_x":OFFSET_SUN_MOON_X, "offset_y":OFFSET_SUN_MOON_Y}}
         self.__weather_dict = {"overcast":{"img":self.__cloud_overcast_img, "offset_x_ratio":OFFSET_CLOUD_WIDTH_RATIO, "offset_y_ratio":OFFSET_CLOUD_LENGTH_RATIO}, 
                                 "dark":{"img":self.__cloud_dark_img, "offset_x_ratio":OFFSET_CLOUD_DARK_WIDTH_RATIO, "offset_y_ratio":OFFSET_CLOUD_DARK_LENGTH_RATIO}}
+        self._tod_sprite = None
+        self._weather_sprite = None
         # self.sunrise = pyglet.sprite.Sprite(self.__sunrise_img, self.__pos_x + OFFSET_SUNRISE_X, self.__pos_y + OFFSET_SUNRISE_SUNSET_Y, batch=self.__batch, group=self.__group_daytime)
         # self.sun = pyglet.sprite.Sprite(self.__sun_img, self.__pos_x + OFFSET_SUN_MOON_X, self.__pos_y + OFFSET_SUN_MOON_Y, batch=self.__batch, group=self.__group_daytime)
         # self.sunset = pyglet.sprite.Sprite(self.__sunset_img, self.__pos_x + OFFSET_SUNSET_X, self.__pos_y + OFFSET_SUNRISE_SUNSET_Y, batch=self.__batch, group=self.__group_daytime)
@@ -122,10 +124,12 @@ class DayTimeWeatherWidget(object):
         """ weather is 'clear', 'overcast' or 'dark', time_of_day is 'sunrise', 'sun', 'sunset, 'moon'"""
         ## NOTE: further improvements, consider outside weather with evolution of T°, Rh and CO2
         # delete old sprite
-        if hasattr(self, "_tod_sprite"):
+        if self._tod_sprite is not None:
             self._tod_sprite.delete()
-        if hasattr(self, '_weather_sprite'):
+        # if hasattr(self, '_weather_sprite'):
+        if self._weather_sprite is not None:
             self._weather_sprite.delete()
+        
         # update lux_out
         self.__lux_out = round(lux_out,1) if lux_out > 1 else lux_out
         self.__out_state_value.text = self.__out_state_str + str(self.__lux_out) + "lux"
@@ -133,9 +137,9 @@ class DayTimeWeatherWidget(object):
         if time_of_day in self.__tod_dict:
             self._tod_sprite = pyglet.sprite.Sprite(self.__tod_dict[time_of_day]["img"], self.__pos_x + self.__tod_dict[time_of_day]["offset_x"], self.__pos_y + self.__tod_dict[time_of_day]["offset_y"], batch=self.__batch, group=self.__group_daytime)
         # update weather img
-        if weather != 'clear':
-            if weather in self.__weather_dict:
-                self._weather_sprite = pyglet.sprite.Sprite(self.__weather_dict[weather]["img"], self._tod_sprite.x + self.__weather_dict[weather]["offset_x_ratio"] * self._tod_sprite.width, self._tod_sprite.y + self.__weather_dict[weather]["offset_y_ratio"] * self._tod_sprite.height, batch=self.__batch, group=self.__group_weather)
+        # if weather != 'clear':
+        if weather in self.__weather_dict:
+            self._weather_sprite = pyglet.sprite.Sprite(self.__weather_dict[weather]["img"], self._tod_sprite.x + self.__weather_dict[weather]["offset_x_ratio"] * self._tod_sprite.width, self._tod_sprite.y + self.__weather_dict[weather]["offset_y_ratio"] * self._tod_sprite.height, batch=self.__batch, group=self.__group_weather)
 
 
 class WindowWidget(object):
@@ -226,7 +230,6 @@ class ButtonSave(object):
         # generate_configfile_from_system(gui_window.room, saved_config_path)
         with open(saved_config_path, 'w') as saved_config_file:
             json.dump(gui_window.system_config_dict, saved_config_file, indent=2)
-        print(" button SAVE is pressed")
 
 class ButtonDefault(object):
     def __init__(self, x, y, batch, button_file, group):

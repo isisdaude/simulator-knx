@@ -499,14 +499,14 @@ class GUIWindow(pyglet.window.Window):
     def initialize_system(self, save_config=False, config_path=None, system_dt=1):
         """ Initialize gui system from room configuration """
         from devices import Button, LED, Brightness, Dimmer, Heater, AC, Thermometer, AirSensor # ,PresenceSensor
-        self.room.window = self # same for the GUi window object, but to room1 object
+        self.room.gui_window = self # same for the GUi window object, but to room1 object
         if save_config: # stor the saved config path only at first call, not when user reload the system
             # Save the system also when reloading to default or empty system
             # We save the system dictionary from config file to update it as the user add devices
             if config_path is None: # If system initialisation, we take the normal config path
                 config_path = self.__CONFIG_PATH
                 self.__SYSTEM_DT = system_dt # we store the system dt giuven from simulator
-            # else, teh congif path would either be default or empty config
+            # else, the config path would either be default or empty config
             with open(config_path, "r") as config_file:
                 self.system_config_dict = json.load(config_file)
         pyglet.clock.schedule_interval(self.room.update_world, interval=system_dt, gui_mode=True) # update every 1seconds, corresponding to 1 * speed_factor real seconds
@@ -631,8 +631,12 @@ class GUIWindow(pyglet.window.Window):
             config_path = self.__EMPTY_CONFIG_PATH
         else:
             config_path = self.__CONFIG_PATH
-        self.room = configure_system_from_file(config_path)[0] # only one room for now
+        rooms, system_dt = configure_system_from_file(config_path) 
+        self.room = rooms[0] # only one room for now
+        # re init of day time and weather
+        self.daytimeweather_widget = DayTimeWeatherWidget(TIMEWEATHER_POS[0], TIMEWEATHER_POS[1], self.__batch, group_box=self.__background, group_daytime=self.__middleground, group_weather=self.__foreground, temp_out=self.room.world.ambient_temperature.temperature_out, hum_out=self.room.world.ambient_humidity.humidity_out, co2_out=self.room.world.ambient_co2.co2_out )
         self.room.world.time.start_time = time()
+        self.__SYSTEM_DT = system_dt
         self.initialize_system(save_config=True, config_path = config_path, system_dt=self.__SYSTEM_DT)
 
 
@@ -648,7 +652,8 @@ class GUIWindow(pyglet.window.Window):
             logging.info("The simulation is resumed")
         
     def redraw(self):
-        """ When SVSHI_MODE, device sprites need to be redrawn if telegram takes time to be received"""
+        print("redraw")
+        """ When SVSHI_MODE, device sprites need to be redrawn if telegram have delay from svshi"""
         self.__switch_sprite()
         self.clear()
         self.__batch.draw()
@@ -922,7 +927,7 @@ class GUIWindow(pyglet.window.Window):
 
 
 # Cannot be a class method because first argument must be dt for scheduling, and thus cannot be self.
-def update_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out, svshi_mode): 
+def update_gui_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out, svshi_mode): 
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time displayed and should update the world state'''
     if svshi_mode: # redraw images to take into account delay of telegram from svshi
@@ -936,5 +941,4 @@ def update_window(dt, window, date_time, current_str_simulation_time, weather, t
     window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
     
     print(f"World state update at simulation time: {sim_time}", end='\r') #[:-5]
-
 

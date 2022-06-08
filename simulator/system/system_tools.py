@@ -117,8 +117,6 @@ class GroupAddress:
 
 
 
-
-
 class Window:
     """Class to represent windows"""
     def __init__(self, window_name, room, wall, location_offset, size):

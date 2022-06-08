@@ -34,7 +34,7 @@ from tools.config_tools import * # GUI_MODE, CLI_INT_MODE, SAVED_CONFIG_PATH, ..
 
 def launch_simulation(argv):
     # Parser CLI arguments given by the user when launching the program
-    INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, SYSTEM_DT = tools.arguments_parser(argv)
+    INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE = tools.arguments_parser(argv)
     
     # System configuration from function configure_system
     if CONFIG_MODE == DEV_CONFIG:
@@ -42,23 +42,22 @@ def launch_simulation(argv):
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
             if tools.check_simulation_speed_factor(simulation_speed_factor):
                 break
-        rooms = tools.configure_system(simulation_speed_factor, SYSTEM_DT, svshi_mode=SVSHI_MODE)
+        rooms, system_dt = tools.configure_system(simulation_speed_factor, svshi_mode=SVSHI_MODE)
     # Default, empty or file config
     else:
         CONFIG_PATH = DEFAULT_CONFIG_PATH if CONFIG_MODE == DEFAULT_CONFIG else CONFIG_PATH
         CONFIG_PATH = EMPTY_CONFIG_PATH if CONFIG_MODE == EMPTY_CONFIG else CONFIG_PATH
-        rooms = tools.configure_system_from_file(CONFIG_PATH, SYSTEM_DT, svshi_mode=SVSHI_MODE)
+        rooms, system_dt = tools.configure_system_from_file(CONFIG_PATH, svshi_mode=SVSHI_MODE)
 
 
     # GUI interface with the user
     if INTERFACE_MODE == GUI_MODE:
         window = gui.GUIWindow(CONFIG_PATH, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, rooms) #CONFIG_PATH can be a normal file, default or empty
-        window.initialize_system(save_config=True, system_dt=SYSTEM_DT) #system_dt is delta time for scheduling update_world
+        window.initialize_system(save_config=True, system_dt=system_dt) #system_dt is delta time for scheduling update_world
         print("\n>>> The simulation is started in Graphical User Interface Mode <<<\n")
         start_time = time.time()
         for room in rooms: # NOTE: further implementation for multiple rooms can use the rooms list
             room.world.time.start_time = start_time
-            room.knxbus.gui_window = window
         room1 = rooms[0] 
         try:
             #loop = asyncio.new_event_loop()
