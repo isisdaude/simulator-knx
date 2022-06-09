@@ -4,8 +4,10 @@ Module that gather class definitions for the room contained in the system and th
 
 import logging
 import numbers
+import os
 import sys
 from typing import List
+from datetime import datetime
 
 import world
 from devices import Device
@@ -57,7 +59,7 @@ class Room:
     """Class representing the abstraction of a room, containing devices at certain positions and a physical world representation"""
 
     """List of devices in the room at certain positions"""
-    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False, svshi_mode=False, telegram_logging=False): # system_dt is delta t in seconds between updates # TODO script mode remove print telegrams
+    def __init__(self, name: str, width: float, length: float, height:float, simulation_speed_factor:float, group_address_style:str, system_dt=1, insulation='average', temp_out=20.0, hum_out=50.0, co2_out=300, temp_in=25.0, hum_in=35.0, co2_in=800, date_time="today", weather="sunny", test_mode=False, svshi_mode=False, telegram_logging=False, interface=None): # system_dt is delta t in seconds between updates # TODO script mode remove print telegrams
         self.__test_mode = test_mode # flag to avoid using gui package when testing, pyglet not supported by pyglet
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
@@ -72,16 +74,30 @@ class Room:
         self.simulation_status = True
         self.__paused_tick_counter = 0
         self.__system_dt = system_dt
-        
+        if telegram_logging:
+            tel_logging_path = "./logs/" + datetime.now().strftime("%d-%m-%Y_%H%M%S")
+            os.mkdir(tel_logging_path)
+            self.telegram_logging_file_path = tel_logging_path + "/telegram_logs.txt" # path to txt file for telegram logs
         """if SVSHI mode activated, waits for a connection and starts the communication"""
         self.svshi_mode = svshi_mode
         self.telegram_logging = telegram_logging
         if self.svshi_mode:
-            from svshi_interface.main import Interface
+            if interface is not None: # Simulation reloaded, we keep same interface
+                self.__interface = interface
+                self.__interface.room = self
+            else:
+                from svshi_interface.main import Interface
+                self.__interface = Interface(self, self.telegram_logging)
             from devices.actuators import IPInterface
             from system import IndividualAddress
-            self.__interface = Interface(self.knxbus, self.telegram_logging)
-            self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
+            if self.__interface is not None:
+                self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
+
+    def get_interface(self):
+        if self.svshi_mode:
+            return self.__interface
+        else:
+            return None
 
 
     def add_device(self, device: Device, x: float, y: float, z: float=1):
@@ -135,16 +151,18 @@ class Room:
             self.knxbus.attach(device, ga)
             if self.svshi_mode:
                 self.knxbus.attach(self.interface_device, ga)
-            return 1
-        else:
+            return 1 
+        else: ##TODO utile?
             return 0
+    
     def detach(self, device, group_address:str):
         ga = check_group_address(self.__group_address_style, group_address)
         if ga:
             self.knxbus.detach(device, ga)
             return 1
-        else:
+        else: ##TODO utile?
             return 0
+
 
     def update_world(self, interval=1, gui_mode=False):
         if self.__test_mode == False:

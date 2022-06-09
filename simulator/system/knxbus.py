@@ -4,7 +4,7 @@ Module that implement the KNX Bus object representation to emulate the real beha
 
 import logging
 import sys
-import time
+import traceback
 from typing import List
 
 from system.system_tools import GroupAddress
@@ -82,7 +82,9 @@ class KNXBus:
                     except AttributeError:
                         logging.warning(f"The actuator {actuator.name} or the telegram created is missing an Attribute.")
                     except:
-                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
+                        exc = sys.exc_info()[0]
+                        trace = traceback.format_exc()
+                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {exc} with trace \n{trace}")
                 # NOTE: for further implementation with functional_modules and sensors receiving telegrams
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.function_to_call(telegram)

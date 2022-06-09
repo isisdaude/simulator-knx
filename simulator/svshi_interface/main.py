@@ -31,14 +31,14 @@ sys.path.append("..")
 
 class Interface:
 
-    def __init__(self, knxbus, telegram_logging: bool):
+    def __init__(self, room, telegram_logging: bool):
         from svshi_interface.telegram_parser import TelegramParser
         self.__telegram_logging = telegram_logging
         self.__last_tel_logged = None
-        if self.__telegram_logging:
-            logging_path = "./logs/" + datetime.now().strftime("%d-%m-%Y_%H%M")
-            os.mkdir(logging_path)
-            self.__logging_file_path = logging_path + "/telegram_logs.txt" # path to txt file for telegram logs
+        # if self.__telegram_logging:
+        #     logging_path = "./logs/" + datetime.now().strftime("%d-%m-%Y_%H%M%S")
+        #     os.mkdir(logging_path)
+        #     self.__logging_file_path = logging_path + "/telegram_logs.txt" # path to txt file for telegram logs
         self.sequence_number = 0
         self.__not_acked_telegrams = {}
         self.__sending_queue: queue.Queue[sim_t.Telegram] = queue.Queue()
@@ -56,8 +56,18 @@ class Interface:
 
         server_address = (self.IPAddr, 3671)
         self.sock.bind(server_address)
-
-        self.main(knxbus)
+        self.room = room # to get telegram file path because fails when relaoding (cannot stop thread)
+        self.main()
+    
+    # def new_system_config(self):
+    #     print(f"new system config interface")
+    #     if self.__telegram_logging:
+    #         print(f"telegram logging is true")
+    #         logging_path = "./logs/" + datetime.now().strftime("%d-%m-%Y_%H%M%S")
+    #         os.mkdir(logging_path)
+    #         self.__logging_file_path = logging_path + "/telegram_logs.txt" # path to txt file for telegram logs
+    #     # self.main(self.knxbus)
+        
 
     # INITIALIZATION OF THE CONNECTION #
     def __create_connection(self, xknx: XKNX):
@@ -129,7 +139,7 @@ class Interface:
             )
             print("Received a telegram :\n", sim_telegram)
             if self.__telegram_logging:
-                with open(self.__logging_file_path, "a+") as log_file:
+                with open(self.room.telegram_logging_file_path, "a+") as log_file:
                     if self.__last_tel_logged is None or self.__last_tel_logged == 'sent':
                         log_file.write("\n++++++++++ Telegram received ++++++++++")
                         self.__last_tel_logged = 'recv'
@@ -177,7 +187,7 @@ class Interface:
             sender = sender.init_from_body(req)
             self.sock.sendto(bytes(sender.to_knx()), addr)
             if self.__telegram_logging:
-                with open(self.__logging_file_path, "a+") as log_file:
+                with open(self.room.telegram_logging_file_path, "a+") as log_file:
                     if self.__last_tel_logged is None or self.__last_tel_logged == 'recv':
                         log_file.write("\n---------- Telegram sent ----------")
                         self.__last_tel_logged = 'sent'
@@ -191,7 +201,7 @@ class Interface:
             self.__not_acked_telegrams[req.sequence_counter] = bytes(sender.to_knx()) # TODO: when do we resend?
 
     # MAIN
-    def main(self, knxbus):
+    def main(self):
         """Initializes the communication between any external KNX interface and us"""
 
         print("Waiting on port:", 3671, "at address", self.IPAddr)
@@ -213,7 +223,7 @@ class Interface:
                     if ready_socket is self.sock:
                         data = self.sock.recv(1024)
                         # Do stuff with data, fill this up with your code
-                        self.__receiving_telegrams(frame, data, addr, knxbus)
+                        self.__receiving_telegrams(frame, data, addr, self.room.knxbus)
                     else:
                         # print("on est dans le coing")
                         # Ready_socket is rsock

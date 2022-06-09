@@ -34,6 +34,7 @@ class Device(ABC):
     def send_telegram(self, payload, control_field):
         # print(f"device {self.name} has attr bus : {hasattr(self, 'knxbus')}")
         from system import Telegram # Import here to avoid circular import between system ,-> device_abstractions
+        # print(f"send telegram payload: {payload}")
         for group_address in self.group_addresses:
             telegram = Telegram(control_field, self.individual_addr, group_address, payload)
             #print("knxbus: ", self.knxbus.name)

@@ -114,15 +114,14 @@ class TelegramParser:
                 write_content = DPTBinary(value=binary_value)
             else:
                 write_content = DPTArray(value)
-     
             ga = GroupAddress(address)
             ga.levels = self.__sim_encoding_to_xknx.get(encoding)
-            print(f"source telegram: {telegram.source}, dest: {telegram.destination}")
-            telegram = Telegram(source_address=IndividualAddress(f"{telegram.source.area}.{telegram.source.line}.{telegram.source.device}"),
+            # print(f"source telegram: {telegram.source}, dest: {telegram.destination}")
+            newTelegram = Telegram(source_address=IndividualAddress(f"{telegram.source.area}.{telegram.source.line}.{telegram.source.device}"),
                 destination_address=ga,
                 payload=GroupValueWrite(write_content)
             )
-            return telegram
+            return newTelegram
         else:    
             return None
 

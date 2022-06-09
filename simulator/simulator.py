@@ -37,7 +37,6 @@ def launch_simulation(argv):
         CONFIG_PATH = ct.EMPTY_CONFIG_PATH if CONFIG_MODE == ct.EMPTY_CONFIG else CONFIG_PATH
         room1, system_dt = tools.configure_system_from_file(CONFIG_PATH, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING)
 
-
     # GUI interface with the user
     if INTERFACE_MODE == ct.GUI_MODE:
         window = gui.GUIWindow(CONFIG_PATH, ct.DEFAULT_CONFIG_PATH, ct.EMPTY_CONFIG_PATH, ct.SAVED_CONFIG_PATH, room1, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING) #CONFIG_PATH can be a normal file, default or empty

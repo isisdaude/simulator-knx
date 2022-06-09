@@ -29,16 +29,18 @@ DEFAULT_CONFIG  = 'default'     # configuration from default json file (~3device
 EMPTY_CONFIG    = 'empty'     # configuration with no devices
 DEV_CONFIG      = 'dev'     # configuration from python function
 # Path to save system configuration when modified using the GUI
-SAVED_CONFIG_PATH = os.path.abspath("docs/config/") + '/'
+SAVED_CONFIG_PATH = os.path.abspath("config/") + '/'
 # Config file paths
 COMPLETE_FILE_PATH = "./config/sim_config_bedroom.json"
 DEFAULT_CONFIG_PATH = "./config/default_config.json"
 EMPTY_CONFIG_PATH = "./config/empty_config.json"
 SVSHI_CONFIG_PATH = "./config/svshi_config.json"
 
+interface = None
 
 def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False, telegram_logging=False):
     from system import Room
+    global interface, interface_device
     system_dt=1
     # Declaration of sensors, actuators and functional modules
     led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
@@ -57,7 +59,8 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
                 room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode, 
-                svshi_mode=svshi_mode, telegram_logging=telegram_logging) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+                svshi_mode=svshi_mode, telegram_logging=telegram_logging, interface=interface) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+    interface = room1.get_interface()
     # room1.__.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
@@ -79,6 +82,7 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
 
 def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, svshi_mode=False, telegram_logging=False):
     from system import Room
+    global interface, interface_device
     with open(config_file_path, "r") as file:
         config_dict = json.load(file) ###
     knx_config = config_dict["knx"]
@@ -126,7 +130,8 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
                     room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
-                    datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode, telegram_logging=telegram_logging)
+                    datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode, telegram_logging=telegram_logging, interface=interface)
+        interface = room.get_interface()
         windows = []
         for window in room_config["windows"]:
             wall = room_config["windows"][window]["wall"]

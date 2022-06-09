@@ -91,7 +91,7 @@
   },
   "world": {
     "system_dt":1,
-    "simulation_speed_factor": 900,
+    "simulation_speed_factor": 1800,
     "outside_temperature": 20.0,
     "inside_temperature": 19.0,
     "outside_relativehumidity": 50.0,

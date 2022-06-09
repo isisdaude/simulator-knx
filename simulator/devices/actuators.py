@@ -31,18 +31,18 @@ class LED(LightActuator):
         # if telegram.control_field == True: # Control field bit
         # print(f"telegram received: {telegram}")
         # print("receive telegram led")
-        if isinstance(telegram.payload, BinaryPayload):
-            # print("binary telegram")
-            self.state = telegram.payload.content
-
-        elif isinstance(telegram.payload, DimmerPayload):
+        if isinstance(telegram.payload, DimmerPayload):
             # print("dimmer telegram")
             self.state = telegram.payload.content
             if self.state:
                 self.state_ratio = telegram.payload.state_ratio
 
-            self.__str_state = 'ON' if self.state else 'OFF'
-            logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
+        elif isinstance(telegram.payload, BinaryPayload):
+            # print("binary telegram")
+            self.state = telegram.payload.content
+
+        self.__str_state = 'ON' if self.state else 'OFF'
+        logging.info(f"{self.name} has been turned {self.__str_state} by device '{telegram.source}'.")
     
     def effective_lumen(self):
         # Lumen quantity rationized with the state ratio (% of source's max lumens)
@@ -156,6 +156,7 @@ class Switch(Actuator):
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
+
 class IPInterface(Actuator):
     """Concrete class to represent an IP interface to communicate with external interfaces"""
     from svshi_interface.main import Interface
@@ -164,10 +165,12 @@ class IPInterface(Actuator):
         self.interface = interface
 
     def update_state(self, telegram: Telegram):
-        # TODO: For the moment, retransmit only Binary Telegrams!
         # print(f"update state IP interface, telegram: {telegram}")
         if isinstance(telegram.payload, BinaryPayload):
             # print("Binary payload")
+            self.interface.add_to_sending_queue([telegram])
+        elif isinstance(telegram.payload, DimmerPayload):
+            telegram.payload = BinaryPayload(telegram.payload.content) # create binary payload with state from dimmer payload
             self.interface.add_to_sending_queue([telegram])
         ### TODO float payload
 

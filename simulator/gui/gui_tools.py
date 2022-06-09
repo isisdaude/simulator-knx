@@ -135,7 +135,7 @@ class DayTimeWeatherWidget(object):
         self._weather_sprite = None
 
     def update_out_state(self, weather:str, time_of_day:str, lux_out:float) -> None:
-        """ 
+        """
         Update outside physical states in GUI.
         weather is 'clear', 'overcast' or 'dark', 
         time_of_day is 'sunrise', 'sun', 'sunset, 'moon'
@@ -145,11 +145,22 @@ class DayTimeWeatherWidget(object):
         if self._weather_sprite is not None:
             self._weather_sprite.delete()
         self.__lux_out = round(lux_out,1) if lux_out > 1 else lux_out
-        self.__out_state_value.text = self.__out_state_str + str(self.__lux_out) + "lux"
+        new_out_states = self.__out_state_str + str(self.__lux_out) + "lux"
+        self.__out_state_value.text = new_out_states
         if time_of_day in self.__tod_dict:
             self._tod_sprite = pyglet.sprite.Sprite(self.__tod_dict[time_of_day]["img"], self.__pos_x+self.__tod_dict[time_of_day]["offset_x"], self.__pos_y+self.__tod_dict[time_of_day]["offset_y"], batch=self.__batch, group=self.__group_daytime)
         if weather in self.__weather_dict:
             self._weather_sprite = pyglet.sprite.Sprite(self.__weather_dict[weather]["img"], self._tod_sprite.x+self.__weather_dict[weather]["offset_x_ratio"]*self._tod_sprite.width, self._tod_sprite.y+self.__weather_dict[weather]["offset_y_ratio"]*self._tod_sprite.height, batch=self.__batch, group=self.__group_weather)
+
+    def delete(self):
+        """ Delete all components of the DayTimeWeather widget."""
+        if self._tod_sprite is not None:
+            self._tod_sprite.delete()
+        if self._weather_sprite is not None:
+            self._weather_sprite.delete()
+        self.__out_state_label.delete()
+        self.__out_state_value.delete()
+        self.__box_shape.delete()
 
 class WindowWidget(object):
     """ Class to represent the simulated rooms' windows in GUI"""

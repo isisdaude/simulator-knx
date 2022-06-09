@@ -611,14 +611,15 @@ class GUIWindow(pyglet.window.Window):
             room_device_label.delete()
         self.__room_devices_labels = []
         self.__button_pause.update_sprite(reload=True) # Re-initialization of Pause button
-        if default_config: # Re configuration of the room and simulation time
+        if default_config: # Re-configuration of the room and simulation time
             config_path = self.__DEFAULT_CONFIG_PATH
         elif empty_config:
             config_path = self.__EMPTY_CONFIG_PATH
         else:
             config_path = self.__CONFIG_PATH
-        self.room, self.__SYSTEM_DT = configure_system_from_file(config_path, self.__svshi_mode, self.__telegram_logging) 
+        self.room, self.__SYSTEM_DT = configure_system_from_file(config_path, svshi_mode=self.__svshi_mode, telegram_logging=self.__telegram_logging) 
         # Re-initialization of day time and weather
+        self.daytimeweather_widget.delete()
         self.daytimeweather_widget = gt.DayTimeWeatherWidget(gc.TIMEWEATHER_POS[0], gc.TIMEWEATHER_POS[1], self.__batch, group_box=self.__background, group_daytime=self.__middleground, group_weather=self.__foreground, temp_out=self.room.world.ambient_temperature.temperature_out, hum_out=self.room.world.ambient_humidity.humidity_out, co2_out=self.room.world.ambient_co2.co2_out)
         self.room.world.time.start_time = time()
         self.initialize_system(save_config=True, config_path = config_path, system_dt=self.__SYSTEM_DT)
@@ -826,10 +827,14 @@ class GUIWindow(pyglet.window.Window):
                 if hasattr(self, '_dimmer_being_set'):
                     # If mouse was not dragged but only pressed (to turn ON/OFF dimmer)
                     if not self._dimmer_being_set.being_set: 
-                        self._dimmer_being_set.room_dimmer_widget.in_room_device.device.user_input(switch_state=True)
+                        self._dimmer_being_set.room_dimmer_widget.in_room_device.device.user_input()
                     else: # If mouse was dragged while pressing left button to set dimmer ratio
                         new_ratio = gt.dimmer_ratio_from_mouse_pos(y, self._dimmer_being_set.center_y)
-                        self._dimmer_being_set.room_dimmer_widget.in_room_device.device.user_input(state_ratio=new_ratio, keep_on=True)
+                        if new_ratio == 0:
+                            new_state = False
+                        else:
+                            new_state = True
+                        self._dimmer_being_set.room_dimmer_widget.in_room_device.device.user_input(state=new_state, state_ratio=new_ratio)
                     self.__switch_sprite()
                     self._dimmer_being_set.delete()
                     delattr(self, '_dimmer_being_set')
@@ -904,4 +909,3 @@ def update_gui_window(dt, window, date_time, current_str_simulation_time, weathe
     window.simtime_widget.date_value.text = f"{datetime_str}"
     window.daytimeweather_widget.update_out_state(weather, time_of_day, lux_out)
     print(f"World state update at simulation time: {sim_time}", end='\r')
-
