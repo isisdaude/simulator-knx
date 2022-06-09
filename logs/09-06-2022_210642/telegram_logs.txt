@@ -1,3 +1,0 @@
-
-++++++++++ Telegram received ++++++++++
-SVSHI -> Simulator: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/2" payload="<GroupValueRead />" />
