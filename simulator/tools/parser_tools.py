@@ -1,13 +1,16 @@
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import asyncio
-import logging, sys
-import numbers
-import argparse
+"""
+Module that define functions for parsing user commands, CLI arguments or API scripts.
+"""
+
+import logging
 import pprint
-pp=pprint.PrettyPrinter(compact=True)
+
+import argparse
+import asyncio
 
 import devices as dev
-from .config_tools import * # GUI_MODE, CLI_INT_MODE, ...
+
+pp=pprint.PrettyPrinter(compact=True)
 
 
 COMMAND_HELP = "Command Syntax: \n"\
@@ -16,7 +19,6 @@ COMMAND_HELP = "Command Syntax: \n"\
                 "- system info: 'getinfo [device_name]' or 'getinfo world [ambient]'\n"\
                 "- exit: 'q' to quit the program\n"\
                 "- help: 'h' for help"
-
 
 
 def arguments_parser(argv):

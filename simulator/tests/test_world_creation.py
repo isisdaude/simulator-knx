@@ -3,7 +3,7 @@ import pytest
 import logging
 
 import system
-import simulation as sim
+import world
 
 
 def test_correct_world_creation():
@@ -18,7 +18,7 @@ def test_correct_world_creation():
     vapor_pressure = 818.76226238 # NOTE: to change if temp init ≠ 20.0 and hum inti ≠ 35
     utilization_factor = 0.52
     light_loss_factor = 0.8
-    world = sim.World(width, length, height, speed_factor, system_dt, insulation, temp_out, hum_out, co2_out)
+    world = world.World(width, length, height, speed_factor, system_dt, insulation, temp_out, hum_out, co2_out)
     assert hasattr(world, 'time')
     assert world.time.speed_factor == speed_factor
     assert hasattr(world, 'room_insulation')

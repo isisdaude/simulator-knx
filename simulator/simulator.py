@@ -1,35 +1,23 @@
 """
-Simple simulator prototype.
+Main module, managing start of simulator in selected or default mode, launch of scheduler and GUI, and initialization of system through room.
 """
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 
 # Standard library imports
-#sys, os, io, time, datetime, ast, abc, dataclasses, json, copy, typing, math, logging, shutil, itertools, functools, numbers, collections, enum
-import functools
-import asyncio, aioconsole, signal
-import time, datetime, sys, os
-import pyglet
-import json
-import logging, threading
-import aioreactive as rx
-
+import logging
+import sys
+import time
 # Third party imports
-from pathlib import Path
-from pynput import keyboard
-from contextlib import suppress
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-
+import aioconsole
+import asyncio
 import pprint
-pp=pprint.PrettyPrinter(compact=True)
-
+import pyglet
+from contextlib import suppress
 # Local application imports
 import gui
-import system
 import tools
-from svshi_interface.main import Interface
-from tools.config_tools import * # GUI_MODE, CLI_INT_MODE, SAVED_CONFIG_PATH, ...
+import tools.config_tools as ct 
 
+pp=pprint.PrettyPrinter(compact=True)
 
 
 def launch_simulation(argv):
@@ -37,7 +25,7 @@ def launch_simulation(argv):
     INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, TELEGRAM_LOGGING = tools.arguments_parser(argv)
     
     # System configuration from function configure_system
-    if CONFIG_MODE == DEV_CONFIG:
+    if CONFIG_MODE == ct.DEV_CONFIG:
         while(True): # Waits for the input to be a correct speed factor, before starting the simulation
             simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
             if tools.check_simulation_speed_factor(simulation_speed_factor):
@@ -45,14 +33,14 @@ def launch_simulation(argv):
         room1, system_dt = tools.configure_system(simulation_speed_factor, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING)
     # Default, empty or file config
     else:
-        CONFIG_PATH = DEFAULT_CONFIG_PATH if CONFIG_MODE == DEFAULT_CONFIG else CONFIG_PATH
-        CONFIG_PATH = EMPTY_CONFIG_PATH if CONFIG_MODE == EMPTY_CONFIG else CONFIG_PATH
+        CONFIG_PATH = ct.DEFAULT_CONFIG_PATH if CONFIG_MODE == ct.DEFAULT_CONFIG else CONFIG_PATH
+        CONFIG_PATH = ct.EMPTY_CONFIG_PATH if CONFIG_MODE == ct.EMPTY_CONFIG else CONFIG_PATH
         room1, system_dt = tools.configure_system_from_file(CONFIG_PATH, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING)
 
 
     # GUI interface with the user
-    if INTERFACE_MODE == GUI_MODE:
-        window = gui.GUIWindow(CONFIG_PATH, DEFAULT_CONFIG_PATH, EMPTY_CONFIG_PATH, SAVED_CONFIG_PATH, room1, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING) #CONFIG_PATH can be a normal file, default or empty
+    if INTERFACE_MODE == ct.GUI_MODE:
+        window = gui.GUIWindow(CONFIG_PATH, ct.DEFAULT_CONFIG_PATH, ct.EMPTY_CONFIG_PATH, ct.SAVED_CONFIG_PATH, room1, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING) #CONFIG_PATH can be a normal file, default or empty
         window.initialize_system(save_config=True, system_dt=system_dt) #system_dt is delta time for scheduling update_world
         print("\n>>> The simulation is started in Graphical User Interface Mode <<<\n")
         start_time = time.time()
@@ -66,7 +54,7 @@ def launch_simulation(argv):
         print("The GUI window has been closed and the simulation terminated.")
 
     # Terminal interface with the user (no visual feedback)
-    elif INTERFACE_MODE == CLI_INT_MODE: # run the simulation without the GUI window
+    elif INTERFACE_MODE == ct.CLI_INT_MODE: # run the simulation without the GUI window
         # Configure the start_time attribute of room's Time object
         start_time = time.time()
         room1.world.time.start_time = start_time
@@ -136,11 +124,11 @@ async def kill_tasks():
 async def async_main(loop, room, command_mode, script_path):
     """ Manager function of asyncio tasks"""
     tasks = []
-    if command_mode == CLI_COM_MODE:
+    if command_mode == ct.CLI_COM_MODE:
         print(">>>>>> The Command mode is set to CLI (commands through terminal)")
         ui_task = loop.create_task(user_input_loop(room))
         tasks.append(ui_task) 
-    elif command_mode == SCRIPT_MODE:
+    elif command_mode == ct.SCRIPT_MODE:
         print(">>>>>> The Command mode is set to SCRIPT (commands from .txt script file)")
         script_task = loop.create_task(simulator_script_loop(room, script_path))
         tasks.append(script_task) 
@@ -151,20 +139,5 @@ async def async_main(loop, room, command_mode, script_path):
 if __name__ == "__main__":
     launch_simulation()
 
-# async def shutdown(signal, loop):
-#     """Cleanup tasks tied to the service's shutdown."""
-#     logging.info(f"Received exit signal {signal.name}...")
-#     tasks = [t for t in asyncio.all_tasks() if t is not
-#              asyncio.current_task()]
-
-#     [task.cancel() for task in tasks]
-
-#     logging.info(f"Cancelling {len(tasks)} outstanding tasks")
-#     await asyncio.gather(*taskss, return_exceptions=True)
-#     logging.info(f"Flushing metrics")
-#     loop.stop()
-#     print("\nThe simulation program has been ended.")
-#     sys.exit(1)
-        
 
 

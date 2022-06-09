@@ -1,3 +1,9 @@
+"""
+TODO
+"""
+
+import socket
+
 import asyncio
 from xknx.core.value_reader import ValueReader
 from xknx.dpt.dpt import DPTArray, DPTBase, DPTBinary
@@ -8,9 +14,7 @@ from xknx.xknx import XKNX
 from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.xknx import XKNX
 from xknx.telegram.telegram import Telegram
-import asyncio
-import time
-import socket
+
 
 async def telegram_received_cb(telegram: Telegram):
         """

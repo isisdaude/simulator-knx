@@ -1,24 +1,19 @@
 """
-Some class definitions for the simulation of the physical world
+ Module defining classes for the simulation of the physical world states. 
 """
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
 
+import time
+import math
+import logging
+from datetime import timedelta
 from typing import List
-import time, math, schedule
-import sys, logging
-from datetime import timedelta, datetime
-from numpy import mean, sign
-
-#from soupsieve import escape
-# sys.path.append("..") # Adds higher directory to python modules path, for relative includes
-# sys.path.append("core")
-#
-# from devices import *
-import system, tools
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from numpy import mean, sign
 
-SOIL_MOISTURE_MIN = 10
+import tools
+from .world_tools import outdoor_light, compute_distance, compute_distance_from_window,  INSULATION_TO_TEMPERATURE_FACTOR, INSULATION_TO_HUMIDITY_FACTOR, INSULATION_TO_CO2_FACTOR, SOIL_MOISTURE_MIN
+
 
 class Time:
     '''Class that implements time by handling events that should be executed at regular intervals'''
@@ -130,7 +125,6 @@ class AmbientTemperature:
 
     def update(self):
         from devices import Heater, AC
-        from system import INSULATION_TO_TEMPERATURE_FACTOR
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         logging.debug("Temperature update")
         previous_temp = self.__temperature_in
@@ -200,12 +194,13 @@ class AmbientLight:
         self.__utilization_factor = 0.52 
         self.__light_loss_factor = 0.8  # TODO magic number 
         self.__weather = weather
-        self.__lux_out, self.__time_of_day = system.outdoor_light(date_time, weather)
+        self.__lux_out, self.__time_of_day = outdoor_light(date_time, weather)
 
     def add_source(self, lightsource): 
         """ lightsource: InRoomDevice """
+        from system import Window
         self.__light_sources.append(lightsource) 
-        if isinstance(lightsource.device, system.Window):
+        if isinstance(lightsource.device, Window):
             # print(f"window {lightsource.device.name} is added to light sources")
             self.__windows.append(lightsource)
             # Compute window lumen from out_lux and window area
@@ -232,17 +227,18 @@ class AmbientLight:
 
     def __compute_sensor_brightness(self, brightness_sensor): # Read brightness at a particular sensor
         """ brightness_sensor: InRoomDevice """
+        from system import Window
         brightness = 0
         for source in self.__light_sources:
             # If the light is on and enabled on the bus
-            if isinstance(source.device, system.Window):
+            if isinstance(source.device, Window):
                 # Compute closest distance between sensor and windows
-                distance = system.compute_distance_from_window(source, brightness_sensor)
+                distance = compute_distance_from_window(source, brightness_sensor)
                 # print(f"sensor {brightness_sensor.name} is at {distance} from window {source.name}")
             elif (source.device.is_enabled() and source.device.state):
                 # print(f"{source.device.name} is a light source")
                 # Compute distance between sensor and each source
-                distance = system.compute_distance(source, brightness_sensor)  
+                distance = compute_distance(source, brightness_sensor)  
             # Compute the new brightness (illuminance in lux=[lm/m^2])
             partial_illuminance = self.__lux_from_lightsource(source, distance)
             # We can linearly add lux values
@@ -255,7 +251,7 @@ class AmbientLight:
             return None
         else:
             self.__weather = value
-            self.__lux_out, self.__time_of_day = system.outdoor_light(date_time, self.__weather)
+            self.__lux_out, self.__time_of_day = outdoor_light(date_time, self.__weather)
             for window in self.__windows: # update max_lumen
                 window.device.max_lumen_from_out_lux(self.__lux_out)
             for sensor in self.__light_sensors:
@@ -266,7 +262,7 @@ class AmbientLight:
     def update(self, date_time): # Updates all brightness sensors of the world (the room)
         logging.debug("Brightness update")
         brightness_levels = []
-        self.__lux_out, self.__time_of_day = system.outdoor_light(date_time, self.__weather)
+        self.__lux_out, self.__time_of_day = outdoor_light(date_time, self.__weather)
         for window in self.__windows: # update max_lumen
             window.device.max_lumen_from_out_lux(self.__lux_out)
         ## TODO window and blinds with out_lux
@@ -373,7 +369,6 @@ class AmbientHumidity:
         return 1
 
     def update(self, temperature):
-        from system import INSULATION_TO_HUMIDITY_FACTOR
         logging.debug("Humidity update")
         # We recompute sat vapor pressure from new temp
         self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(temperature)
@@ -434,7 +429,6 @@ class AmbientCO2:
         return 1
     
     def update(self, temperature, humidity):  ### TODO remove temp et humif not used
-        from system import INSULATION_TO_CO2_FACTOR
         logging.debug("CO2 update")
         # self.__co2_in = compute_co2level(temperature, humidity) # totally wrong values...
         ## TODO : change CO2 if window opened, co2 rise until window is opened

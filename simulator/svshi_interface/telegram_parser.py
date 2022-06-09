@@ -1,16 +1,21 @@
-import sys
+"""
+TODO
+"""
 
-sys.path.append('.')
-sys.path.append('..')
-from typing import Dict, Final, Union, List
+import sys
+from typing import Dict, Final, Union
+
 from xknx.dpt.dpt import DPTArray, DPTBinary, DPTNumeric
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress, IndividualAddress, GroupAddressType
-import system.telegrams as sim_t
 from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
 from xknx.xknx import XKNX
 
+import system.telegrams as sim_t
+
+sys.path.append('.')
+sys.path.append('..')
 #TODO: we do not handle floats for the moment, but useful when describing temperature!!!
 
 class TelegramParser:

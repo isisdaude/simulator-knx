@@ -1,5 +1,9 @@
-#__init__.py
-from .room import Room, InRoomDevice #, System
+"""
+Package system gather all abstractions and representations of KNX system related elements: KNX Bus, Telegrams, Room object.
+system_tools gather also
+"""
+
+from .room import Room, InRoomDevice 
 from .knxbus import KNXBus, GroupAddressBus
-from .telegrams import Telegram, Payload, BinaryPayload, FloatPayload#, TempControllerPayload
-from .system_tools import Location, IndividualAddress, GroupAddress, Window, compute_distance, compute_distance_from_window, outdoor_light, INSULATION_TO_TEMPERATURE_FACTOR, INSULATION_TO_HUMIDITY_FACTOR, INSULATION_TO_CO2_FACTOR
+from .telegrams import Telegram, Payload, BinaryPayload, FloatPayload
+from .system_tools import Location, IndividualAddress, GroupAddress, Window

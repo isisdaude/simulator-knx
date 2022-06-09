@@ -1,18 +1,18 @@
 """
-Some class definitions for the room(s) contained in the system
+Module that gather class definitions for the room contained in the system and the device simulated in it.
 """
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging, sys
+
+import logging
 import numbers
+import sys
 from typing import List
 
-import simulation as sim
+import world
 from devices import Device
-
 from system.system_tools import Location, Window
-from tools.check_tools import check_group_address, check_room_config #, check_simulation_speed_factor
+from tools.check_tools import check_group_address, check_room_config
 from .knxbus import KNXBus
-from abc import ABC, abstractclassmethod
+
 
 class InRoomDevice:
         """Inner class to represent a device located at a certain position in a room"""
@@ -35,18 +35,6 @@ class InRoomDevice:
             new_x = self.location.x if new_x is None else new_x
             new_loc = Location(self.room, new_x, new_y, new_z)
             self.location = new_loc
-
-        # def get_position(self):
-        #     return self.location.pos
-
-        # def get_x(self) -> float:
-        #     return self.location.x
-
-        # def get_y(self) -> float:
-        #     return self.location.y
-
-        # def get_z(self) -> float:
-        #     return self.location.z
         
         def get_irdev_info(self, attribute=None):
             if attribute is not None: # script mode, to store the device attribute in a variable
@@ -60,13 +48,9 @@ class InRoomDevice:
                 if isinstance(attr, numbers.Number):
                     return round(attr, 2)
             ir_device_dict = {"room_name":self.room.name, "device_name":self.device.name, "location":self.location.pos}
-            # print(f"ir_device_dict: '{ir_device_dict}'")-------------------
             device_dict = self.device.get_dev_info()
-            # print(f"device_dict: '{device_dict}'")
             ir_device_dict.update(device_dict) # concatenate 2 dict by uodating existing keys'value
-            # print(f"ir_device_dict(update): '{ir_device_dict}'")
             return ir_device_dict
-            
 
 
 class Room:
@@ -78,7 +62,7 @@ class Room:
         """Check and assign room configuration"""
         self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
         """Creation of the world object from room config"""
-        self.world = sim.World(self.width, self.length, self.height, self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
+        self.world = world.World(self.width, self.length, self.height, self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point
         """Representation of the KNX Bus"""
         self.knxbus= KNXBus(svshi_mode)
         """List of all devices in the room"""
@@ -100,7 +84,7 @@ class Room:
             self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
 
 
-    def add_device(self, device: Device, x: float, y: float, z:float):
+    def add_device(self, device: Device, x: float, y: float, z: float=1):
         from devices import FunctionalModule, Button, Dimmer, Actuator, LightActuator, TemperatureActuator, Sensor, Brightness, Thermometer, AirSensor, HumiditySoil, HumidityAir, CO2Sensor, PresenceSensor
         """Adds a device to the room at the given position"""
 

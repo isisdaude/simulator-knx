@@ -1,13 +1,15 @@
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging, sys, time
+"""
+Module that implement the KNX Bus object representation to emulate the real behaviour of a KNX system.
+"""
+
+import logging
+import sys
+import time
 from typing import List
-from pynput.keyboard import Key, Controller
 
 from system.system_tools import GroupAddress
 from devices import Actuator, Sensor, FunctionalModule
-from .telegrams import Telegram
 
-# TODO: add an async function that checks whether there are telegrams to be transmitted from svshi, maybe in the callback function of the interface!
 
 class KNXBus:
     '''Class that implements the transmission over the KNX Bus, between Actuators and FuntionalModules'''

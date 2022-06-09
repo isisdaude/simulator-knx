@@ -1,10 +1,15 @@
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
-import logging, sys, json, os
+"""
+Module that define functions to configure the system at start, or when reloading.
+"""
+
+import json
+import logging
+import os
+import sys
 
 import devices as dev
 from system.system_tools import IndividualAddress, Window
 from .check_tools import check_group_address, check_simulation_speed_factor
-# from system.room import Room
 
 
 DEV_CLASSES = { "LED": dev.LED, "Heater":dev.Heater, "AC":dev.AC, "Switch": dev.Switch,

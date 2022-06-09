@@ -1,5 +1,10 @@
-from abc import ABC
+"""
+Module that define classes related to Telegrams and their Payload.
+"""
+
 import logging
+from abc import ABC
+
 
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""

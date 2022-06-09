@@ -1,30 +1,31 @@
-import sys
+"""
+TODO
+"""
+
 import os
-import time
+import queue
+import sys
+import socket
+import select
+import threading
+
 from datetime import datetime
 from typing import List
+from _thread import *
 
-sys.path.append(".")
-sys.path.append("..")
-
-import socket
+import xknx.telegram.telegram as real_t
 from xknx import XKNX
 from xknx.knxip import *
 from xknx.io.connection import ConnectionConfig, ConnectionType
 from xknx.io.transport import *
 from xknx.io.knxip_interface import *
 from xknx.io.request_response import *
-import xknx.telegram.telegram as real_t
 from xknx.knxip import TunnellingRequest
-import select
-import socket
-import queue
-from _thread import *
-import threading
-
-from pynput.keyboard import Key, Controller
 
 import system.telegrams as sim_t
+
+sys.path.append(".")
+sys.path.append("..")
 
 # TODO: when to resend unacked?
 
@@ -130,7 +131,7 @@ class Interface:
             if self.__telegram_logging:
                 with open(self.__logging_file_path, "a+") as log_file:
                     if self.__last_tel_logged is None or self.__last_tel_logged == 'sent':
-                        log_file.write("\n++++ Telegram received ++++")
+                        log_file.write("\n++++++++++ Telegram received ++++++++++")
                         self.__last_tel_logged = 'recv'
                     log_file.write(f"\nSVSHI -> Simulator: {telegram}")
             ## TODO log telegrams
@@ -178,7 +179,7 @@ class Interface:
             if self.__telegram_logging:
                 with open(self.__logging_file_path, "a+") as log_file:
                     if self.__last_tel_logged is None or self.__last_tel_logged == 'recv':
-                        log_file.write("\n---- Telegram sent ----")
+                        log_file.write("\n---------- Telegram sent ----------")
                         self.__last_tel_logged = 'sent'
                     log_file.write(f"\nSimulator -> SVSHI: {teleg}")
             # data, addr = self.sock.recvfrom(1024)

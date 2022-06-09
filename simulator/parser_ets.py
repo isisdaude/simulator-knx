@@ -1,4 +1,4 @@
-
+""" Parser of ETS project files """
 from bs4 import BeautifulSoup
 import os, sys, logging
 
@@ -10,7 +10,6 @@ Devices types:
 - Heating, A/C, Ventilation
 - Presence detectors
 - heating, air condition, ventilation
--
 """
 
 

@@ -1,8 +1,8 @@
-import sys
-# sys.path.append("./simulator-knx/simulator")
-sys.path.append("./simulator")
-from simulator import launch_simulation #simulator.
+""" Program starting hook. """
 
+import sys
+from simulator import launch_simulation 
+sys.path.append("./simulator")
 
 if __name__ == "__main__":
     launch_simulation(sys.argv)

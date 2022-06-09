@@ -1,3 +1,6 @@
+""" 
+Module defining constant variables for the GUI Window and widgets
+"""
 
 ## GUI dimensions definitions
 WIN_WIDTH   = 1500  # [x axis] 
@@ -161,6 +164,7 @@ FONT_SIZE_SENSOR_LABEL      = 13
 FONT_SIZE_SENSOR_LEVEL      = 11
 FONT_SIZE_INDIVIDUAL_ADDR   = 10
 FONT_SIZE_OUT_STATE         = 14
+FONT_SIZE_SOILMOISTURE      = 10
 
 ## Opacity definitions
 OPACITY_DEFAULT     = 255
