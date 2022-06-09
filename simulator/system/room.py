@@ -138,6 +138,13 @@ class Room:
             return 1
         else:
             return 0
+    def detach(self, device, group_address:str):
+        ga = check_group_address(self.__group_address_style, group_address)
+        if ga:
+            self.knxbus.detach(device, ga)
+            return 1
+        else:
+            return 0
 
     def update_world(self, interval=1, gui_mode=False):
         if self.__test_mode == False:
