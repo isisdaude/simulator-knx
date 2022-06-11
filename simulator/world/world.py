@@ -532,7 +532,7 @@ class World:
         self.__temp_out, self.__hum_out, self.__co2_out = temp_out, hum_out, co2_out # does not change during simulation
         # self.speed_factor = simulation_speed_factor
         self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, self.time.update_rule_ratio, self.__temp_out, temp_in, room_insulation)
-        self.ambient_light = AmbientLight(self.__date_time, self.__weather) #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(sunny, cloudy,...)
+        self.ambient_light = AmbientLight(self.__date_time, self.__weather) #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(clear, overcast,...)
         self.ambient_humidity = AmbientHumidity(self.__temp_out, self.__hum_out, temp_in, hum_in,  self.__room_insulation, self.time.update_rule_ratio)
         self.ambient_co2 = AmbientCO2(self.__co2_out, co2_in, self.__room_insulation, self.time.update_rule_ratio)
         self.soil_moisture = SoilMoisture(self.time.update_rule_ratio)

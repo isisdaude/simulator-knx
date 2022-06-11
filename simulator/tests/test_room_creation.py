@@ -2,7 +2,7 @@
 import pytest
 import logging
 
-import system, tools
+import system, tools, world
 from devices import Button
 
 
@@ -17,8 +17,8 @@ def test_correct_room_creation():
     assert room1.width == room1_config["dimensions"][0]
     assert room1.length == room1_config["dimensions"][1]
     assert room1.height == room1_config["dimensions"][2]
-    assert room1.__.group_address_style == group_address_style
-    assert room1.__insulation in system.INSULATION_TO_TEMPERATURE_FACTOR
+    assert room1._Room__group_address_style == group_address_style
+    assert room1._Room__insulation in world.INSULATION_TO_TEMPERATURE_FACTOR
 
 def test_correct_InRoomDevice_creation():
     button1_config = {"name":"button1", "refid":"M-0_S1", "indiv_addr":[0,0,20], "status":"enabled", "location":(0,0,1), "group_addresses":['1/1/1']}
@@ -70,7 +70,7 @@ wrong_insulation_types = ['nice', 'good_', 'p3rf3ct.', 25, 0x67]
 def test_incorrect_room_insulation():
     for wrong_insulation in wrong_insulation_types:
         room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation=wrong_insulation, test_mode=True)
-        assert room1.__insulation == 'average'
+        assert room1._Room__insulation == 'average'
 
 
 

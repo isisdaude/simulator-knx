@@ -338,7 +338,7 @@ def check_wheater_date(date_time, weather):
         assert weather in WEATHER
         sim_weather = weather
     except AssertionError:
-        logging.error(f"'weather should be 'clear', 'overcast' or 'dark', but '{weather}' was given, 'sunny' is considered as simulation outside weather ")
+        logging.error(f"'weather should be 'clear', 'overcast' or 'dark', but '{weather}' was given, 'clear' is considered as simulation outside weather ")
         sim_weather = 'clear'
     return sim_datetime, sim_weather
 
