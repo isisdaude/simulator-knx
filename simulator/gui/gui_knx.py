@@ -896,7 +896,7 @@ class GUIWindow(pyglet.window.Window):
 
 
 # Cannot be a class method because first argument must be dt for scheduling, and thus cannot be self.
-def update_gui_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out, svshi_mode): 
+def update_gui_window(dt, window, date_time, current_str_simulation_time, weather, time_of_day, lux_out, svshi_mode) -> None: 
     ''' Functions called with the pyglet scheduler
         Update the Simulation Time, Date and Weather displayed'''
     if svshi_mode: # Redraw devices images to take into account delay of telegram from svshi

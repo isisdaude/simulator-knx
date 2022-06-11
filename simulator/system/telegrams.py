@@ -21,7 +21,7 @@ class Telegram:
 
 class Payload(ABC):
     """Abstract class to represent the payload given as attribute to the Telegrams sent"""
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.content = None
 
