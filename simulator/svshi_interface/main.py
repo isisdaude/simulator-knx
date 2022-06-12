@@ -2,14 +2,12 @@
 Main class that implements the interface with sending and receving operations
 """
 
-import os
 import queue
 import sys
 import socket
 import select
 import threading
 
-from datetime import datetime
 from typing import List, Tuple
 from _thread import *
 
@@ -108,7 +106,7 @@ class Interface:
         return bytes(frame.to_knx())
 
     # RECEIVING TELEGRAMS
-    def __receiving_telegrams(self, frame: KNXIPFrame, data: bytes, addr: Any, knxbus) -> None:
+    def __receiving_telegrams(self, frame: KNXIPFrame, data: bytes, addr: Any, knxbus=None) -> None:
         """Receives telegrams and forwards them to the system"""
 
         frame.from_knx(data)
@@ -194,6 +192,7 @@ class Interface:
                     if ready_socket is self.__sock:
                         data = self.__sock.recv(1024)
                         # Ready socket is sock, we receive telegrams from SVSHI
+                        
                         self.__receiving_telegrams(frame, data, addr, self.room.knxbus)
                     else:
                         # Ready_socket is rsock, we need to send to SVSHI
