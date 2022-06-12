@@ -20,7 +20,7 @@ sys.path.append('..')
 class TelegramParser:
     '''Class that implements a parser for telegrams, from simulated telegrams to real telegrams and the other way around'''
 
-    def __init__(self, group_address_to_payload = Dict()) -> None:
+    def __init__(self, group_address_to_payload = {}) -> None:
         """Initializes an instance of a telegram parser"""
         self.group_address_to_payload: Dict[str,
                                             sim_t.Payload] = group_address_to_payload
