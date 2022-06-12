@@ -7,8 +7,8 @@ from .device_abstractions import FunctionalModule
 from system.telegrams import BinaryPayload, DimmerPayload, FloatPayload, Payload, Telegram
 
 class Button(FunctionalModule):
-    def __init__(self, name, refid, location, default_status):
-        super().__init__('Button', name, refid, location, default_status, "button")
+    def __init__(self, name, location):
+        super().__init__('Button', name, location)
         self.state = False
         self.__str_state = "OFF"
 
@@ -29,8 +29,8 @@ class Button(FunctionalModule):
 
 
 class Dimmer(FunctionalModule):
-    def __init__(self, name, refid, location, default_status):
-        super().__init__('Dimmer', name, refid, location, default_status, "dimmer")
+    def __init__(self, name, location):
+        super().__init__('Dimmer', name, location)
         self.state = False
         self.__str_state = "OFF"
         self.state_ratio = 100

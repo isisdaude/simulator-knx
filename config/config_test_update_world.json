@@ -7,41 +7,27 @@
         "devices": {
           "brightness1": {
             "class": "Brightness",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.100",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.100"
           },
           "airsensor1": {
             "class": "AirSensor",
-            "refid": "M-O_X101",
-            "knx_location": "0.0.101",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.101"
           },
           "button1": {
             "class": "Button",
-            "refid": "M-O_X102",
-            "knx_location": "0.0.102",
-            "status": "enabled"
+            "knx_location": "0.0.102"
           },
           "heater1": {
             "class": "Heater",
-            "refid": "M-O_X103",
-            "knx_location": "0.0.103",
-            "status": "enabled"
+            "knx_location": "0.0.103"
           },
           "dimmer1": {
             "class": "Dimmer",
-            "refid": "M-O_X104",
-            "knx_location": "0.0.104",
-            "status": "enabled"
+            "knx_location": "0.0.104"
           },
           "led1": {
             "class": "LED",
-            "refid": "M-O_X105",
-            "knx_location": "0.0.105",
-            "status": "enabled"
+            "knx_location": "0.0.105"
           }
         }
       }

@@ -14,8 +14,7 @@ Devices types:
 
 
 class Manufacturer:
-    def __init__(self, man_refid, man_name, man_language):
-        self.man_refid = man_refid
+    def __init__(self, man_name, man_language):
         self.man_name = man_name
         self.man_language = man_language
 

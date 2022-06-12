@@ -169,12 +169,10 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                 try:
                     device_config = line_devices_config[dev_key]
                     dev_class = device_config["class"]
-                    dev_refid = device_config["refid"]
-                    dev_status = device_config["status"]
                 except (KeyError):
                     logging.warning(f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}")
                     continue # get out of the for loop iteration
-                # print(f"{dev_key}, {dev_class}, {dev_refid}, loc = {device_config['location']}")
+                # print(f"{dev_key}, {dev_class}, loc = {device_config['location']}")
                 _a, _l, _d = [int(loc) for loc in device_config["knx_location"].split(".")] # parse individual addresses 'area/line/device' in 3 variables
                 if (_a != a or _l != l):
                     logging.warning(f"{dev_key} on {area_key}.{line_key} is wrongly configured with area{_a}.line{_l} ==> device is rejected")
@@ -182,13 +180,12 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                 if (_a < 0 or _a > 15 or _l < 0 or _l > 15 or _d < 0 or _d > 255):
                     logging.warning(f"Individual address out of bounds, should be in 0.0.0 -> 15.15.255 ==> device is rejected")
                     continue # get out of the for loop iteration
-                dev_status = device_config["status"]
                 print(dev_key)
                 for room_builder in rooms_builders: # list of [room_object, room_devices_config] for all rooms of the system
                     if dev_key in room_builder[1].keys():
                         dev_pos = room_builder[1][dev_key]
                         # Create the device object before adding it to the room
-                        dev_object = DEV_CLASSES[dev_class](dev_key, dev_refid, IndividualAddress(_a, _l, _d), dev_status) # we don't set up the state, False(OFF) by default
+                        dev_object = DEV_CLASSES[dev_class](dev_key, IndividualAddress(_a, _l, _d)) # we don't set up the state, False(OFF) by default
                         room_builder[0].add_device(dev_object, dev_pos[0], dev_pos[1], dev_pos[2])
                     else:
                         logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected")

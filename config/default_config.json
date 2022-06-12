@@ -7,22 +7,15 @@
         "devices": {
           "led1": {
             "class": "LED",
-            "refid": "M-0_L1",
-            "knx_location": "0.0.1",
-            "status": "enabled"
+            "knx_location": "0.0.1"
           },
           "button1": {
             "class": "Button",
-            "refid": "M-0_B1",
-            "knx_location": "0.0.20",
-            "status": "enabled"
+            "knx_location": "0.0.20"
           },
           "brightness1": {
             "class": "Brightness",
-            "refid": "M-0_S1",
-            "knx_location": "0.0.5",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.5"
           }
         }
       }

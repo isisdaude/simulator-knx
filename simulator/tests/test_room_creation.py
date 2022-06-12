@@ -21,8 +21,8 @@ def test_correct_room_creation():
     assert room1._Room__insulation in world.INSULATION_TO_TEMPERATURE_FACTOR
 
 def test_correct_InRoomDevice_creation():
-    button1_config = {"name":"button1", "refid":"M-0_S1", "indiv_addr":[0,0,20], "status":"enabled", "location":(0,0,1), "group_addresses":['1/1/1']}
-    button1 = Button("button1", "M-0_S1", system.IndividualAddress(0,0,20), "enabled")
+    button1_config = {"name":"button1", "indiv_addr":[0,0,20], "location":(0,0,1), "group_addresses":['1/1/1']}
+    button1 = Button("button1", system.IndividualAddress(0,0,20))
     room1 = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation='good', test_mode=True)
     ir_button1 = system.InRoomDevice(button1, room1, 0, 0, 1)
     assert ir_button1.name == button1_config["name"]

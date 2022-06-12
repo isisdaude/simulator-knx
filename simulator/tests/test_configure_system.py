@@ -6,18 +6,18 @@ import system
 import devices as dev
 
 # Creation of the system base (devices + room)
-button1 = dev.Button("button1", "M-0_S1", system.IndividualAddress(0,0,20), "enabled")
-dimmer1 = dev.Dimmer("dimmer1", "M-0_D1", system.IndividualAddress(0,0,22), "enabled")
-led1 = dev.LED("led1", "M-0_L1", system.IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
-heater1 = dev.Heater("heater1", "M-0_H1", system.IndividualAddress(0,0,11), "enabled", 400) #400W max power
-ac1 = dev.AC("ac1", "M-0_C1", system.IndividualAddress(0,0,12), "enabled", 400)
-switch1 = dev.Switch("switch1", "M-0_S1", system.IndividualAddress(0,0,44), "enabled")
-brightness1 = dev.Brightness("brightness1", "M-0_L3", system.IndividualAddress(0,0,5), "enabled")
-thermometer1 = dev.Thermometer("thermometer1", "M-0_T1", system.IndividualAddress(0,0,33), "enabled")
-humiditysoil1 = dev.HumiditySoil("humiditysoil1", "M-0_HU1", system.IndividualAddress(0,0,34), "enabled")
-co2sensor1 = dev.CO2Sensor("co2sensor1", "M-0_CO2", system.IndividualAddress(0,0,35), "enabled")
-airsensor1 = dev.AirSensor("airsensor1", "M-0_A1", system.IndividualAddress(0,0,55), "enabled")
-presencesensor1 = dev.PresenceSensor("presencesensor1", "M-0_A1", system.IndividualAddress(0,0,66), "enabled")
+button1 = dev.Button("button1", system.IndividualAddress(0,0,20))
+dimmer1 = dev.Dimmer("dimmer1", system.IndividualAddress(0,0,22))
+led1 = dev.LED("led1", system.IndividualAddress(0,0,1)) #Area 0, Line 0, Device 0
+heater1 = dev.Heater("heater1", system.IndividualAddress(0,0,11), 400) #400W max power
+ac1 = dev.AC("ac1", system.IndividualAddress(0,0,12), 400)
+switch1 = dev.Switch("switch1", system.IndividualAddress(0,0,44))
+brightness1 = dev.Brightness("brightness1", system.IndividualAddress(0,0,5))
+thermometer1 = dev.Thermometer("thermometer1", system.IndividualAddress(0,0,33))
+humiditysoil1 = dev.HumiditySoil("humiditysoil1", system.IndividualAddress(0,0,34))
+co2sensor1 = dev.CO2Sensor("co2sensor1", system.IndividualAddress(0,0,35))
+airsensor1 = dev.AirSensor("airsensor1", system.IndividualAddress(0,0,55))
+presencesensor1 = dev.PresenceSensor("presencesensor1", system.IndividualAddress(0,0,66))
 
 simulation_speed_factor = 180
 room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
@@ -108,7 +108,7 @@ ga2 = system.GroupAddress('3-levels', main=2, middle=2, sub=2)
 # ga2_bus = system.GroupAddressBus(ga2)
 ga2_bus = None
 ga2_str = '2/2/2'
-led22 = dev.LED("led22", "M-0_L22", system.IndividualAddress(2,2,2), "enabled") #Area 0, Line 0, Device 0
+led22 = dev.LED("led22", system.IndividualAddress(2,2,2)) #Area 0, Line 0, Device 0
 def test_correct_detachement_from_bus():
     room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
     room1.add_device(led22, 2, 2, 2)

@@ -7,57 +7,34 @@
         "devices":{
           "led1":{
             "class":"LED",
-            "refid":"M-0_L1",
-            "knx_location":"0.0.1",
-            "status":"enabled"},
+            "knx_location":"0.0.1"},
           "led2":{
             "class":"LED",
-            "refid":"M-0_L2",
-            "knx_location":"0.0.2",
-            "status":"enabled"},
+            "knx_location":"0.0.2"},
           "led3":{
             "class":"LED",
-            "refid":"M-0_L3",
-            "knx_location":"0.0.3",
-            "status":"enabled"},
+            "knx_location":"0.0.3"},
           "button1":{
             "class":"Button",
-            "refid":"M-0_B1",
-            "knx_location":"0.0.21",
-            "status":"enabled"},
+            "knx_location":"0.0.21"},
           "button2":{
             "class":"Button",
-            "refid":"M-0_B2",
-            "knx_location":"0.0.22",
-            "status":"enabled"},
+            "knx_location":"0.0.22"},
           "dimmer1":{
             "class":"Dimmer",
-            "refid":"M-0_D2",
-            "knx_location":"0.0.41",
-            "status":"enabled"},
+            "knx_location":"0.0.41"},
           "brightness1":{
             "class":"Brightness",
-            "refid":"M-0_S1",
-            "knx_location":"0.0.5",
-            "status":"enabled",
-            "send_state_interval":1},
+            "knx_location":"0.0.5"},
           "brightness2":{
             "class":"Brightness",
-            "refid":"M-0_S2",
-            "knx_location":"0.0.6",
-            "status":"enabled",
-            "send_state_interval":1},
+            "knx_location":"0.0.6"},
           "heater1":{
             "class":"Heater",
-            "refid":"M-0_H1",
-            "knx_location":"0.0.11",
-            "status":"enabled"},
+            "knx_location":"0.0.11"},
           "thermometer1":{
             "class":"Thermometer",
-            "refid":"M-0_T1",
-            "knx_location":"0.0.12",
-            "status":"enabled",
-            "send_state_interval":1}
+            "knx_location":"0.0.12"}
         }
       }
     },

@@ -7,137 +7,87 @@
         "devices": {
           "led1": {
             "class": "LED",
-            "refid": "M-0_L1",
-            "knx_location": "0.0.1",
-            "status": "enabled"
+            "knx_location": "0.0.1"
           },
           "led2": {
             "class": "LED",
-            "refid": "M-0_L2",
-            "knx_location": "0.0.2",
-            "status": "enabled"
+            "knx_location": "0.0.2"
           },
           "led3": {
             "class": "LED",
-            "refid": "M-0_L3",
-            "knx_location": "0.0.3",
-            "status": "enabled"
+            "knx_location": "0.0.3"
           },
           "button1": {
             "class": "Button",
-            "refid": "M-0_B1",
-            "knx_location": "0.0.21",
-            "status": "enabled"
+            "knx_location": "0.0.21"
           },
           "button2": {
             "class": "Button",
-            "refid": "M-0_B2",
-            "knx_location": "0.0.22",
-            "status": "enabled"
+            "knx_location": "0.0.22"
           },
           "dimmer1": {
             "class": "Dimmer",
-            "refid": "M-0_D2",
-            "knx_location": "0.0.41",
-            "status": "enabled"
+            "knx_location": "0.0.41"
           },
           "brightness1": {
             "class": "Brightness",
-            "refid": "M-0_S1",
-            "knx_location": "0.0.5",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.5"
           },
           "brightness2": {
             "class": "Brightness",
-            "refid": "M-0_S2",
-            "knx_location": "0.0.6",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.6"
           },
           "heater1": {
             "class": "Heater",
-            "refid": "M-0_H1",
-            "knx_location": "0.0.11",
-            "status": "enabled"
+            "knx_location": "0.0.11"
           },
           "thermometer1": {
             "class": "Thermometer",
-            "refid": "M-0_T1",
-            "knx_location": "0.0.12",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.12"
           },
           "led4": {
             "class": "LED",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.13",
-            "status": "enabled"
+            "knx_location": "0.0.13"
           },
           "dimmer2": {
             "class": "Dimmer",
-            "refid": "M-O_X101",
-            "knx_location": "0.0.14",
-            "status": "enabled"
+            "knx_location": "0.0.14"
           },
           "button3": {
             "class": "Button",
-            "refid": "M-O_X102",
-            "knx_location": "0.0.15",
-            "status": "enabled"
+            "knx_location": "0.0.15"
           },
           "ac1": {
             "class": "AC",
-            "refid": "M-O_X103",
-            "knx_location": "0.0.16",
-            "status": "enabled"
+            "knx_location": "0.0.16"
           },
           "button4": {
             "class": "Button",
-            "refid": "M-O_X104",
-            "knx_location": "0.0.17",
-            "status": "enabled"
+            "knx_location": "0.0.17"
           },
           "airsensor1": {
             "class": "AirSensor",
-            "refid": "M-O_X108",
-            "knx_location": "0.0.18",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.18"
           },
           "humiditysoil1": {
             "class": "HumiditySoil",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.19",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.19"
           },
           "co2sensor1": {
             "class": "CO2Sensor",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.20",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.20"
           },
           "humidityair1": {
             "class": "HumidityAir",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.21",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.21"
           },
           "switch1": {
             "class": "Switch",
-            "refid": "M-O_X101",
-            "knx_location": "0.0.22",
-            "status": "enabled"
+            "knx_location": "0.0.22"
           },
           "presencesensor1": {
             "class": "PresenceSensor",
-            "refid": "M-O_X100",
-            "knx_location": "0.0.23",
-            "status": "enabled",
-            "send_state_interval":1
+            "knx_location": "0.0.23"
           }
         }
       }
