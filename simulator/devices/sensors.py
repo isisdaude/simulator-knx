@@ -42,6 +42,7 @@ class Thermometer(Sensor):
         if self.interface is not None and self.group_addresses:
             # ga = GroupAddress('3-levels', 0, 0, 3)
             payload = FloatPayload(self.temperature)
+            # self.send_telegram(payload) # should send on the bus if connected to a ga, and IPInterface should get it
             telegram = Telegram(self.individual_addr, self.group_addresses[0], payload)
             self.interface.add_to_sending_queue([telegram])
 

@@ -23,7 +23,7 @@ COMMAND_HELP = "Command Syntax: \n"\
 
 def arguments_parser(argv):
     """FUcntion to parse CLI arguments given by the user when launching the program"""
-    parser = argparse.ArgumentParser(description='Process Interface, Command, Config and Logging modes.')
+    parser = argparse.ArgumentParser(description='Process Interface, Command, Config and Logging modes.', formatter_class=argparse.RawTextHelpFormatter)
 
     # Logging argument definition
     parser.add_argument("-l", "--log",  
@@ -31,7 +31,7 @@ def arguments_parser(argv):
                         default="WARNING",
                         type=str.upper,
                         choices=logging._nameToLevel.keys(), 
-                        help=("Provide logging level. Example '-l debug' or '--log=DEBUG', default='WARNING'."))
+                        help=("Provide logging level.\nExample '-l debug' or '--log=DEBUG'\n-> default='WARNING'."))
     ## TODO, add log file destination option
     # Interface argument definition
     parser.add_argument("-i", "--interface",
@@ -39,37 +39,37 @@ def arguments_parser(argv):
                         default="gui",
                         type=str.lower,
                         choices=["gui", "cli"],
-                        help=("Provide user interface mode. Example '-i cli' or '--interface=cli', default='gui'."))
+                        help=("Provide user interface mode.\nExample '-i cli' or '--interface=cli'\n-> default='gui'."))
     # Command argument definition
     parser.add_argument("-c", "--command-mode",
                         action='store',
                         default="cli",
                         type=str.lower,
                         choices=["script", "cli"],
-                        help=("Provide command mode (Only if interface mode is CLI). Example '-c script' or '--command-mode=script', default='cli'"))
+                        help=("Provide command mode (only if interface mode is CLI).\nExample '-c script' or '--command-mode=script'\n-> default='cli'"))
     # Config File Name argument definition 
     parser.add_argument("-f", "--filescript-name",
                         action='store',
                         default="full_script",
                         type=str.lower,
-                        help=("Provide script file name (without .txt extension). Example '-F full_script' or '--file-name=full_script', default='full_script'"))
+                        help=("Provide script file name (without .txt extension).\nExample '-F full_script' or '--file-name=full_script'\n-> default='full_script'"))
     # Config argument definition
     parser.add_argument("-C", "--config-mode",
                         action='store',
                         default="file",
                         type=str.lower,
                         choices=["file", "default", "empty", "dev"],
-                        help=("Provide configuration mode. Example '-C file' or '--command-mode=empty', default='file'"))
+                        help=("Provide configuration mode.\nExample '-C file' or '--command-mode=empty'\n-> default='file'"))
     # Config File Name argument definition 
     parser.add_argument("-F", "--fileconfig-name",
                         action='store',
                         default="sim_config_bedroom",
                         type=str.lower,
-                        help=("Provide configuration file name (without .json extension). Example '-F sim_config_bedroom' or '--file-name=sim_config_bedroom', default='sim_config_bedroom'"))
+                        help=("Provide configuration file name (without .json extension).\nExample '-F sim_config_bedroom' or '--file-name=sim_config_bedroom'\n-> default='sim_config_bedroom'"))
     # SVSHI mode argument definition
     parser.add_argument("-s", "--svshi-mode",
                         action='store_true', # svshi_mode=True if option, False if no -s option
-                        help=("Specifies that SVSHI will be used (-s option) or not (no option)."))
+                        help=("Specifies that SVSHI program will be used, start a thread to communicate with it."))
     # Telegram logging mode argument definition
     parser.add_argument("-t", "--telegram-logging",
                         action='store_true', # telegram_logging=True if option, False if no -t option

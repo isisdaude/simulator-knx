@@ -1,0 +1,4 @@
+
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.1" destination_address="0/0/2" payload="<GroupValueWrite value="<DPTBinary value="1" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.1" destination_address="0/0/2" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />

@@ -1,0 +1,3 @@
+
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x76]" />" />" />
