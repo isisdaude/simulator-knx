@@ -35,6 +35,7 @@ jobs:
         uses: codecov/codecov-action@v3 ### what is this command?
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          version: "v0.1.16"
           fail_ci_if_error: true
 
   fail_if_pull_request_is_draft:
