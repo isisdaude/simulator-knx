@@ -125,7 +125,7 @@ def test_communication():
     group_address_style = '3-levels'
     room = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation='good', test_mode=True)
 
-    interface = Interface(room, False, testing=True)
+    interface = Interface(room, True, testing=True)
     
 
     hostname = socket.gethostname()
