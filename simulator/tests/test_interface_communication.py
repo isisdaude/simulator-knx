@@ -123,9 +123,9 @@ def test_communication():
     svshi = SVSHI_TEST()
     speed_factor = 180
     group_address_style = '3-levels'
-    room = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation='good', test_mode=True, telegram_logging=True)
+    room = system.Room("bedroom1", 20, 20, 3, speed_factor, group_address_style, insulation='good', test_mode=True)
 
-    interface = Interface(room, True, testing=True)
+    interface = Interface(room, False, testing=True)
     
 
     hostname = socket.gethostname()
