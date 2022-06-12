@@ -7,21 +7,15 @@
         "devices": {
           "led2": {
             "class": "LED",
-            "refid": "M-0_L2",
-            "knx_location": "0.0.2",
-            "status": "enabled"
+            "knx_location": "0.0.2"
           },
           "button2": {
             "class": "Button",
-            "refid": "M-0_B2",
-            "knx_location": "0.0.22",
-            "status": "enabled"
+            "knx_location": "0.0.22"
           },
           "dimmer1": {
             "class": "Dimmer",
-            "refid": "M-0_D2",
-            "knx_location": "0.0.41",
-            "status": "enabled"
+            "knx_location": "0.0.41"
           }
         }
       }
@@ -35,28 +29,19 @@
         "devices": {
           "led1": {
             "class": "LED",
-            "refid": "M-0_L1",
-            "knx_location": "1.1.2",
-            "status": "enabled"
+            "knx_location": "1.1.2"
           },
           "button1": {
             "class": "Button",
-            "refid": "M-0_B1",
-            "knx_location": "1.1.1",
-            "status": "enabled"
+            "knx_location": "1.1.1"
           },
           "thermometer1": {
             "class": "Thermometer",
-            "refid": "M-0_T1",
-            "knx_location": "1.1.3",
-            "status": "enabled",
-            "send_state_interval":4
+            "knx_location": "1.1.3"
           },
           "heater1": {
             "class": "Heater",
-            "refid": "M-0_H1",
-            "knx_location": "1.1.2",
-            "status": "enabled"
+            "knx_location": "1.1.2"
           }
         }
       }

@@ -398,7 +398,6 @@ class GUIWindow(pyglet.window.Window):
         # Set up dummy Individual Address
         area, line, dev_number = [self.__individual_address_default[i] for i in range(3)]
         individual_address = IndividualAddress(area, line, dev_number) 
-        new_refid = "M-O_X" + str(self.__individual_address_default[2]) #TODO#
         self.__individual_address_default[2] += 1
         if self.__individual_address_default[2] > 255:
             self.__individual_address_default[2] = 0
@@ -412,15 +411,14 @@ class GUIWindow(pyglet.window.Window):
                 similar_devices_counter +=1
         new_device_name = new_device_class.lower() + str(similar_devices_counter)
         # Creation of the device object
-        new_status = "enabled"
-        device = DEV_CLASSES[new_device_class](new_device_name, new_refid, individual_address, new_status) #TODO#
+        device = DEV_CLASSES[new_device_class](new_device_name, individual_address) #TODO#
         loc_x, loc_y = gt.gui_pos_to_system_loc(pos_x, pos_y, self.__room_width_ratio, self.__room_length_ratio,
                                             self.__room_widget.origin_x, self.__room_widget.origin_y)
         loc_z = 1.0 # 1 is default height z
         self._moving_device.in_room_device = room.add_device(device, loc_x, loc_y, loc_z)
         self._moving_device.update_position(pos_x, pos_y, loc_x, loc_y, update_loc=True)
         self.__room_devices.append(self._moving_device)
-        self.__add_device_to_config(new_device_name, new_device_class, new_refid, str(area), str(line), str(dev_number), new_status, loc_x, loc_y, loc_z, room.name)
+        self.__add_device_to_config(new_device_name, new_device_class, str(area), str(line), str(dev_number), loc_x, loc_y, loc_z, room.name)
         self.__display_brightness_labels()
         self.__display_temperature_labels()
         self.__display_airsensor_labels()
@@ -446,14 +444,14 @@ class GUIWindow(pyglet.window.Window):
         self._moving_device.update_position(new_x, new_y, loc_x, loc_y, update_loc=True)
         self.__update_config_loc(loc_x, loc_y, self.room.name)
 
-    def __add_device_to_config(self, dev_name: str, dev_class: str, dev_refid: str, area: str, line: str, dev_number : str, dev_status: str, loc_x: float, loc_y: float, loc_z: float, room_name: str) -> None: #TODO#
+    def __add_device_to_config(self, dev_name: str, dev_class: str, area: str, line: str, dev_number : str, loc_x: float, loc_y: float, loc_z: float, room_name: str) -> None: #TODO#
         """ Update with a new device the configuration dict respresenting the current GUI system"""
         knx_config = self.system_config_dict["knx"]
         area_key = 'area' + area
         line_key = 'line' + line
         knx_loc = '.'.join([area, line, dev_number])
         line_devices = knx_config[area_key][line_key]["devices"]
-        line_devices[dev_name] = {"class": dev_class, "refid": dev_refid, "knx_location": knx_loc, "status": dev_status}
+        line_devices[dev_name] = {"class": dev_class, "knx_location": knx_loc}
         world_config = self.system_config_dict["world"]
         for room in world_config["rooms"]:
             if world_config["rooms"][room]["name"] == room_name:

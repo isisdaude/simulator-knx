@@ -137,10 +137,10 @@ class AmbientTemperature:
             #### actual power would allow to compute concrete max temp
             # self.total_actual_power = 0
             # for source in self.__temp_sources:
-            #     if source.device.status and source.device.state:
+            #     if source.device.state:
             #         self.total_actual_power += source.device.effective_power
             for source in self.__temp_sources: # sources of heat or cold
-                if source.device.status and source.device.state: # if source enabled
+                if source.device.state: # if source enabled
                     if isinstance(source.device, Heater):
                         source.device.update_rule = source.device.effective_power()/self.total_max_power 
                         self.__temperature_in += source.device.update_rule*self.__update_rule_ratio
@@ -235,7 +235,7 @@ class AmbientLight:
                 # Compute closest distance between sensor and windows
                 distance = compute_distance_from_window(source, brightness_sensor)
                 # print(f"sensor {brightness_sensor.name} is at {distance} from window {source.name}")
-            elif (source.device.is_enabled() and source.device.state):
+            elif source.device.state:
                 # print(f"{source.device.name} is a light source")
                 # Compute distance between sensor and each source
                 distance = compute_distance(source, brightness_sensor)  

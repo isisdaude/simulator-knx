@@ -1,5 +1,5 @@
 """ 
-Simulation package to model and update physical world states, such as Temperature, Humidity, Co2, Brightness, Time, Soil Humidity or Presence.
+Package world to model and update physical world states, such as Temperature, Humidity, Co2, Brightness, Time, Soil Humidity or Presence.
 """
 
 from .world import Time, AmbientTemperature, AmbientLight, World

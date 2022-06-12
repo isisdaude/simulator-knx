@@ -7,7 +7,7 @@ import devices as dev
 
 
 simulation_speed_factor = 180
-led1 = dev.LED("led1", "M-0_L1", system.IndividualAddress(0,0,1), "enabled")
+led1 = dev.LED("led1", system.IndividualAddress(0,0,1))
 
 correct_locations = [[0,0,0], [12.5,10,3], [2,6,1.5]]
 # Out-of-bounds locations, supposed to be replaced in the room's bounds

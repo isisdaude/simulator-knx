@@ -212,7 +212,7 @@ def check_room_config(name, width, length, height, speed_factor, ga_style, insul
     return name, width, length, height, speed_factor, ga_style, insulation
 
 
-def check_device_config(class_name, name, refid, individual_addr, status):
+def check_device_config(class_name, name, individual_addr):
     # Device name check
     try:
         assert isinstance(name, str)
@@ -231,32 +231,14 @@ def check_device_config(class_name, name, refid, individual_addr, status):
     except AssertionError:
         logging.error(f"The lower-case class name '{class_name.lower()}' should be in name, but '{name}' was given -> program terminated.")
         sys.exit(1)
-    # Device refid check
-    try:
-        assert isinstance(refid, str)
-    except AssertionError:
-        logging.error(f"A non-empty ascii string reference ID is required to create the device, but '{refid}' was given -> program terminated.")
-        sys.exit(1)
-    try:
-        assert len(refid) > 5 # arbitrary 5, refid should be longer
-        assert refid.isascii() # check alphanumericness
-    except AssertionError:
-        logging.error(f"A non-empty ascii string reference ID is required to create the device, but '{refid}' was given -> program terminated.")
-        sys.exit(1)
     # Device Individual address check
     try:
         assert individual_addr.area is not None and individual_addr.line is not None and individual_addr.device is not None
     except AssertionError:
         logging.error(f"Wrong individual address for device {name} -> program terminated.")
         sys.exit(1)
-    # Device status check
-    try:
-        assert status in ["enabled", "disabled"]
-    except AssertionError:
-        logging.error(f"Status of device {name} should be 'enabled' or 'disabled', but '{status}' was given -> program terminated.")
-        sys.exit(1)
 
-    return class_name, name, refid, individual_addr, status
+    return class_name, name, individual_addr
 
 
 def check_location(bounds, x, y, z):

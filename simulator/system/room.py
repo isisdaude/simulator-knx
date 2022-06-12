@@ -25,10 +25,9 @@ class InRoomDevice:
             self.location = Location(self.room, x, y, z)
 
         def __eq__(self, other_device):
-            return (self.device.name == other_device.device.name and
-                    self.location.pos == other_device.location.pos and
-                    self.device.individual_addr == other_device.device.individual_addr and 
-                    self.device.refid == other_device.device.refid)
+            return (self.device.name == other_device.device.name
+                    and self.location.pos == other_device.location.pos 
+                    and self.device.individual_addr == other_device.device.individual_addr)
 
         def update_location(self, new_x=None, new_y=None, new_z=None):  
             # We keep old location if None is given to avoid program failure (None is not supported and considered an error if given to constructor Location)

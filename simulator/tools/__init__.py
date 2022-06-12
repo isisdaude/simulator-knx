@@ -1,5 +1,5 @@
 """
-Package that gather classes and function tools necessary for the good functioning of the simulator:
+Package tools that gather classes and function tools necessary for the good functioning of the simulator:
 parser: parse CLIarguments, CLI and API commands
 check: check functions to verify values when intializing or modifying classes or elements
 config: functions to configure the system at start or when the user reloads it.
