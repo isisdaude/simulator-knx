@@ -69,12 +69,11 @@ class TelegramParser:
                 # We assume that we receive by default a Binary value
                 dpt = self.payload_to_dpt.get(self.group_address_to_payload.get(str(address),sim_t.BinaryPayload),None)
                 
-                if dpt == None:
-                    return None
                 if dpt == DPTBinary:
                     payload = self.group_address_to_payload.get(str(address), sim_t.BinaryPayload)(binary_state=True if v.value == self.__TRUE else False)
                     output = sim_t.Telegram(0, source, address,payload)
-                else:
+
+                elif dpt == DPTArray:
 
                     decoder = DPT4ByteFloat()
                     
@@ -92,15 +91,17 @@ class TelegramParser:
 
         dpt = None
         value = None
+        if payload.content is not None:
+            if isinstance(payload, sim_t.BinaryPayload):
+                dpt = self.payload_to_dpt.get(sim_t.BinaryPayload)
+                value = payload.content
 
-        if isinstance(payload, sim_t.BinaryPayload):
-            dpt = self.payload_to_dpt.get(sim_t.BinaryPayload)
-            value = payload.content
-
-        elif isinstance(payload, sim_t.FloatPayload):
-            dpt = self.payload_to_dpt.get(sim_t.FloatPayload)
-            decoder = DPT4ByteFloat()
-            value = decoder.to_knx(payload.content)
+            elif isinstance(payload, sim_t.FloatPayload):
+                dpt = self.payload_to_dpt.get(sim_t.FloatPayload)
+                decoder = DPT4ByteFloat()
+                value = decoder.to_knx(payload.content)
+        else:
+            return None
 
         if dpt != None and value != None:
 

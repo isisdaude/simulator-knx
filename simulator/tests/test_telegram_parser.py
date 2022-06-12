@@ -36,6 +36,13 @@ def test_telegram_from_simulated_1():
     assert str(simulator_t) == str(parser.from_knx_telegram(knx_t))
 
 
+    simulator_t = sim_t.Telegram(0, ia1, ga1, FloatPayload(None))
+
+    knx_t = parser.from_simulator_telegram(simulator_t)
+
+    assert knx_t is None
+
+
 group_address_to_payload_2 = {
     '0/0/0': FloatPayload,
     '0': FloatPayload
