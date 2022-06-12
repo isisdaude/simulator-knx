@@ -59,7 +59,7 @@ class TelegramParser:
         else:
             address = GroupAddress('3-levels', ga_split[0], ga_split[1], ga_split[2])
 
-        source = IndividualAddress(telegram.source_address.area, telegram.source_address.line, telegram.source_address.main)
+        source = IndividualAddress(telegram.source_address.area, telegram.source_address.main, telegram.source_address.line)
         output = None
 
         if isinstance(payload, GroupValueWrite):
