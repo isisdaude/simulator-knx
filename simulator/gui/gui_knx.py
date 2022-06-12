@@ -45,7 +45,7 @@ class GUIWindow(pyglet.window.Window):
         try:
             self.room = room
         except TypeError:
-            logging.info("No room is defined, the room's default characteristics are applied")
+            logging.info("No room is defined, the room's default characteristics are applied.")
             self.room = configure_system_from_file(self.__DEFAULT_CONFIG_PATH, svshi_mode=self.__svshi_mode, telegram_logging=self.__telegram_logging)
 
         # Array to store the devices added to the room (e.g., by dragging them in)
@@ -387,7 +387,7 @@ class GUIWindow(pyglet.window.Window):
             except AttributeError: # e.g. sensor have no 'state' attribute
                 pass
             except:
-                logging.warning(f"Unable to switch sprite of {room_device.label_name} : '{sys.exc_info()[0]}'")
+                logging.warning(f"Unable to switch sprite of {room_device.label_name} : '{sys.exc_info()[0]}'.")
     
 ### Devices and configuration file management methods ###
     def __add_device_to_simulation(self, room: Room, pos_x: float, pos_y: float) -> None:
@@ -475,21 +475,21 @@ class GUIWindow(pyglet.window.Window):
             if group_address == ga["address"]:
                 if dev_name not in ga["group_devices"]:
                     ga["group_devices"].append(dev_name)
-                    logging.info(f"The {dev_name} is added to device list of group address {group_address} in temporary config dict")
+                    logging.info(f"The {dev_name} is added to device list of group address {group_address} in temporary config dict.")
                     return 1
                 else: # If device already assigned to this group address
                     if detach:
                         ga["group_devices"].remove(dev_name)
-                        logging.info(f"The {dev_name} is removed from device list of group address {group_address} in temporary config dict")
+                        logging.info(f"The {dev_name} is removed from device list of group address {group_address} in temporary config dict.")
                         if len(ga["group_devices"]) < 1: # If no more devices are linked to this ga
                             del gas_config[g]
-                            logging.info(f"The group address {group_address} is removed from temporary config dict because no device is attached to it")
+                            logging.info(f"The group address {group_address} is removed from temporary config dict because no device is attached to it.")
                             return 0
                     return 1
         # If this group address does not exist yet
         new_ga = {"address":group_address, "group_devices":[dev_name]}
         gas_config.append(new_ga)
-        logging.info(f"The group address {group_address} is added with {dev_name} attached to it in temporary config dict")
+        logging.info(f"The group address {group_address} is added with {dev_name} attached to it in temporary config dict.")
     
     def __launch_vacuum(self) -> None:
         """ Launch vacuum cleaner animation"""
@@ -516,7 +516,7 @@ class GUIWindow(pyglet.window.Window):
         for in_room_device in self.room.devices:
             gui_device = getattr(self.__available_devices, in_room_device.device.class_name.lower())
             pos_x, pos_y = gt.system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.__room_width_ratio, self.__room_length_ratio, self.__room_widget.origin_x, self.__room_widget.origin_y)
-            logging.info(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}")
+            logging.info(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}.")
             if 'thermometer' in gui_device.label_name:
                 img_neutral = gc.DEVICE_THERMO_NEUTRAL_PATH
             else: 
@@ -626,12 +626,12 @@ class GUIWindow(pyglet.window.Window):
         """ Method called when pressing pause button, stores the time of the pause to resume with the correct simtime"""
         self.room.simulation_status = not self.room.simulation_status
         if not self.room.simulation_status:
-            logging.info("The simulation is paused")
+            logging.info("The simulation is paused...")
             self.__sleep_time_till_next_update = pyglet.clock.get_sleep_time(True)
         else:
             if self.__sleep_time_till_next_update:
                 sleep(self.__sleep_time_till_next_update)
-            logging.info("The simulation is resumed")
+            logging.info("The simulation is resumed !")
         
     def redraw(self) -> None:
         """ When SVSHI_MODE, redraw device sprites, in case telegrams have delay from svshi program"""

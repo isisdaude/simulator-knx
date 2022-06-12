@@ -27,7 +27,7 @@ class KNXBus:
         '''Adds a device to the knx bus'''
         if group_address in device.group_addresses:
             logging.info(
-                f"{device.name} is already connected to the KNX Bus through {group_address.name}")
+                f"{device.name} is already connected to the KNX Bus through {group_address.name}.")
             return
         else:
             if isinstance(device, FunctionalModule):
@@ -35,7 +35,7 @@ class KNXBus:
   
             if group_address not in self.group_addresses:  # if ga not in group_addresses of KNXBus
                 logging.info(
-                    f"Creation of a ga_bus ({group_address.name}) for {device.name}")
+                    f"Creation of a ga_bus ({group_address.name}) for {device.name}.")
                 self.group_addresses.append(group_address)
                 # Creation of the instance that link all devices connected to this group address
                 ga_bus = GroupAddressBus(group_address)
@@ -46,7 +46,7 @@ class KNXBus:
                 for ga_bus in self.__ga_buses:
                     if ga_bus.group_address == group_address:
                         logging.info(
-                            f"{device.name} is added to the ga_bus ({group_address.name})")
+                            f"{device.name} is added to the ga_bus ({group_address.name}).")
                         ga_bus.add_device(device) # add ga to devices ga list
 
     # Remove the device from the group address
@@ -84,7 +84,7 @@ class KNXBus:
                     except:
                         exc = sys.exc_info()[0]
                         trace = traceback.format_exc()
-                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {exc} with trace \n{trace}")
+                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {exc} with trace \n{trace}.")
                 # NOTE: for further implementation with functional_modules and sensors receiving telegrams
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.function_to_call(telegram)
@@ -138,7 +138,7 @@ class GroupAddressBus:
     def add_device(self, device):
         device.group_addresses.append(self.group_address)
         logging.info(
-            f"{self.group_address.name} added to {device.name}'s connections")
+            f"{self.group_address.name} added to {device.name}'s connections.")
         if isinstance(device, Actuator):
             self.actuators.append(device)
         if isinstance(device, FunctionalModule):
@@ -152,20 +152,20 @@ class GroupAddressBus:
                 self.actuators.remove(device)
             except ValueError:
                 logging.warning(
-                    f"{device.name} is not stored in ga_bus {self.group_address.name}")
+                    f"{device.name} is not stored in ga_bus {self.group_address.name}.")
         if isinstance(device, FunctionalModule):
             try:
                 self.functional_modules.remove(device)
             except ValueError:
                 logging.warning(
-                    f"{device.name} is not stored in ga_bus {self.group_address.name}")
+                    f"{device.name} is not stored in ga_bus {self.group_address.name}.")
         if isinstance(device, Sensor):
             try:
                 self.sensors.remove(device)
             except ValueError:
                 logging.warning(
-                    f"{device.name} is not stored in ga_bus {self.group_address.name}")
+                    f"{device.name} is not stored in ga_bus {self.group_address.name}.")
         device.group_addresses.remove(self.group_address)
         logging.info(
-            f"{self.group_address.name} removed from {device.name}'s connections")
+            f"{self.group_address.name} removed from {device.name}'s connections.")
         return (len(self.sensors) + len(self.actuators) + len(self.functional_modules))

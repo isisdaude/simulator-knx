@@ -23,7 +23,7 @@ class Brightness(Sensor):
         if self.interface is not None:
             # ga = GroupAddress('3-levels', 0, 0, 3)
             payload = FloatPayload(self.brightness)
-            telegram = Telegram(False, self.individual_addr, self.group_addresses[0], payload)
+            telegram = Telegram(self.individual_addr, self.group_addresses[0], payload)
             self.interface.add_to_sending_queue([telegram])
 
 class Thermometer(Sensor):
@@ -42,7 +42,7 @@ class Thermometer(Sensor):
         if self.interface is not None and self.group_addresses:
             # ga = GroupAddress('3-levels', 0, 0, 3)
             payload = FloatPayload(self.temperature)
-            telegram = Telegram(False, self.individual_addr, self.group_addresses[0], payload)
+            telegram = Telegram(self.individual_addr, self.group_addresses[0], payload)
             self.interface.add_to_sending_queue([telegram])
 
 class HumiditySoil(Sensor):
@@ -59,7 +59,7 @@ class HumiditySoil(Sensor):
         value = float(value)
         ## TODO check if its a number
         if value < 0 or value > 100:
-            logging.warning(f"The soil humidity value shoudl be in (0-100), but {value} was given>=.")
+            logging.warning(f"The soil humidity value shoudl be in (0-100), but {value} was given.")
             return None
         else:
             self.humiditysoil = value

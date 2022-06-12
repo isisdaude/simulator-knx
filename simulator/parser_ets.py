@@ -136,8 +136,8 @@ def main(): #TODO: consider device number in the case of multiple instances of t
     print("\n------ Devices(Items) in this project ------ ")
     for item in items_list:
         print(item)
-    logging.info(f"<ETS files parser> Size of manufacturers_list: {sys.getsizeof(manufacturers_list)} bytes")
-    logging.info(f"<ETS files parser> Size of items_list: {sys.getsizeof(items_list)} bytes\n")
+    logging.info(f"<ETS files parser> Size of manufacturers_list: {sys.getsizeof(manufacturers_list)} bytes.")
+    logging.info(f"<ETS files parser> Size of items_list: {sys.getsizeof(items_list)} bytes.\n")
     # (size of items list for 6 devices: 120B, for 60 devices: 664B, size of man_list:120B)
 
 if __name__ == '__main__':

@@ -70,7 +70,7 @@ def launch_simulation(argv):
         finally:
             loop.run_until_complete(kill_tasks())
             loop.close()
-            logging.info("Simulation Terminated")
+            logging.info("Simulation Terminated.")
             print("\nThe simulation program has been ended.")
             sys.exit(1)
 

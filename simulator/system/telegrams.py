@@ -8,15 +8,14 @@ from abc import ABC
 
 class Telegram:
     """Class to represent KNX telegrams and store its fields"""
-    def __init__(self, control_field, source_individual_addr, destination_group_addr, payload):
+    def __init__(self, source_individual_addr, destination_group_addr, payload):
         from system import IndividualAddress, GroupAddress
-        self.control_field = control_field
         self.source: IndividualAddress = source_individual_addr
         self.destination: GroupAddress = destination_group_addr
         self.payload: Payload = payload
 
     def __str__(self): # syntax when instance is called with print() 
-        return f" --- -- Telegram -- ---\n-control_field: {self.control_field} \n-source: {self.source}  \n-destination: {self.destination}  \n-payload: {self.payload}\n --- -------------- --- "
+        return f" --- -- Telegram -- ---\n-source: {self.source}  \n-destination: {self.destination}  \n-payload: {self.payload}\n --- -------------- --- "
         #return f" --- -- Telegram -- ---\n {self.control} | {self.source} | {self.destination} | {self.payload}"
 
 class Payload(ABC):
@@ -61,8 +60,6 @@ class DimmerPayload(BinaryPayload):
     def __str__(self) -> str:
         return f" DimmerPayload: state={self.content} | ratio={self.state_ratio}"
 
-
-    
 
 class FloatPayload(Payload):
     """Class to represent the payload of a float, fields are none if unused"""

@@ -123,7 +123,7 @@ def user_command_parser(command, room):
             for in_room_device in room.devices:
                 if in_room_device.name in name:
                     if not isinstance(in_room_device.device, dev.FunctionalModule):
-                        logging.warning("Users can only interact with a Functional Module")
+                        logging.warning("Users can only interact with a Functional Module.")
                         return 0
                     in_room_device.device.user_input()
                     return 1
@@ -133,20 +133,20 @@ def user_command_parser(command, room):
         # If user gives ON/OFF state and/or value
         elif len(command_split) >= 3: 
             if command_split[2].lower() not in ['on', 'off']:
-                logging.warning("The command is not recognized by the parser: either wrong or incomplete")
+                logging.warning("The command is not recognized by the parser: either wrong or incomplete.")
                 print(COMMAND_HELP)
                 return 0
             state = True if command_split[2].lower()=='on' else False
             for in_room_device in room.devices:
                     if in_room_device.name in name:
                         if not isinstance(in_room_device.device, dev.FunctionalModule):
-                            logging.warning("Users can only interact with a Functional Module")
+                            logging.warning("Users can only interact with a Functional Module.")
                             return 0
                         # User gives ON/OFF state and value (e.g. for dimmer)
                         if len(command_split) == 4: 
                             state_ratio = int(command_split[3])
                             if state_ratio < 0 or 100 < state_ratio:
-                                logging.warning(f"The value '{state_ratio}' given should be a ratio (0-100), the command is incorrect")
+                                logging.warning(f"The value '{state_ratio}' given should be a ratio (0-100), the command is incorrect.")
                                 return 0
                             in_room_device.device.user_input(state=state, state_ratio=state_ratio)
                         # User gives only ON/OFF state
@@ -210,7 +210,7 @@ def user_command_parser(command, room):
                 if len(command_split) > 2:
                     name = command_split[2]
                 else:
-                    logging.warning("The command is not recognized by the parser: either wrong or incomplete")
+                    logging.warning("The command is not recognized by the parser: either wrong or incomplete.")
                     print(COMMAND_HELP)
                     return 0
             else:
@@ -220,7 +220,7 @@ def user_command_parser(command, room):
             pp.pprint(device_dict)
             return device_dict
         else:
-            logging.warning("The command is not recognized by the parser: either wrong or incomplete")
+            logging.warning("The command is not recognized by the parser: either wrong or incomplete.")
             print(COMMAND_HELP)
             return 0
     elif command_split[0] == 'getvalue': #Sensor
@@ -229,7 +229,7 @@ def user_command_parser(command, room):
         for in_room_device in room.devices:
             if in_room_device.name in name:
                 if not isinstance(in_room_device.device, dev.Sensor):
-                    logging.warning("Users can only get the value read by a Sensor with 'getvalue' command")
+                    logging.warning("Users can only get the value read by a Sensor with 'getvalue' command.")
                     return 0
                 pp.pprint(in_room_device.device.get_dev_info(value=True))
                 # print("=> The brightness received on sensor %s located at (%d,%d) is %.2f\n" % (name, in_room_device.get_x(), in_room_device.get_y(), room.world.ambient_light.read_brightness(in_room_device)))
@@ -240,7 +240,7 @@ def user_command_parser(command, room):
     elif command in ('q','Q','quit','QUIT'):
         return None
     else:
-        logging.warning("The command is not recognized by the parser: either wrong or incomplete")
+        logging.warning("The command is not recognized by the parser: either wrong or incomplete.")
         print(COMMAND_HELP)
         return 0
     return 1
@@ -283,7 +283,7 @@ class ScriptParser():
         # 'store' command to keep one current system value in memory
         elif command.startswith('store'):
             if len(command_split) != 4:
-                logging.error(f"The 'store' command requires 3 arguments, but only {len(command_split)-1} were given")
+                logging.error(f"The 'store' command requires 3 arguments, but only {len(command_split)-1} were given.")
                 return None, self.assertions
             if command_split[1] == 'world':
                 var_name = command_split[3]
@@ -291,7 +291,7 @@ class ScriptParser():
                 try:
                     assert ambient in ['simtime', 'temperature', 'humidity', 'co2', 'brightness', 'weather']
                 except AssertionError:
-                    logging.error(f"'store world' command expect ambient argument in ['simtime', 'temperature', 'humidity', 'co2', 'brightness', 'weather'], but {ambient} was given")
+                    logging.error(f"'store world' command expect ambient argument in ['simtime', 'temperature', 'humidity', 'co2', 'brightness', 'weather'], but {ambient} was given.")
                     return None, self.assertions
                 if ambient == 'weather' or ambient == 'simtime':
                     self.stored_values[var_name] = room.get_world_info(ambient=ambient)[ambient]
@@ -301,7 +301,7 @@ class ScriptParser():
                     self.stored_values[var_name] = round(room.get_world_info(ambient=ambient, str_mode=False)[ambient+'_in'],2)
                 if self.stored_values[var_name] is None:
                     return None, self.assertions
-                logging.info(f"[SCRIPT] The world {ambient} is stored in variable {var_name}={self.stored_values[var_name]}")
+                logging.info(f"[SCRIPT] The world {ambient} is stored in variable {var_name}={self.stored_values[var_name]}.")
                 return 1, self.assertions
             else: # store a device attribute/method result
                 device_name = command_split[1]
@@ -310,12 +310,12 @@ class ScriptParser():
                 self.stored_values[var_name] = room.get_device_info(device_name, attribute = attribute) 
                 if self.stored_values[var_name] is None:
                     return None, self.assertions
-                logging.info(f"[SCRIPT] The device {attribute} is stored in variable {var_name}={self.stored_values[var_name]}")
+                logging.info(f"[SCRIPT] The device {attribute} is stored in variable {var_name}={self.stored_values[var_name]}.")
                 return 1, self.assertions
 
         elif command.startswith('assert'):
             if len(command_split) != 4:
-                logging.error(f"The 'assert' command requires 3 arguments, but only {len(command_split)-1} were given")
+                logging.error(f"The 'assert' command requires 3 arguments, but only {len(command_split)-1} were given.")
                 return None, self.assertions
             var_name = command_split[1]
 
@@ -342,19 +342,19 @@ class ScriptParser():
                     if type(var) == float:
                         assert value <= var
                     else:
-                        logging.warning(f"Cannot compare string or bool with inequality symbols")
+                        logging.warning(f"Cannot compare string or bool with inequality symbols.")
                         return None, self.assertions
                 elif command_split[2] == '>=':
                     if type(var) == float:
                         assert value >= var
                     else:
-                        logging.warning(f"Cannot compare string or bool with inequality symbols")
+                        logging.warning(f"Cannot compare string or bool with inequality symbols.")
                         return None, self.assertions
                 else:
                     logging.error(f"The comparison sign should be in ['=='/'!='/'<='/'>='], but {command_split[2]} was given.")
                     return None, self.assertions
                 recap_str = f"{var_name} {command_split[2]} {var}"
-                logging.info(f"[SCRIPT] The comparison '{recap_str}' is correct")
+                logging.info(f"[SCRIPT] The comparison '{recap_str}' is correct.")
                 print(f"Assertion True")
                 simtime = room.world.time.simulation_time(str_mode=True)
                 self.assertions["Assertion"+str(self.assert_counter)+" at "+str(simtime)] = recap_str
@@ -362,7 +362,7 @@ class ScriptParser():
                 return 1, self.assertions
             except AssertionError:
                 recap_str = f"{var_name} {command_split[2]} {value}"
-                logging.info(f"[SCRIPT] The comparison '{recap_str}' is not correct")
+                logging.info(f"[SCRIPT] The comparison '{recap_str}' is not correct.")
                 print(f"Assertion False")
                 simtime = room.world.time.simulation_time(str_mode=True)
                 self.assertions["Assertion"+str(self.assert_counter)+" FAILED at "+str(simtime)] = recap_str
@@ -382,7 +382,7 @@ class ScriptParser():
                             ambient = command_split[1]+"_"+command_split[3] # we add '_in' or '_out'
                             ret = room.world.set_ambient_value(ambient, value)
                         else:
-                            logging.warning(f"No specification of indoor/outdoor ambient to set, the third argument of 'set' command should be 'in' or 'out' with temperature, humidity and co2level")
+                            logging.warning(f"No specification of indoor/outdoor ambient to set, the third argument of 'set' command should be 'in' or 'out' with temperature, humidity and co2level.")
                             return None, self.assertions
                     return ret, self.assertions # ret is None or 1
                 else:
