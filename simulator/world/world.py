@@ -38,7 +38,7 @@ class Time:
         try:
             self.__update_job = self.__scheduler.add_job(job_function, 'interval', seconds = self.__system_dt)
         except AttributeError:
-            logging.warning("The Scheduler is not initialized: update job cannnot be added")
+            logging.warning("The Scheduler is not initialized: update job cannnot be added.")
 
     def scheduler_start(self):
         try:
@@ -46,7 +46,7 @@ class Time:
             self.start_time = time.time()
             self._last_tick_time = self.start_time
         except AttributeError:
-            logging.warning("The Scheduler is not initialized and cannot be started")
+            logging.warning("The Scheduler is not initialized and cannot be started.")
 
     # Simulation time management 
     def simulation_time(self, str_mode=False):
@@ -58,7 +58,7 @@ class Time:
             else:
                 return elapsed_time 
         except AttributeError:
-            logging.warning("The Simulation time is not initialized")
+            logging.warning("The Simulation time is not initialized.")
     
     def update_datetime(self):
         self.__simtim_tick_counter += self.__system_dt # Increment simtime with system_dt=interval between two tick/updates
@@ -126,7 +126,7 @@ class AmbientTemperature:
     def update(self):
         from devices import Heater, AC
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
-        logging.debug("Temperature update")
+        logging.debug("Temperature update...")
         previous_temp = self.__temperature_in
         max_temp = 30.0 #self.max_temperature_in_room(self.__room_volume, self.__max_power_heater, "good") ##mean(max_temps)
         min_temp = 10.0
@@ -351,7 +351,7 @@ class AmbientHumidity:
             p_sat = num / denom
             return round(p_sat, 8)
         else:
-            logging.warning(f"Cannot compute saturation vapor pressure because temperature {temperature}<0")
+            logging.warning(f"Cannot compute saturation vapor pressure because temperature {temperature}<0.")
             return None
 
     # def read_humidity(self, humidity_sensor):
@@ -369,7 +369,7 @@ class AmbientHumidity:
         return 1
 
     def update(self, temperature):
-        logging.debug("Humidity update")
+        logging.debug("Humidity update...")
         # We recompute sat vapor pressure from new temp
         self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(temperature)
         self.__temperature_in = temperature
@@ -429,7 +429,7 @@ class AmbientCO2:
         return 1
     
     def update(self, temperature, humidity):  ### TODO remove temp et humif not used
-        logging.debug("CO2 update")
+        logging.debug("CO2 update...")
         # self.__co2_in = compute_co2level(temperature, humidity) # totally wrong values...
         ## TODO : change CO2 if window opened, co2 rise until window is opened
         ## TODO: check of presence 
@@ -462,7 +462,7 @@ class SoilMoisture:
         self.__humiditysoil_sensors.append(humiditysoilsensor)
 
     def update(self): #, humidity_in
-        logging.debug("Soil Moisture update")
+        logging.debug("Soil Moisture update...")
         moisture_levels = []
         for sensor in self.__humiditysoil_sensors:
             if sensor.device.humiditysoil > SOIL_MOISTURE_MIN:

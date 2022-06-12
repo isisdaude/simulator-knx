@@ -17,10 +17,10 @@ class Button(FunctionalModule):
         if state is not None: # if user specifies the wanted state (ON/OFF)
             self.state = state
         self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
-        logging.info(f"The {self.name} has been turned {self.__str_state}")
+        logging.info(f"The {self.name} has been turned {self.__str_state}.")
         __binary_payload = BinaryPayload(binary_state=self.state)
         # Send Telegram to the knxbus
-        self.send_telegram(__binary_payload, control_field = True)
+        self.send_telegram(__binary_payload)
     
     def get_dev_info(self):
         dev_specific_dict = {"state":self.state}
@@ -43,13 +43,13 @@ class Dimmer(FunctionalModule):
 
         if self.state:
             self.state_ratio = state_ratio
-            logging.info(f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}%")
+            logging.info(f"The {self.name} has been turned {self.__str_state} at {self.state_ratio}%.")
         else:
-            logging.info(f"The {self.name} has been turned {self.__str_state}")
+            logging.info(f"The {self.name} has been turned {self.__str_state}.")
 
         dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
         # Send Telegram to the knxbus
-        self.send_telegram(dimmer_payload, control_field = True)
+        self.send_telegram(dimmer_payload)
     
     def get_dev_info(self):
         dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}

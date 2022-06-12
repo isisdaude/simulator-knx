@@ -27,21 +27,21 @@ class Device(ABC):
     def __str__(self): # syntax when instance is called with print()
         return f"Device : {self.name}  {self.individual_addr} "
 
-    def send_telegram(self, payload, control_field):
+    def send_telegram(self, payload):
         # print(f"device {self.name} has attr bus : {hasattr(self, 'knxbus')}")
         from system import Telegram # Import here to avoid circular import between system ,-> device_abstractions
         # print(f"send telegram payload: {payload}")
         for group_address in self.group_addresses:
-            telegram = Telegram(control_field, self.individual_addr, group_address, payload)
+            telegram = Telegram(self.individual_addr, group_address, payload)
             #print("knxbus: ", self.knxbus.name)
             try:
                 self.knxbus.transmit_telegram(telegram) # Simply send the telegram to all receiving devices connected to the group address
             except AttributeError:
-                logging.warning(f"The device '{self.name}' is not connected to the bus, and thus cannot send telegrams")
+                logging.warning(f"The device '{self.name}' is not connected to the bus, and thus cannot send telegrams.")
             except:
                 # print(f"hasattr knxbus: {hasattr(self, 'knxbus')}")
                 # print(f"knx bus hasattr transmit_telegram: {hasattr(self.knxbus, 'transmit_telegram')}")
-                logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}")
+                logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {sys.exc_info()[0]}.")
         return 0
 
     def connect_to(self, knxbus): # Connect to the KNX Bus, to be able to send telegrams
@@ -54,7 +54,7 @@ class Device(ABC):
         try:
             del self.knxbus
         except AttributeError:
-            logging.warning(f"The Functional Module '{self.name}' is not connected to this KNX bus, and thus cannot deconnect from it")
+            logging.warning(f"The Functional Module '{self.name}' is not connected to this KNX bus, and thus cannot deconnect from it.")
     
 
     @abstractmethod

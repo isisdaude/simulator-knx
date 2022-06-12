@@ -90,7 +90,7 @@ class Room:
             from devices.actuators import IPInterface
             from system import IndividualAddress
             if self.__interface is not None:
-                self.interface_device = IPInterface("ipinterface1", "M-O_X000", IndividualAddress(0, 0, 0), "enabled", self.__interface)
+                self.interface_device = IPInterface("ipinterface1", IndividualAddress(0, 0, 0), self.__interface)
 
     def get_interface(self):
         if self.svshi_mode:
@@ -132,7 +132,7 @@ class Room:
                 self.world.presence.add_sensor(in_room_device)
 
         elif isinstance(device, FunctionalModule):
-            logging.info(f"FunctionalModule {device.name} establiched connection with the bus")
+            logging.info(f"FunctionalModule {device.name} establiched connection with the bus.")
             device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams on it
         return in_room_device # Return for gui
 
@@ -168,7 +168,7 @@ class Room:
             import gui
             if self.simulation_status: # True if system is running (not in pause)
                 if self.__paused_tick_counter > 0:
-                    logging.info(f"Simulation was paused for {self.__paused_tick_counter * self.__system_dt} seconds")
+                    logging.info(f"Simulation was paused for {self.__paused_tick_counter * self.__system_dt} seconds.")
                     self.__paused_tick_counter = 0
                 # world.update updates value of all sensors system instances 
                 date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update() #call the update function of all ambient modules in world
@@ -176,13 +176,13 @@ class Room:
                     try: # attributes are created in main (proto_simulator)
                         gui.update_gui_window(interval, self.gui_window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux, self.svshi_mode)
                     except AttributeError as msg:
-                        logging.error(f"Cannot update GUI window due to Room/World attributes missing : '{msg}'")
+                        logging.error(f"Cannot update GUI window due to Room/World attributes missing : '{msg}'.")
                     except Exception:
-                        logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'")
+                        logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'.")
                     try: # update gui devices instances
                         self.gui_window.update_sensors(brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
                     except Exception:
-                        logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'")
+                        logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'.")
                 elif gui_mode == False:
                     True
                     # print("not gui mode")
@@ -206,7 +206,7 @@ class Room:
                 ir_dev_dict = ir_device.get_irdev_info(attribute=attribute)
                 # print(f"ir_dev_dict: '{ir_dev_dict}'")
                 return ir_dev_dict
-        logging.warning(f" Device's name '{device_name}' not found in list of room '{self.name}' ")
+        logging.warning(f" Device's name '{device_name}' not found in list of room '{self.name}'.")
         return 0
 
     def get_world_info(self, ambient=None, str_mode=True):

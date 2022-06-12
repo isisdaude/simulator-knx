@@ -43,14 +43,14 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     global interface, interface_device
     system_dt=1
     # Declaration of sensors, actuators and functional modules
-    led1 = dev.LED("led1", "M-0_L1", IndividualAddress(0,0,1), "enabled") #Area 0, Line 0, Device 0
-    led2 = dev.LED("led2", "M-0_L1", IndividualAddress(0,0,2), "enabled")
+    led1 = dev.LED("led1", IndividualAddress(0,0,1)) #Area 0, Line 0, Device 0
+    led2 = dev.LED("led2", IndividualAddress(0,0,2))
 
-    heater1 = dev.Heater("heater1", "M-0_H1", IndividualAddress(0,0,11), "enabled", 400) #400W max power
-    ac1 = dev.AC("ac1", "M-0_AC1", IndividualAddress(0,0,12), "enabled", 400)
-    button1 = dev.Button("button1", "M-0_S1", IndividualAddress(0,0,20), "enabled")
-    button2 = dev.Button("button2", "M-0_S2", IndividualAddress(0,0,21), "enabled")
-    bright1 = dev.Brightness("brightness1", "M-0_L3", IndividualAddress(0,0,5), "enabled")
+    heater1 = dev.Heater("heater1", IndividualAddress(0,0,11), 400) #400W max power
+    ac1 = dev.AC("ac1", IndividualAddress(0,0,12), 400)
+    button1 = dev.Button("button1", IndividualAddress(0,0,20))
+    button2 = dev.Button("button2", IndividualAddress(0,0,21))
+    bright1 = dev.Brightness("brightness1", IndividualAddress(0,0,5))
 
     outside_temperature = 20.0
     humidity_out = 50.0
@@ -88,7 +88,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     knx_config = config_dict["knx"]
     group_address_encoding_style = check_group_address(knx_config["group_address_style"], style_check=True)
     if not group_address_encoding_style:
-        logging.error("Incorrect group address, check the config file before launching the simulator")
+        logging.error("Incorrect group address, check the config file before launching the simulator.")
         sys.exit()
     world_config = config_dict["world"]
     # Store number of main elements 
@@ -99,7 +99,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     try:
         assert simulation_speed_factor
     except AssertionError:
-        logging.error("Incorrect simulation speed factor, review the config file before launching the simulator")
+        logging.error("Incorrect simulation speed factor, review the config file before launching the simulator.")
         sys.exit()
     
     # Physical initial states indoor/outdoor
@@ -123,7 +123,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
         try:
             room_config = rooms_config[room_key]
         except (KeyError):
-            logging.warning(f"'{room_key}' not defined in config file, or wrong number of rooms")
+            logging.warning(f"'{room_key}' not defined in config file, or wrong number of rooms.")
             continue # get out of the for loop iteratiom
         x, y, z = room_config["dimensions"]
         room_insulation = room_config["insulation"]
@@ -170,15 +170,15 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                     device_config = line_devices_config[dev_key]
                     dev_class = device_config["class"]
                 except (KeyError):
-                    logging.warning(f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}")
+                    logging.warning(f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}.")
                     continue # get out of the for loop iteration
                 # print(f"{dev_key}, {dev_class}, loc = {device_config['location']}")
                 _a, _l, _d = [int(loc) for loc in device_config["knx_location"].split(".")] # parse individual addresses 'area/line/device' in 3 variables
                 if (_a != a or _l != l):
-                    logging.warning(f"{dev_key} on {area_key}.{line_key} is wrongly configured with area{_a}.line{_l} ==> device is rejected")
+                    logging.warning(f"{dev_key} on {area_key}.{line_key} is wrongly configured with area{_a}.line{_l} ==> device is rejected.")
                     continue # get out of the for loop iteration
                 if (_a < 0 or _a > 15 or _l < 0 or _l > 15 or _d < 0 or _d > 255):
-                    logging.warning(f"Individual address out of bounds, should be in 0.0.0 -> 15.15.255 ==> device is rejected")
+                    logging.warning(f"Individual address out of bounds, should be in 0.0.0 -> 15.15.255 ==> device is rejected.")
                     continue # get out of the for loop iteration
                 print(dev_key)
                 for room_builder in rooms_builders: # list of [room_object, room_devices_config] for all rooms of the system
@@ -188,7 +188,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                         dev_object = DEV_CLASSES[dev_class](dev_key, IndividualAddress(_a, _l, _d)) # we don't set up the state, False(OFF) by default
                         room_builder[0].add_device(dev_object, dev_pos[0], dev_pos[1], dev_pos[2])
                     else:
-                        logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected")
+                        logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected.")
                         continue # get out of the for loop iteration
     # print(" ----------------------------------------------------")
     # Parsing of group addresses to connect devices together

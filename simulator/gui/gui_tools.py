@@ -374,7 +374,7 @@ class DeviceWidget(object):
         if update_loc:
             self.loc_x, self.loc_y = loc_x, loc_y
             self.in_room_device.update_location(new_x=self.loc_x, new_y=self.loc_y)
-            logging.info(f"Location of {self.label_name} is updated to {self.loc_x}, {self.loc_y}")
+            logging.info(f"Location of {self.label_name} is updated to {self.loc_x}, {self.loc_y}.")
 
     def delete(self) -> None:
         """ Delete the visual representation of the device : sprite and label"""
@@ -676,7 +676,7 @@ def gui_pos_to_system_loc(pos_x: float, pos_y: float, width_ratio: float, length
         loc_x = (pos_x - room_x) / width_ratio
         loc_y = (pos_y - room_y) / length_ratio
     except AttributeError:
-        logging.warning("The system is not initialized and the room width/length ratios are not defined")
+        logging.warning("The system is not initialized and the room width/length ratios are not defined.")
     return loc_x, loc_y
 
 def system_loc_to_gui_pos(loc_x: float, loc_y: float, width_ratio: float, length_ratio: float, room_x: float, room_y: float) -> Tuple[float, float]:
@@ -685,7 +685,7 @@ def system_loc_to_gui_pos(loc_x: float, loc_y: float, width_ratio: float, length
         pos_x = int(room_x + width_ratio * loc_x)
         pos_y = int(room_y + length_ratio * loc_y)
     except AttributeError:
-        logging.warning("The system is not initialized and the room width/length ratios are not defined")
+        logging.warning("The system is not initialized and the room width/length ratios are not defined.")
     return pos_x, pos_y
 
 def window_pos_from_gui_loc(pos_x: float, pos_y: float, window_object) -> Tuple[float, float]: # window_object : system.Window
