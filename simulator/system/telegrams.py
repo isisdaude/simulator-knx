@@ -71,6 +71,5 @@ class FloatPayload(Payload):
         super().__init__()
         self.content: float = value
 
-    # def __str__(self) -> str:
-    #     ## TODO: display a more truthful payload
-    #     return f"The maximum power of this heater is {self.content}."
+    def __repr__(self) -> str:
+        return super().__repr__()

@@ -9,7 +9,7 @@ from xknx.dpt.dpt import DPTArray, DPTBinary, DPTNumeric
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress, IndividualAddress, GroupAddressType
-from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
+from xknx.dpt.dpt_4byte_float import DPT4ByteFloat
 from xknx.xknx import XKNX
 
 import system.telegrams as sim_t
@@ -75,10 +75,12 @@ class TelegramParser:
                     payload = self.group_address_to_payload.get(str(address), sim_t.BinaryPayload)(binary_state=True if v.value == self.__TRUE else False)
                     output = sim_t.Telegram(0, source, address,payload)
                 else:
-                    decoder = DPT2ByteFloat()
+
+                    decoder = DPT4ByteFloat()
+                    
                     conv_v = decoder.from_knx(v.value)
                     payload = self.group_address_to_payload.get(str(address), sim_t.BinaryPayload)(conv_v)
-                    output = sim_t.Telegram(0, source, address,payload)
+                    output = sim_t.Telegram(0, source, address, payload)
         return output
     
     def from_simulator_telegram(self, telegram: sim_t.Telegram) -> Union[Telegram, None]:
@@ -97,7 +99,7 @@ class TelegramParser:
 
         elif isinstance(payload, sim_t.FloatPayload):
             dpt = self.payload_to_dpt.get(sim_t.FloatPayload)
-            decoder = DPT2ByteFloat()
+            decoder = DPT4ByteFloat()
             value = decoder.to_knx(payload.content)
 
         if dpt != None and value != None:
@@ -110,7 +112,7 @@ class TelegramParser:
             ga = GroupAddress(address)
             ga.levels = self.__sim_encoding_to_xknx.get(encoding)
 
-            newTelegram = Telegram(source_address=IndividualAddress(f"{telegram.source.area}.{telegram.source.line}.{telegram.source.device}"),
+            newTelegram = Telegram(source_address=IndividualAddress(f"{telegram.source.area}.{telegram.source.device}.{telegram.source.line}"),
                 destination_address=ga,
                 payload=GroupValueWrite(write_content)
             )
