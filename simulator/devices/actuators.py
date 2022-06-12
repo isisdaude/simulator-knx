@@ -181,7 +181,7 @@ class IPInterface(Actuator):
             # Create SVSHI compliant binary payload with state from dimmer payload, as actuator can only receive binary input from svshi
             telegram.payload = BinaryPayload(telegram.payload.content) 
             self.interface.add_to_sending_queue([telegram])
-        elif isinstance(telegram.payload, FloatPayload): # for sensors values send regularly on bus
+        elif isinstance(telegram.payload, FloatPayload): # for sensors values sent regularly on bus
             self.interface.add_to_sending_queue([telegram])
         ## float payload
 

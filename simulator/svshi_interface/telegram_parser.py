@@ -9,6 +9,7 @@ from xknx.dpt.dpt import DPTArray, DPTBinary, DPTNumeric
 from xknx.telegram.apci import GroupValueWrite
 from xknx.telegram.telegram import Telegram
 from xknx.telegram.address import GroupAddress, IndividualAddress, GroupAddressType
+from xknx.dpt.dpt_4byte_float import DPT4ByteFloat
 from xknx.dpt.dpt_2byte_float import DPT2ByteFloat
 from xknx.xknx import XKNX
 

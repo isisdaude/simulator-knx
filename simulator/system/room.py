@@ -81,7 +81,7 @@ class Room:
         self.svshi_mode = svshi_mode
         self.telegram_logging = telegram_logging
         if self.svshi_mode:
-            if interface is not None: # Simulation reloaded, we keep same interface
+            if interface is not None: # Simulation reloaded, we keep same interface to maitain connection
                 self.__interface = interface
                 self.__interface.room = self
             else:
