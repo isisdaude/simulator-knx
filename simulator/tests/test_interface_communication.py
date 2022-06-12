@@ -121,6 +121,6 @@ def test_communication():
     start_func.start()
     svshi.start()
     assert svshi.communication_engaged
-    pytest.exit("Ended")
+    os._exit(0)
         
         
