@@ -20,16 +20,17 @@ from xknx.io.knxip_interface import *
 from xknx.io.request_response import *
 from xknx.knxip import TunnellingRequest
 
-import system.telegrams as sim_t
+
 
 sys.path.append(".")
 sys.path.append("..")
 
 class Interface:
-
-    def __init__(self, room, telegram_logging: bool) -> None:
+    
+    def __init__(self, room, telegram_logging: bool, testing=False) -> None:
         """Initalizes the interface used for communication with SVSHI"""
         from svshi_interface.telegram_parser import TelegramParser
+        import system.telegrams as sim_t
         self.__telegram_logging = telegram_logging
         self.__last_tel_logged = None
         self.__sending_queue: queue.Queue[sim_t.Telegram] = queue.Queue()
@@ -46,7 +47,9 @@ class Interface:
         server_address = (self.__IPAddr, 3671)
         self.__sock.bind(server_address)
         self.room = room # to get telegram file path because fails when reloading (cannot stop thread)
-        self.main()
+        
+        if not testing:
+            self.main()
         
 
     # INITIALIZATION OF THE CONNECTION #
@@ -108,12 +111,13 @@ class Interface:
     # RECEIVING TELEGRAMS
     def __receiving_telegrams(self, frame: KNXIPFrame, data: bytes, addr: Any, knxbus=None) -> None:
         """Receives telegrams and forwards them to the system"""
+        
 
         frame.from_knx(data)
         
         if isinstance(frame.body, TunnellingRequest):
             telegram: real_t.Telegram = frame.body.cemi.telegram
-
+            import system.telegrams as sim_t
             sim_telegram: sim_t.Telegram = self.__telegram_parser.from_knx_telegram(
                 telegram
             )
@@ -140,7 +144,8 @@ class Interface:
             pass
 
     # SENDING TELEGRAMS
-    def add_to_sending_queue(self, teleg: List[sim_t.Telegram]) -> None:
+
+    def add_to_sending_queue(self, teleg) -> None:
         """Adds to the queue of telegrams to be sent to the external interface"""
         for t in teleg:
             t_xknx = self.__telegram_parser.from_simulator_telegram(t)
@@ -186,19 +191,25 @@ class Interface:
 
         def threaded():
             while True:
+                data = None
                 # When either main_socket has data or rsock has data, select.select will return
                 rlist, _, _ = select.select([self.__sock, self.__rsock], [], [])
                 for ready_socket in rlist:
                     if ready_socket is self.__sock:
                         data = self.__sock.recv(1024)
                         # Ready socket is sock, we receive telegrams from SVSHI
-                        
+                        if data == b'\x11':
+                            break
                         self.__receiving_telegrams(frame, data, addr, self.room.knxbus)
                     else:
                         # Ready_socket is rsock, we need to send to SVSHI
-                        self.__rsock.recv(1)  # Dump the ready mark
+                        signal = self.__rsock.recv(1)  # Dump the ready mark
+                        
                         # Send the data.
                         self.__process_telegram_queue(addr)
+
+                if data == b'\x11':
+                    break
 
         main_functions = threading.Thread(target=threaded, args=())
         main_functions.start()
