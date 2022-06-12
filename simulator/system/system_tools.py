@@ -56,9 +56,8 @@ class IndividualAddress:
         return f" Individual Address(area:{self.area}, line:{self.line}, device:{self.device})"
 
     def __repr__(self) -> str:
-        '''Following XKNX handling of individual addresses'''
         return f"{self.area}.{self.line}.{self.device}"
-
+    
 
 class GroupAddress:
     """Class to represent group addresses (devices gathered by functionality)"""
