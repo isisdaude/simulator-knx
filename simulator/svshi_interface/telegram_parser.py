@@ -120,5 +120,3 @@ class TelegramParser:
             return newTelegram
         else:    
             return None
-
-
