@@ -393,6 +393,12 @@ class ScriptParser():
                         ret = room.world.set_ambient_value('weather', value)
                     else:
                         if len(command_split) == 4:
+                            try:
+                                assert isinstance(value, numbers.Number)
+                                value = float(value)
+                            except AssertionError:
+                                logging.warning(f"The value should be a number, but '{value}' was given.")
+                                return None, self.assertions
                             ambient = command_split[1]+"_"+command_split[3] # we add '_in' or '_out'
                             ret = room.world.set_ambient_value(ambient, value)
                         else:

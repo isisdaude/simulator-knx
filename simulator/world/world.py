@@ -10,7 +10,7 @@ from datetime import timedelta, datetime
 from typing import List, Union, Tuple, Dict
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from numpy import mean, sign
+from numpy import float32, mean, sign
 
 import tools
 from .world_tools import outdoor_light, compute_distance, compute_distance_from_window, INSULATION_TO_TEMPERATURE_FACTOR, INSULATION_TO_HUMIDITY_FACTOR, INSULATION_TO_CO2_FACTOR, SOIL_MOISTURE_MIN
@@ -88,7 +88,6 @@ class AmbientLight:
         from system import Window
         self.__light_sources.append(lightsource) 
         if isinstance(lightsource.device, Window):
-            # print(f"window {lightsource.device.name} is added to light sources")
             self.__windows.append(lightsource)
             # Compute window lumen from out_lux and window area
             lightsource.device.max_lumen_from_out_lux(self.__lux_out)
@@ -221,20 +220,16 @@ class AmbientLight:
 class AmbientTemperature:
     """Class to represent Temperature in a simulation"""
     def __init__(self, update_rule_ratio: float, temp_out:float, temp_in:float, room_insulation: str) -> None:
-        # self.simulation_speed_factor = simulation_speed_factor
-        # self.simulated_dt = system_dt * simulation_speed_factor # e.g., update called every 1*180seconds = 3min
         self.__update_rule_ratio = update_rule_ratio # update rules are per hour, ratio translate it to the system dt
         self.__temperature_in = temp_in 
-        # print("________ init temp_in: ", temp_in)
         self.temperature_out = temp_out
         self.__room_insulation = room_insulation
-        # self.__room_volume = room_volume
-        """Describes room volume in m3"""
+        # """Describes room volume in m3"""
         self.__temp_sources = []
-        """List of temperature actuators sources in the room"""
+        # """List of temperature actuators sources in the room"""
         self.__temp_sensors = []
-        """List of temperature sensors in the room"""
-        self.__temp_controllers = []
+        # """List of temperature sensors in the room"""
+        # self.__temp_controllers = []
 
         self.__max_power_heater = 0
         self.__max_power_ac = 0
@@ -259,28 +254,20 @@ class AmbientTemperature:
         """
         self.__temp_sensors.append(tempsensor) #add check on sensor
 
-    # def add_temp_controllers(self, temp_controllers):
-    #     self.__temp_controllers.append(temp_controllers) #add check on sensor
-    
-    # def watts_to_temp(self, watts):
-    #     return ((watts - 70)*2)/7 + 18
 
-    # def max_temperature_in_room(self, volume, max_power, insulation_state='good'):
-    #     """Maximum reachable temperature in the specified room with the current enabled heaters, with exterior temperature being 20C"""
-    #     from system import INSULATION_TO_CORRECTION_FACTOR
-    #     watts = max_power/((1+INSULATION_TO_CORRECTION_FACTOR[self.__room_insulation])*volume)
-    #     return self.watts_to_temp(watts)
-
-    def set_temperature(self, location, value): # location is 'in' or 'out'
+    def set_temperature(self, location: str, value: float) -> int: # location is 'in' or 'out'
         if location == 'in': ## TODO check if number
             self.__temperature_in = float(value)
             for sensor in self.__temp_sensors:
                 sensor.device.temperature = self.__temperature_in
         elif location == 'out':
             self.temperature_out = float(value)
+        else:
+            logging.error(f"The location should be 'in' or 'out' when setting temperature, but {location} was given.")
+            return 0
         return 1
 
-    def update(self):
+    def update(self) -> Tuple[List[Tuple[str, float]], bool]:
         from devices import Heater, AC
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
         logging.info("Temperature update...")
@@ -333,16 +320,12 @@ class AmbientTemperature:
     def __str__(self):
         return f"{self.__temperature_in} °C"
     
-    def get_temperature(self, str_mode=False):
+    def get_temperature(self, str_mode: bool=False) -> Union[str, float]:
         if str_mode:
             temp = str(round(self.__temperature_in, 2)) + " °C"
         else:
             temp = round(self.__temperature_in, 2)
         return temp
-
-
-
-
 
 
 
@@ -353,7 +336,7 @@ class AmbientHumidity:
     # - windows
     # - heater/cooler
     # - insulation
-    def __init__(self, temp_out, hum_out, temp_in, hum_in, room_insulation, update_rule_ratio) -> None:
+    def __init__(self, temp_out: float, hum_out: float, temp_in: float, hum_in: float, room_insulation: str, update_rule_ratio: float) -> None:
         self.__temperature_out = temp_out ## NOTE maybe useless as we use it once in init
         self.__temperature_in = temp_in
         self.humidity_out = hum_out
@@ -370,14 +353,21 @@ class AmbientHumidity:
         self.__update_rule_ratio = update_rule_ratio
 
     
-    def add_source(self, humiditysource):
-        """ humiditysource: InRoomDevice """
+    def add_source(self, humiditysource) -> None:
+        """ 
+        
+        humiditysource: InRoomDevice 
+        """
         self.__humidity_sources.append(humiditysource)
-    def add_sensor(self, humiditysoil):
-        """ humiditysoil: InRoomDevice """
+
+    def add_sensor(self, humiditysoil) -> None:
+        """ 
+        
+        humiditysoil: InRoomDevice 
+        """
         self.__humidity_sensors.append(humiditysoil)
     
-    def compute_saturation_vapor_pressure_water(self, temperature):
+    def compute_saturation_vapor_pressure_water(self, temperature: float)-> Union[float, None]:
         if temperature > 0:
             exp_arg = 34.494 - 4924.99 / (temperature + 237.1)
             num = math.exp(exp_arg)
@@ -390,7 +380,7 @@ class AmbientHumidity:
 
     # def read_humidity(self, humidity_sensor):
 
-    def set_humidity(self, location, value): # location is 'in' or 'out'
+    def set_humidity(self, location: str, value: float) -> int: # location is 'in' or 'out'
         if location == 'in': ## TODO check if number
             self.__humidity_in = float(value)
             self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(self.__temperature_in)
@@ -399,10 +389,13 @@ class AmbientHumidity:
                 sensor.device.humidity = round(self.__humidity_in, 2)
         elif location == 'out':
             self.humidity_out = float(value)
-            self.saturation_vapour_pressure_out = self.compute_saturation_vapor_pressure_water(self.__temperature_out )
+            self.saturation_vapour_pressure_out = self.compute_saturation_vapor_pressure_water(self.__temperature_out)
+        else:
+            logging.error(f"The location should be 'in' or 'out' when setting humidity, but {location} was given.")
+            return 0
         return 1
 
-    def update(self, temperature):
+    def update(self, temperature: float) -> List[Tuple[str, float]]:
         logging.info("Humidity update...")
         # We recompute sat vapor pressure from new temp
         self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(temperature)
@@ -422,7 +415,7 @@ class AmbientHumidity:
             humidity_levels.append((sensor.device.name, sensor.device.humidity))
         return humidity_levels
 
-    def get_humidity(self, str_mode=False):
+    def get_humidity(self, str_mode: bool=False) -> Union[str, float]:
         if str_mode:
             hum = str(round(self.__humidity_in, 2)) + " %"
         else:
@@ -443,27 +436,33 @@ class AmbientCO2:
     # 5,000	Workplace exposure limit (as 8-hour TWA) in most jurisdictions.
     # >40,000 ppm	Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
 
-    def __init__(self, co2_out, co2_in, room_insulation, update_rule_ratio) -> None:
+    def __init__(self, co2_out: float, co2_in: float, room_insulation: str, update_rule_ratio: float) -> None:
         self.__co2_in = co2_in # ppm
         self.co2_out = co2_out
         self.__room_insulation = room_insulation
         self.__co2_sensors: List = []
         self.__update_rule_ratio = update_rule_ratio
     
-    def add_sensor(self, co2sensor):
-        """ co2sensor: InRoomDevice """
+    def add_sensor(self, co2sensor) -> None:
+        """ 
+        
+        co2sensor: InRoomDevice 
+        """
         self.__co2_sensors.append(co2sensor)
     
-    def set_co2level(self, location, value):
+    def set_co2level(self, location: str, value: float) -> int:
         if location == 'in': ## TODO check if number
             self.__co2_in = float(value)
             for sensor in self.__co2_sensors:
                 sensor.device.co2level = int(self.__co2_in)
         elif location == 'out':
             self.co2_out = float(value)
+        else:
+            logging.error(f"The location should be 'in' or 'out' when setting CO2, but {location} was given.")
+            return 0
         return 1
     
-    def update(self, temperature, humidity):  ### TODO remove temp et humif not used
+    def update(self, temperature: float, humidity: float) -> List[Tuple[str, float]]:  ### TODO remove temp et humif not used
         logging.info("CO2 update...")
         # self.__co2_in = compute_co2level(temperature, humidity) # totally wrong values...
         ## TODO : change CO2 if window opened, co2 rise until window is opened
@@ -477,7 +476,7 @@ class AmbientCO2:
         return co2_levels
     
     
-    def get_co2level(self, str_mode=False):
+    def get_co2level(self, str_mode: bool=False) -> Union[str, float]:
         if str_mode:
             co2 = str(round(self.__co2_in, 2)) + " ppm"
         else:
@@ -487,17 +486,19 @@ class AmbientCO2:
 
 class SoilMoisture:
     """Class to represent Soil Moisture in a simulation"""
-    def __init__(self, update_rule_ratio) -> None:
+    def __init__(self, update_rule_ratio: float) -> None:
         self.__humiditysoil_sensors = []
         self.__update_rule_ratio = update_rule_ratio
         self.__update_rule_down = -0.5 # -0.5% of soil moisture per hour, limited to SOIL_MOISTURE_MIN
         # self.__update_rule_up = 0.1 # if lower than humidity in, the moisture increase very slowly
     
-    def add_sensor(self, humiditysoilsensor):
-        """ humiditysoilsensor: InRoomDevice """
+    def add_sensor(self, humiditysoilsensor) -> None:
+        """ 
+        humiditysoilsensor: InRoomDevice 
+        """
         self.__humiditysoil_sensors.append(humiditysoilsensor)
 
-    def update(self): #, humidity_in
+    def update(self) -> List[Tuple[str, float]]: #, humidity_in
         logging.info("Soil Moisture update...")
         moisture_levels = []
         for sensor in self.__humiditysoil_sensors:
@@ -520,15 +521,17 @@ class Presence:
         self.entities = [] # person or object detectable by presence sensor
         self.presence_sensors = []
     
-    def add_entity(self, entity:str):
+    def add_entity(self, entity: str) -> None:
         self.entities.append(entity)
         self.presence = True
         self.update()
-    def add_sensor(self, presencesensor):
-        """ presencesensor: InRoomDevice """
+    def add_sensor(self, presencesensor) -> None:
+        """ 
+        presencesensor: InRoomDevice
+         """
         self.presence_sensors.append(presencesensor)
 
-    def remove_entity(self, entity:str):
+    def remove_entity(self, entity: str) -> None:
         if entity in self.entities:
             self.entities.remove(entity)
             self.presence = True if len(self.entities) else False
@@ -536,39 +539,40 @@ class Presence:
         else:
             logging.warning(f"The entity {entity} is not present in the simulation.")
     
-    def set_presence(self, value):
-        value_bool = bool(value)
-        if value_bool not in [True, False]:
-            logging.warning(f"The presence value should be in [True, False], but {value} was given.")
-            return None
-        else:
+    def set_presence(self, value: str) -> Union[None, int]:
+        if len(value) <= len('False'):
+            if 'True' == value.capitalize():
+                value_bool = True
+            elif 'False' == value.capitalize():
+                value_bool = False
+            else:
+                logging.warning(f"The presence value should be in [True, False], but {value} was given.")
+                return None
+
             self.presence = value_bool
             for sensor in self.presence_sensors:
                 sensor.device.state = self.presence
             return 1
     
-    def update(self):
+    def update(self) -> List[Tuple[str, float]]:
         presence_sensors_states = []
         for sensor in self.presence_sensors:
             sensor.device.state = self.presence
             presence_sensors_states.append((sensor.device.name, sensor.device.state))
         return presence_sensors_states
-    
-    ## TODO: implement set for world states
-    # def set_presence(self):
-        # self.presence = True
+
 
 
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
-    def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt, room_insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) -> None: #date_time is simply a string keyword from config file at this point
+    def __init__(self, room_width: float, room_length: float, room_height: float, simulation_speed_factor: float, system_dt: float, room_insulation: str, temp_out: float, hum_out: float, co2_out: float, temp_in: float, hum_in: float, co2_in: float, date_time: datetime, weather: str) -> None: #date_time is simply a string keyword from config file at this point
         self.__date_time, self.__weather = tools.check_wheater_date(date_time, weather) # self.__date_time is a datetime.datetime instance, self.__weather is a string
         self.time = Time(simulation_speed_factor, system_dt, self.__date_time) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.__room_insulation = room_insulation
         self.__temp_out, self.__hum_out, self.__co2_out = temp_out, hum_out, co2_out # does not change during simulation
         # self.speed_factor = simulation_speed_factor
-        self.ambient_temperature = AmbientTemperature(room_width*room_height*room_length, self.time.update_rule_ratio, self.__temp_out, temp_in, room_insulation)
+        self.ambient_temperature = AmbientTemperature(self.time.update_rule_ratio, self.__temp_out, temp_in, room_insulation)
         self.ambient_light = AmbientLight(self.__date_time, self.__weather) #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(clear, overcast,...)
         self.ambient_humidity = AmbientHumidity(self.__temp_out, self.__hum_out, temp_in, hum_in,  self.__room_insulation, self.time.update_rule_ratio)
         self.ambient_co2 = AmbientCO2(self.__co2_out, co2_in, self.__room_insulation, self.time.update_rule_ratio)
@@ -576,7 +580,7 @@ class World:
         self.presence = Presence()
         # self.ambient_world = [self.ambient_temperature, self.ambient_light, self.ambient_humidity, self.ambient_co2, self.soil_moisture]
 
-    def update(self):
+    def update(self) -> Tuple[datetime, str, datetime, float, List[Tuple[str, float]], List[Tuple[str, float]], bool, List[Tuple[str, float]], List[Tuple[str, float]], List[Tuple[str, float]], List[Tuple[str, bool]]]:
         # co2 and humidity update need temperature update to be done before
         date_time = self.time.update_datetime()
         brightness_levels, weather, time_of_day, out_lux = self.ambient_light.update(date_time)
@@ -592,7 +596,10 @@ class World:
     #     print(f" Temperature: {self.ambient_temperature.temperature_in}")
     #     #TODO: add others when availaible
     #     print("+----------------------------+")
-    def set_ambient_value(self, ambient, value):
+    def set_ambient_value(self, ambient: str, value: Union[str, float]) -> Union[None, int]:
+        """
+        
+        value : ambient value or presence bool(in str) or weather string"""
         if 'temperature' in ambient:
             if ambient == 'temperature_in':
                 ret = self.ambient_temperature.set_temperature('in', value)
@@ -616,7 +623,7 @@ class World:
                 self.__weather = value
         return ret # None or 1
     
-    def get_info(self, ambient, room, str_mode):
+    def get_info(self, ambient: str, room, str_mode: bool) -> Dict[str, str]:
         basic_dict_out = {"room_insulation":self.__room_insulation, "temperature_out":str(self.__temp_out)+" °C", "humidity_out":str(self.__hum_out)+" %", "co2_out":str(self.__co2_out)+" ppm", "brightness_out":self.ambient_light.get_global_brightness(room, str_mode=str_mode, out=True)}
         basic_dict = {"simtime": self.time.simulation_time(str_mode=str_mode)}
         if 'temperature' == ambient:

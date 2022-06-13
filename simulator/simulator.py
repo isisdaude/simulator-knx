@@ -16,11 +16,12 @@ from contextlib import suppress
 import gui
 import tools
 import tools.config_tools as ct 
+from system.room import Room
 
 pp=pprint.PrettyPrinter(compact=True)
 
 
-def launch_simulation(argv):
+def launch_simulation(argv) -> None:
     # Parser CLI arguments given by the user when launching the program
     INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, TELEGRAM_LOGGING = tools.arguments_parser(argv)
     
@@ -75,7 +76,7 @@ def launch_simulation(argv):
             sys.exit(1)
 
 
-async def user_input_loop(room):
+async def user_input_loop(room: Room) -> None:
     """Asyncio loop to await user command from terminal"""
     while True:
         message = ">>> What do you want to do?\n"
@@ -85,7 +86,7 @@ async def user_input_loop(room):
             # return None
             sys.exit(1)
 
-async def simulator_script_loop(room, file_path):
+async def simulator_script_loop(room: Room, file_path: str) -> int:
     """Asyncio loop to await user command from a .txt script"""
     script_parser = tools.ScriptParser()
     with open(file_path, "r") as f:
@@ -108,7 +109,7 @@ async def simulator_script_loop(room, file_path):
             pp.pprint(assertions)
             return 1
 
-async def kill_tasks():
+async def kill_tasks() -> None:
     """Function called to kill task when program ended"""
     try:
         pending = asyncio.Task.all_tasks()
@@ -120,8 +121,11 @@ async def kill_tasks():
         return None
 
 
-async def async_main(loop, room, command_mode, script_path):
-    """ Manager function of asyncio tasks"""
+async def async_main(loop, room: Room, command_mode: str, script_path: str) -> None:
+    """ Manager function of asyncio tasks
+    
+    loop : asyncio get event loop
+    """
     tasks = []
     if command_mode == ct.CLI_COM_MODE:
         print(">>>>>> The Command mode is set to CLI (commands through terminal)")
