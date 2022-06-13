@@ -89,7 +89,7 @@ class GroupAddress:
 
 class Window:
     """Class to represent room windows."""
-    def __init__(self, window_name: str, room, wall: str, location_offset: float, size: Tuple[float, float]) -> None: # room : Room
+    def __init__(self, window_name: str, room, wall: str, location_offset: float, size: Tuple[float, float], test_mode: bool=False) -> None: # room : Room
         """ 
         Initialization of a window object.
         in GUI, window img size is 300p wide, for a room of 12.5m=1000p, it corresponds to 3.75m
@@ -100,7 +100,10 @@ class Window:
         size : window [width, height] in meters 
         """
         from tools import check_window
-        from gui.gui_config import ROOM_WIDTH, ROOM_LENGTH
+        if not test_mode:
+            from gui.gui_config import ROOM_WIDTH, ROOM_LENGTH
+        elif test_mode:
+            ROOM_WIDTH, ROOM_LENGTH = 1000, 800
         self.WINDOW_PIXEL_SIZE = 300 # from png img library (folder png_simulator/)
         ROOM_PIXEL_WIDTH = ROOM_WIDTH
         self.location_offset = location_offset

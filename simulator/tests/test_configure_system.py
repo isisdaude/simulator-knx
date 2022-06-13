@@ -150,7 +150,7 @@ def test_correct_detachement_from_bus():
 
 def test_correct_window_creation_addition():
     window1_config = {"name": "window1", "room":room1, "wall":"north", "loc_offset":4, "size":[2, 1], "win_loc":(4, 10, 1.5)}
-    window1 = system.Window("window1", room1, "north", 4, [2, 1])
+    window1 = system.Window("window1", room1, "north", 4, [2, 1], test_mode=True)
     assert window1.name == window1_config["name"]
     assert window1.wall == window1_config["wall"]
     assert window1.location_offset == window1_config["loc_offset"]
@@ -161,7 +161,7 @@ def test_correct_window_creation_addition():
     assert window1.effective_lumen() == 2000
 
     window2_config = {"name": "window2", "room":room1, "wall":"east", "loc_offset":4, "size":[2, 1], "win_loc":(12.5, 4, 1.5)}
-    window2 = system.Window("window2", room1, "east", 4, [2, 1])
+    window2 = system.Window("window2", room1, "east", 4, [2, 1], test_mode=True)
     assert window2.name == window2_config["name"]
     assert window2.wall == window2_config["wall"]
     assert window2.location_offset == window2_config["loc_offset"]
@@ -204,7 +204,7 @@ def test_configure_system_from_file():
     config_path = "./config/config_test_config.json"
     # devices: brightness1, airsensor1, button1, heater1, dimmer1, led1
     room_conf, system_dt_conf = configure_system_from_file(config_path, system_dt, test_mode=True)
-    window1 = system.Window("window1", room_conf, "north", 4, (2, 1))
+    window1 = system.Window("window1", room_conf, "north", 4, (2, 1), test_mode=True)
     assert isinstance(room_conf, system.Room)
     assert system_dt_conf == system_dt
     assert room_conf._Room__system_dt == system_dt
