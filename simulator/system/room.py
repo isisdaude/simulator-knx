@@ -90,7 +90,7 @@ class Room:
         self.__test_mode = test_mode
         # Room main attributes
         self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
-        self.world = world.World(self.width, self.length, self.height, self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point"
+        self.world = world.World(self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point"
         self.knxbus= KNXBus()
         self.devices: List[InRoomDevice] = []
         self.windows: List[InRoomDevice] = []

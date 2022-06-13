@@ -21,7 +21,7 @@ def test_correct_world_creation():
     vapor_pressure = 818.76226238 # NOTE: to change if temp init ≠ 20.0 and hum inti ≠ 35
     utilization_factor = 0.52
     light_loss_factor = 0.8
-    world_object = world.World(width, length, height, speed_factor, system_dt, insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, datetime, weather)
+    world_object = world.World(speed_factor, system_dt, insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, datetime, weather)
     assert hasattr(world_object, 'time')
     assert world_object.time.speed_factor == speed_factor
     assert hasattr(world_object, '_World__room_insulation')
