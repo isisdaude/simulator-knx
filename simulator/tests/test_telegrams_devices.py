@@ -87,10 +87,10 @@ def test_dev_info():
     assert bright1.get_dev_info() == {'brightness': '0 lux', 'class_name': 'Brightness', 'individual_address': '0.0.6'}
     assert bright1.get_dev_info(True) == {'brightness': 0}
 
-    assert therm1.get_dev_info() == {'temperature': 0}
+    assert therm1.get_dev_info(True) == {'temperature': 0}
     assert therm1.get_dev_info() == {'temperature': '0 °C', 'class_name': 'Thermometer', 'individual_address': '0.0.7'}
 
-    assert humidity_air1.get_dev_info() == {'humidity': 0}
+    assert humidity_air1.get_dev_info(True) == {'humidity': 0}
     assert humidity_air1.get_dev_info() == {'humidity': '0 %', 'class_name': 'HumidityAir', 'individual_address': '0.0.8'}
 
     assert humidity_soil1.get_dev_info() == {'humiditysoil': '10 %', 'class_name': 'HumiditySoil', 'individual_address': '0.0.9'}
