@@ -1,11 +1,19 @@
 # KNX Smart Home Simulator
 
+- [KNX Smart Home Simulator](#KNX-Smart-Home-Simulator)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running](#running)
+  - [CLI](#cli)
+  - [GUI](#gui)
+  - [Script API](#script-api)
+
 The **KNX Smart Home Simulator** is a development tool that can be used when designing smart infrastructures, such as smart buildings.
 
 
 This simulator software represents a [KNX system](https://www.knx.org/knx-en/for-professionals/index.php), without real physical devices but virtual ones, and models its evolution through time in response to user interactions and to a simulated physical world's influences. With this simulator, one user can configure a KNX system with visual feedback, interact with it and even test applications developed with [**SVSHI**](https://github.com/dslab-epfl/svshi) (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) before implementing them in a real physical KNX system.
 
-It provides a [CLI](#cli), a [GUI](#gui) to easily interact  with the platform and a script [API](#api) to run automated tests.
+It provides a [CLI](#cli), a [GUI](#gui) to easily interact  with the platform and a script [Script API](#script-api) to run automated tests.
 
 ## Installation
 
