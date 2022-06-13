@@ -85,11 +85,26 @@ def test_dev_info():
     assert switch1.get_dev_info() == {'state': False, 'class_name': 'Switch', 'individual_address': '0.0.4'}
 
     assert bright1.get_dev_info() == {'brightness': '0 lux', 'class_name': 'Brightness', 'individual_address': '0.0.6'}
+    assert bright1.get_dev_info(True) == {'brightness': 0}
+
+    assert therm1.get_dev_info() == {'temperature': 0}
     assert therm1.get_dev_info() == {'temperature': '0 °C', 'class_name': 'Thermometer', 'individual_address': '0.0.7'}
+
+    assert humidity_air1.get_dev_info() == {'humidity': 0}
     assert humidity_air1.get_dev_info() == {'humidity': '0 %', 'class_name': 'HumidityAir', 'individual_address': '0.0.8'}
+
     assert humidity_soil1.get_dev_info() == {'humiditysoil': '10 %', 'class_name': 'HumiditySoil', 'individual_address': '0.0.9'}
+    assert humidity_soil1.get_dev_info(True) == {'humiditysoil': 10}
+
+    assert co2sensor1.get_dev_info(True) == {'co2level': 0}
     assert co2sensor1.get_dev_info() == {'co2level': '0 ppm', 'class_name': 'CO2Sensor', 'individual_address': '0.0.10'}
+    
     assert airsensor1.get_dev_info() == {'class_name': 'AirSensor', 'individual_address': '0.0.11'}
+    airsensor1.temperature = 1.0
+    airsensor1.humidity = 40
+    airsensor1.co2level = 400
+    assert airsensor1.get_dev_info(True) == {'temperature': 1.0, 'humidity': 40, 'co2level': 400}
+    assert airsensor1.get_dev_info() == {'temperature': '1.0 °C', 'humidity': '40 %', 'co2level': '400 ppm', 'class_name': 'AirSensor', 'individual_address': '0.0.11'}
 
     room1 = Room("bedroom1", 20, 20, 3, 180, '3-levels', system_dt,
         'good', 20.0, 50.0, 300, test_mode=False, 
@@ -101,8 +116,14 @@ def test_dev_info():
 
     assert interface_device.get_dev_info() is None
 
+def test_humidity_soil_set_value():
+    humidity_soil1 = dev.HumiditySoil("humiditysoil1", IndividualAddress(0,0,9))
+    
+    assert humidity_soil1.set_value(-1) is None
+    assert humidity_soil1.set_value(101) is None
 
-
+    assert humidity_soil1.set_value(45) == 1
+    
 def test_user_input_functional_modules():
     #FUNCTIONAL MODULES
     button1 = dev.Button("button1", IndividualAddress(0,0,12))

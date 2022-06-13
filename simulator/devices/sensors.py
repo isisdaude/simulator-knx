@@ -149,27 +149,27 @@ class AirSensor(Sensor):
         if value:
             dev_specific_dict = {}
             if self.temperature is not None:
-                dev_specific_dict.update(("temperature",round(self.temperature, 2)))
+                dev_specific_dict["temperature"] = round(self.temperature, 2)
             
             if self.humidity is not None:
-                dev_specific_dict.update(("humidity",round(self.humidity, 2)))
+                dev_specific_dict["humidity"] = round(self.humidity, 2)
             
             if self.co2level is not None:
-                dev_specific_dict.update(("co2level",round(self.co2level, 2)))
+                dev_specific_dict["co2level"] = round(self.co2level, 2)
             
         if not value:
             dev_specific_dict = {}
             if self.temperature is not None:
-                dev_specific_dict.update(("temperature",str(round(self.temperature, 2))+" °C"))
+                dev_specific_dict["temperature"] = str(round(self.temperature, 2))+" °C"
             
             if self.humidity is not None:
-                dev_specific_dict.update(("humidity",str(round(self.humidity, 2))+" %"))
+                dev_specific_dict["humidity"] = str(round(self.humidity, 2))+" %"
             
             if self.co2level is not None:
-                dev_specific_dict.update(("co2level",str(round(self.co2level, 2))+" ppm"))
+                dev_specific_dict["co2level"] = str(round(self.co2level, 2))+" ppm"
             
             dev_specific_dict.update(self._dev_basic_dict)
-            
+
         return dev_specific_dict
 
     def send_state(self) -> None:
