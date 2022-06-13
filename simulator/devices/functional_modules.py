@@ -1,45 +1,62 @@
 """
-Some class definitions for the simulated KNX functional modules (button, switch, Temp controller,...).
+Class definitions for the simulated KNX Functional Modules:
+Button and Dimmer.
 """
 
 import logging
+from typing import Dict, Union, Tuple
+
 from .device_abstractions import FunctionalModule
-from system.telegrams import BinaryPayload, DimmerPayload, FloatPayload, Payload, Telegram
+from system.telegrams import BinaryPayload, DimmerPayload
+from system.system_tools import Location
+
 
 class Button(FunctionalModule):
-    def __init__(self, name, location):
-        super().__init__('Button', name, location)
+    """ Concrete class to represent a Button"""
+    def __init__(self, name: str, location: Location) -> None:
+        """ Initialization of Button device object"""
+        super().__init__(name, location)
         self.state = False
         self.__str_state = "OFF"
 
-    def user_input(self, state=None, state_ratio=None): # state_ratio is only for command parser, to be able to call the function with this argument without errors
+    def user_input(self, state: bool=None, state_ratio=None) -> None:
+        """ 
+        Update its state and send a telegram with ButtonPayload on the bus.
+        state_ratio=None is simply to have the same function structure for all functional modules, and avoid error in user command parser
+        """
         self.state = not self.state
-        if state is not None: # if user specifies the wanted state (ON/OFF)
+        if state is not None: 
             self.state = state
-        self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
+        self.__str_state = "ON" if self.state else "OFF"
         logging.info(f"The {self.name} has been turned {self.__str_state}.")
         __binary_payload = BinaryPayload(binary_state=self.state)
-        # Send Telegram to the knxbus
         self.send_telegram(__binary_payload)
     
-    def get_dev_info(self):
+    def get_dev_info(self) -> Dict[str, Union[str, bool, float,  Tuple[float, float, float]]]:
+        """ Return information about the Button device's states and configuration, method called via CLI commmand 'getinfo'"""
         dev_specific_dict = {"state":self.state}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
 
 class Dimmer(FunctionalModule):
-    def __init__(self, name, location):
-        super().__init__('Dimmer', name, location)
+    """ Concrete class to represent a Dimmer Button"""
+    def __init__(self, name, location: Location) -> None:
+        """ Initialization of Dimmer device object"""
+        super().__init__(name, location)
         self.state = False
         self.__str_state = "OFF"
         self.state_ratio = 100
 
-    def user_input(self, state=None, state_ratio=100):
+    def user_input(self, state: bool=None, state_ratio: float=100):
+        """ 
+        Update its state and send a telegram with DimmerPayload on the bus.
+        state_ratio : fraction of the dimmer state, percentage in (0-100)
+        """
         self.state = not self.state
-        if state is not None: # if user gives the wanted state (True/False)
+        if state is not None:
             self.state = state
-        self.__str_state = "ON" if self.state else "OFF" #switch the state of the button
+        self.__str_state = "ON" if self.state else "OFF"
 
         if self.state:
             self.state_ratio = state_ratio
@@ -48,10 +65,10 @@ class Dimmer(FunctionalModule):
             logging.info(f"The {self.name} has been turned {self.__str_state}.")
 
         dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
-        # Send Telegram to the knxbus
         self.send_telegram(dimmer_payload)
     
-    def get_dev_info(self):
+    def get_dev_info(self) -> Dict[str, Union[str, bool, float,  Tuple[float, float, float]]]:
+        """ Return information about the Dimmer device's states and configuration, method called via CLI commmand 'getinfo'"""
         dev_specific_dict = {"state":self.state, "state_ratio":self.state_ratio}
         dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict

@@ -16,7 +16,7 @@ If device is a Functional Module:
 If device is a Sensor, no ['on'/'off'] argument (other sensors can not be set individually):
 
 - HumiditySoil Sensor, sets moisture to [value]=(0-100)
-- Presence Sensor, sets presence to [value]=(True/False)\
+- Presence Sensor, sets presence to [value]=(True/False/ON/OFF)\
 
 ##### other devices??
 

@@ -8,7 +8,6 @@ import traceback
 from typing import List
 
 from system.system_tools import GroupAddress
-from devices import Actuator, Sensor, FunctionalModule
 
 
 class KNXBus:
@@ -25,13 +24,14 @@ class KNXBus:
     # If not in list, add the observer to the list
     def attach(self, device, group_address: GroupAddress):
         '''Adds a device to the knx bus'''
+        # from devices import FunctionalModule
         if group_address in device.group_addresses:
             logging.info(
                 f"{device.name} is already connected to the KNX Bus through {group_address.name}.")
             return
         else:
-            if isinstance(device, FunctionalModule):
-                self.__update_group_address_to_payload(device, group_address)
+        #     if isinstance(device, FunctionalModule):
+        #         self.__update_group_address_to_payload(device, group_address)
   
             if group_address not in self.group_addresses:  # if ga not in group_addresses of KNXBus
                 logging.info(
@@ -84,7 +84,7 @@ class KNXBus:
                     except:
                         exc = sys.exc_info()[0]
                         trace = traceback.format_exc()
-                        logging.warning(f"Transmission of the telegram from source '{telegram.source}' failed: {exc} with trace \n{trace}.")
+                        logging.warning(f"[KNXBus.transmit_telegram()] - Transmission of the telegram from source '{telegram.source}' failed: {exc} with trace \n{trace}.")
                 # NOTE: for further implementation with functional_modules and sensors receiving telegrams
                 # for functional_module in ga_bus.functional_modules:
                 #     functional_module.function_to_call(telegram)
@@ -92,14 +92,14 @@ class KNXBus:
                 #     functional.function_to_call(telegram)
 
 
-    def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
-        from system.telegrams import BinaryPayload
-        pass
-        # TODO: which else need to be handled?
-        # print((str(group_address), BinaryPayload)
-        # self.__group_address_to_payload_type.update((str(group_address), BinaryPayload))
-        # TODO: to be added when async things handled correctly
-        # self.communication_interface.group_address_to_payload = self.__group_address_to_payload_type
+    # def __update_group_address_to_payload(self, device: FunctionalModule, group_address: GroupAddress):
+    #     from system.telegrams import BinaryPayload
+    #     pass
+    #     # TODO: which else need to be handled?
+    #     # print((str(group_address), BinaryPayload)
+    #     # self.__group_address_to_payload_type.update((str(group_address), BinaryPayload))
+    #     # TODO: to be added when async things handled correctly
+    #     # self.communication_interface.group_address_to_payload = self.__group_address_to_payload_type
     
     def get_info(self):
         bus_dict = {"name": self.name, "group_addresses":{}}
@@ -130,12 +130,14 @@ class KNXBus:
 
 class GroupAddressBus:
     def __init__(self, group_address: GroupAddress):
+        from devices import Actuator, Sensor, FunctionalModule
         self.group_address = group_address
         self.sensors: List[Sensor] = []
         self.actuators: List[Actuator] = []
         self.functional_modules: List[FunctionalModule] = []
 
     def add_device(self, device):
+        from devices import Actuator, Sensor, FunctionalModule
         device.group_addresses.append(self.group_address)
         logging.info(
             f"{self.group_address.name} added to {device.name}'s connections.")
@@ -147,6 +149,7 @@ class GroupAddressBus:
             self.sensors.append(device)
 
     def detach_device(self, device):
+        from devices import Actuator, Sensor, FunctionalModule
         if isinstance(device, Actuator):
             try:
                 self.actuators.remove(device)

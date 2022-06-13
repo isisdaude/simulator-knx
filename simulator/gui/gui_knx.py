@@ -514,7 +514,7 @@ class GUIWindow(pyglet.window.Window):
 
         logging.info(" ------- Initialization of the KNX System's GUI representation ------- ")
         for in_room_device in self.room.devices:
-            gui_device = getattr(self.__available_devices, in_room_device.device.class_name.lower())
+            gui_device = getattr(self.__available_devices, type(in_room_device.device).__name__.lower())
             pos_x, pos_y = gt.system_loc_to_gui_pos(in_room_device.location.x, in_room_device.location.y, self.__room_width_ratio, self.__room_length_ratio, self.__room_widget.origin_x, self.__room_widget.origin_y)
             logging.info(f"{in_room_device.name} ({in_room_device.location.x}, {in_room_device.location.y}) is at  {pos_x},{pos_y}.")
             if 'thermometer' in gui_device.label_name:

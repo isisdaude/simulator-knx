@@ -120,7 +120,7 @@ class Window:
 
         self.initial_size = room.width * self.WINDOW_PIXEL_SIZE / ROOM_PIXEL_WIDTH # 3.75m if room width=12.5 for 1000 pixels
         self.name = window_name
-        self.class_name = 'Window'
+        # self.class_name = 'Window'
         self.wall, self.window_loc, self.size  = check_window(wall, location_offset, size, room)   # size[width, height] in meters
         if self.wall is None: # failed check
             raise ValueError("Window object cannot be created, check the error logs")

@@ -3,6 +3,7 @@ Module that define functions for parsing user commands, CLI arguments or API scr
 """
 
 import logging
+import numbers
 import pprint
 
 import argparse
@@ -390,7 +391,21 @@ class ScriptParser():
                     if len(command_split) >= 3: 
                         # set sensor value
                         if 'humiditysoil' in command_split[1] or 'presence' in command_split[1]:
-                            value = command_split[2]
+                            if 'humiditysoil' in command_split[1]:
+                                try:
+                                    assert isinstance(command_split[2], numbers.Number)
+                                except AssertionError:
+                                    logging.warning(f"The value {command_split[2]} given to set {command_split[1]} is not a number.")
+                                    return None, self.assertions
+                                value = float(command_split[2])
+                            elif 'presence' in command_split[1]:
+                                try:
+                                    assert command_split[2].lower() in ('true', 'on', 'false', 'off')
+                                except AssertionError:
+                                    logging.warning(f"The value {command_split[2]} given to set {command_split[1]} is not a boolean.")
+                                    return None, self.assertions
+                                value = True if command_split[2].lower() in ('true', 'on') else False
+
                             for ir_device in room.devices:
                                 if command_split[1] == ir_device.name:
                                     ret = ir_device.device.set_value(value)
@@ -398,6 +413,7 @@ class ScriptParser():
                             # If device not found
                             logging.warning(f"The device {command_split[1]} is not found in room's devices list.")
                             return None, self.assertions
+                        
                         # set functional module on or off, with possible value for state_ratio
                         elif 'button' in command_split[1] or 'dimmer' in command_split[1]:
                             if not user_command_parser(command, room): # return 0

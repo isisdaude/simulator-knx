@@ -112,7 +112,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     co2_in = world_config["inside_co2"]
     datetime = world_config["datetime"]
     weather = world_config["weather"]
-    system_dt = world_config["system_dt"]
+    system_dt_config = world_config["system_dt"]
 
     rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
     rooms = []
@@ -128,7 +128,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
         x, y, z = room_config["dimensions"]
         room_insulation = room_config["insulation"]
         # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
-        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt, 
+        room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt_config, 
                     room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
                     datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode, telegram_logging=telegram_logging, interface=interface)
         interface = room.get_interface()

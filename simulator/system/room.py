@@ -81,7 +81,7 @@ class Room:
         self.svshi_mode = svshi_mode
         self.telegram_logging = telegram_logging
         if self.svshi_mode:
-            if interface is not None: # Simulation reloaded, we keep same interface to maitain connection
+            if interface is not None: # Simulation reloaded, we keep same interface to maintain connection
                 self.__interface = interface
                 self.__interface.room = self
             else:
@@ -113,6 +113,7 @@ class Room:
                 self.world.ambient_temperature.add_source(in_room_device)
         elif isinstance(device, Sensor):
             if self.svshi_mode:
+                device.connect_to(self.knxbus) # sensors can send telegram on bus only if svshi is working, no use in simulating it in other case
                 in_room_device.device.interface = self.__interface
             if isinstance(device, Brightness):
                 self.world.ambient_light.add_sensor(in_room_device)
@@ -132,7 +133,7 @@ class Room:
                 self.world.presence.add_sensor(in_room_device)
 
         elif isinstance(device, FunctionalModule):
-            logging.info(f"FunctionalModule {device.name} establiched connection with the bus.")
+            logging.info(f"FunctionalModule {device.name} established connection with the bus.")
             device.connect_to(self.knxbus) # The device connect to the Bus to send telegrams on it
         return in_room_device # Return for gui
 

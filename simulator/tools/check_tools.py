@@ -238,7 +238,7 @@ def check_device_config(class_name, name, individual_addr):
         logging.error(f"Wrong individual address for device {name} -> program terminated.")
         sys.exit(1)
 
-    return class_name, name, individual_addr
+    return name, individual_addr
 
 
 def check_location(bounds, x, y, z):
