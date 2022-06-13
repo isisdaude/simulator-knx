@@ -22,7 +22,6 @@ DATE_WEATHER_TO_LUX = {"clear_day":10752, "overcast_day":1075, "dark_day":107, "
 
 def outdoor_light(date_time:datetime, weather:str) -> Tuple[float, datetime]:
     """ Return outdoor lux value from weather conditions and time of day in a certain location (e.g. Lausanne)"""
-    print(f" -----+++---- datetime: {date_time}, weather:{weather}________+++++____")
     city = LocationInfo("Lausanne", "Switzerland", "Europe", 46.516, 6.63282)
     date = date_time.date()
     date_time = date_time.replace(tzinfo=timezone.utc)

@@ -327,7 +327,6 @@ def check_weather_date(date_time: str, weather: str) -> Tuple[datetime, str]:
     """ Check weather and time of day string from config file."""
     TIME_OF_DAY = ["today", "yesterday", "one_week_ago", "one_month_ago"]
     WEATHER = ["clear", "overcast", "dark"]
-    print(f"==++==++datetime before check : {date_time}")
     # datetime
     date_time = date_time.lower()
     if date_time in TIME_OF_DAY: # today, yesterday,...
@@ -359,7 +358,6 @@ def check_weather_date(date_time: str, weather: str) -> Tuple[datetime, str]:
         except AssertionError:
             logging.error(f"'date_time format should be 'YYYY/MM/DD/HH/MM' or 'YYYY/MM/DD', but '{date_time}' was given, today is considered as datetime simulation.")
             sim_datetime = datetime.today()
-    print(f"==++==++datetime after check : {sim_datetime}")
     # weather
     try:
         weather = weather.lower()
