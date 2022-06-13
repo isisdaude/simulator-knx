@@ -201,7 +201,7 @@ group_addresses = {"1/1/1": [button1, heater1],
                     "1/1/2": [dimmer1, led1]}
 world_states = {"temp_out":20.0, "temp_in":25.0, "hum_out": 50.0, "hum_in":35.0, "co2_out": 300.0, "co2_in": 800.0, "datetime":"today", "weather":"clear", "room_insulation":"average"}
 def test_configure_system_from_file():
-    config_path = "../../config/config_test_config.json"
+    config_path = "config/config_test_config.json"
     # devices: brightness1, airsensor1, button1, heater1, dimmer1, led1
     room_conf, system_dt_conf = configure_system_from_file(config_path, system_dt, test_mode=True)
     window1 = system.Window("window1", room_conf, "north", 4, (2, 1), test_mode=True)
