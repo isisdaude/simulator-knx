@@ -22,17 +22,18 @@ pp=pprint.PrettyPrinter(compact=True)
 
 
 def launch_simulation(argv) -> None:
-    # Parser CLI arguments given by the user when launching the program
+    """ Launch simulation with the correct modes of configuration, command and interface."""
+    # Parsed CLI arguments given by the user when launching the program
     INTERFACE_MODE, COMMAND_MODE, SCRIPT_PATH, CONFIG_MODE, CONFIG_PATH, SVSHI_MODE, TELEGRAM_LOGGING = tools.arguments_parser(argv)
     
-    # System configuration from function configure_system
+    # System configuration from function configure_system()
     if CONFIG_MODE == ct.DEV_CONFIG:
-        while(True): # Waits for the input to be a correct speed factor, before starting the simulation
-            simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [real time = speed * simulation time]\n")
+        while(True):
+            simulation_speed_factor = input(">>> What speed would you like to set for the simulation?  [simulated_time = speed * system_dt]\n")
             if tools.check_simulation_speed_factor(simulation_speed_factor):
                 break
         room1, system_dt = tools.configure_system(simulation_speed_factor, svshi_mode=SVSHI_MODE, telegram_logging=TELEGRAM_LOGGING)
-    # Default, empty or file config
+    # Default, empty or file config from function congirue_system_from_file()
     else:
         CONFIG_PATH = ct.DEFAULT_CONFIG_PATH if CONFIG_MODE == ct.DEFAULT_CONFIG else CONFIG_PATH
         CONFIG_PATH = ct.EMPTY_CONFIG_PATH if CONFIG_MODE == ct.EMPTY_CONFIG else CONFIG_PATH

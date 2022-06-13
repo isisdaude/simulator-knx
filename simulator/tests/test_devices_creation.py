@@ -148,21 +148,4 @@ def test_incorrect_device_ia():
                 devices_classes[dev_class](dev_class.lower(), system.IndividualAddress(dev_ia[0],dev_ia[1],dev_ia[2])) 
             assert pytest_wrapped_error.type == SystemExit
 
-
-
-
-## TODO: add an example for each device type
-
-# def test_configure_system_correct():
-#     rooms = system.configure_system(speed_factor)
-#     assert len(rooms) == 1  ##TODO: change this test if multiple rooms
-#     for room in rooms:
-#         assert room.__.group_address_style == group_address_style
-#         for inroom_device in room.devices:
-#             assert inroom_device.device.name in config_devices
-#             try:
-#                 config_devices.remove(inroom_device.device.name)
-#             except ValueError: # if no more items in the list
-#                 logging.warning(f"Device {inroom_device.device.name} not in test list")
-        
             

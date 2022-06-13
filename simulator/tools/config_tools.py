@@ -47,7 +47,6 @@ def configure_system(simulation_speed_factor: float, system_dt: float=1, test_mo
     """
     from system import Room
     global interface, interface_device
-    system_dt=1
     # Declaration of sensors, actuators and functional modules
     led1 = dev.LED("led1", IndividualAddress(0,0,1)) #Area 0, Line 0, Device 0
     led2 = dev.LED("led2", IndividualAddress(0,0,2))

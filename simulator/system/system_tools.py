@@ -3,7 +3,7 @@ Class definitions usefull to simulate the KNX system: Location, Individual and G
 """
 
 import math
-from typing import List, Union
+from typing import Union, Tuple
 
 import devices as dev
 
@@ -89,7 +89,7 @@ class GroupAddress:
 
 class Window:
     """Class to represent room windows."""
-    def __init__(self, window_name: str, room, wall: str, location_offset: float, size: List[float]) -> None: # room : Room
+    def __init__(self, window_name: str, room, wall: str, location_offset: float, size: Tuple[float, float]) -> None: # room : Room
         """ 
         Initialization of a window object.
         in GUI, window img size is 300p wide, for a room of 12.5m=1000p, it corresponds to 3.75m
@@ -121,7 +121,7 @@ class Window:
             self.scale_y = self.size[0] / self.initial_size
 
     def max_lumen_from_out_lux(self, out_lux: float) -> None:
-        """ COmpute max_lumen value based on out luminosity in lux and window's area."""
+        """ Compute max_lumen value based on out luminosity in lux and window's area."""
         self.max_lumen = out_lux * math.prod(self.size)
     
     def effective_lumen(self) -> float:

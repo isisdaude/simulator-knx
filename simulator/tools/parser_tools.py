@@ -394,7 +394,7 @@ class ScriptParser():
                     else:
                         if len(command_split) == 4:
                             try:
-                                assert isinstance(value, numbers.Number)
+                                assert value.isnumeric()
                                 value = float(value)
                             except AssertionError:
                                 logging.warning(f"The value should be a number, but '{value}' was given.")
@@ -412,7 +412,7 @@ class ScriptParser():
                         if 'humiditysoil' in command_split[1] or 'presence' in command_split[1]:
                             if 'humiditysoil' in command_split[1]:
                                 try:
-                                    assert isinstance(command_split[2], numbers.Number)
+                                    assert command_split[2].isnumeric()
                                 except AssertionError:
                                     logging.warning(f"The value {command_split[2]} given to set {command_split[1]} is not a number.")
                                     return None, self.assertions

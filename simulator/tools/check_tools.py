@@ -32,36 +32,59 @@ def check_simulation_speed_factor(simulation_speed_factor: str) -> Union[None, f
 def check_individual_address(area: Union[str, int], line: Union[str, int], device: Union[str, int]) -> Union[Tuple[None, None, None], Tuple[float, float, float]]:
     """ Check that the individual address has the correct format and values."""
     ia_assert_msg = ""
-    try:
-        assert isinstance(area, numbers.Number), f"area='{area}' is not a number, "
-        area_check = int(area)
-    except AssertionError as assert_msg:
-        ia_assert_msg += str(assert_msg)
-    else:
+    if type(area) == str:
         try:
-            assert isinstance(area, int), f"'area={area}' is not an int, "
+            assert area.isnumeric(), f"area='{area}' is not a number, "
+            area_check = int(area)
         except AssertionError as assert_msg:
             ia_assert_msg += str(assert_msg)
-    try:
-        assert isinstance(line, numbers.Number), f"line='{line}' is not a number, "
-        line_check = int(line)
-    except AssertionError as assert_msg:
-        ia_assert_msg += str(assert_msg)
     else:
         try:
-            assert isinstance(line, int), f"'line={line}' is not an int, "
+            assert isinstance(area, numbers.Number), f"area='{area}' is not a number, "
+            area_check = int(area)
         except AssertionError as assert_msg:
             ia_assert_msg += str(assert_msg)
-    try:
-        assert isinstance(device, numbers.Number), f"device number='{device}' is not a number, "
-        device_check = int(device)
-    except AssertionError as assert_msg:
-        ia_assert_msg += str(assert_msg)
+        else: # if no exceptions
+            try:
+                assert isinstance(area, int), f"'area={area}' is not an int, "
+            except AssertionError as assert_msg:
+                ia_assert_msg += str(assert_msg)
+
+    if type(line) == str:
+        try:
+            assert line.isnumeric(), f"line='{line}' is not a number, "
+            area_check = int(line)
+        except AssertionError as assert_msg:
+            ia_assert_msg += str(assert_msg)
     else:
         try:
-            assert isinstance(device, int), f"'device number={device}' is not an int, "
+            assert isinstance(line, numbers.Number), f"line='{line}' is not a number, "
+            line_check = int(line)
         except AssertionError as assert_msg:
             ia_assert_msg += str(assert_msg)
+        else:
+            try:
+                assert isinstance(line, int), f"'line={line}' is not an int, "
+            except AssertionError as assert_msg:
+                ia_assert_msg += str(assert_msg)
+
+    if type(device) == str:
+        try:
+            assert device.isnumeric(), f"device number='{device}' is not a number, "
+            area_check = int(device)
+        except AssertionError as assert_msg:
+            ia_assert_msg += str(assert_msg)
+    else:
+        try:
+            assert isinstance(device, numbers.Number), f"device number='{device}' is not a number, "
+            device_check = int(device)
+        except AssertionError as assert_msg:
+            ia_assert_msg += str(assert_msg)
+        else:
+            try:
+                assert isinstance(device, int), f"'device number={device}' is not an int, "
+            except AssertionError as assert_msg:
+                ia_assert_msg += str(assert_msg)
     if len(ia_assert_msg) > 0:
         ia_assert_msg = ia_assert_msg[:-2]+'.'
         logging.error(f"Individual address should be numbers in 0.0.0 - 15.15.255, here : {ia_assert_msg}.")
@@ -300,40 +323,43 @@ def check_location(bounds: Tuple[Tuple[float, float], Tuple[float, float], Tuple
     else:
         return x, y, z
 
-def check_wheater_date(date_time: str, weather: str) -> Tuple[datetime, str]:
+def check_weather_date(date_time: str, weather: str) -> Tuple[datetime, str]:
     """ Check weather and time of day string from config file."""
-    TIME_OF_DAY = ["today", "yesterday", "one_week_ago", "one_month_ago", "YYYY/MM/DD/HH/MM"]
+    TIME_OF_DAY = ["today", "yesterday", "one_week_ago", "one_month_ago"]
     WEATHER = ["clear", "overcast", "dark"]
+    print(f"==++==++datetime before check : {date_time}")
     # datetime
     date_time = date_time.lower()
-    try:
-        assert date_time in TIME_OF_DAY # today or yesterday
+    if date_time in TIME_OF_DAY: # today, yesterday,...
         if date_time == 'today':
             sim_datetime = datetime.today()
-        if date_time == 'yesterday':
+        elif date_time == 'yesterday':
             sim_datetime = datetime.today() - timedelta(days=1)
-        if  date_time == 'one_week_ago':
+        elif  date_time == 'one_week_ago':
             sim_datetime = datetime.today() - timedelta(days=7)
-        if date_time == 'one_month_ago': # 4 weeks ago in reality
+        elif date_time == 'one_month_ago': # 4 weeks ago in reality
             sim_datetime = datetime.today() - timedelta(weeks=4)
-    except AssertionError:
+    else:
         try:
             dt_split = date_time.split('/')
+            for d in dt_split:
+                assert d.isnumeric()
             if len(dt_split) > 3:
                 assert len(dt_split) == 5 # hour and minute
                 try:
-                    sim_datetime = datetime(year=dt_split[0],month=dt_split[1],day=dt_split[2], hour=dt_split[3], minute=dt_split[4])
+                    sim_datetime = datetime(year=int(dt_split[0]),month=int(dt_split[1]),day=int(dt_split[2]), hour=int(dt_split[3]), minute=int(dt_split[4]))
                 except ValueError as msg:
                     logging.error(f" The time_of_day '{date_time}' given is incorrect: '{msg}'.")
             else:
                 assert len(dt_split) == 3 # only date
                 try:
-                    sim_datetime = datetime(year=dt_split[0],month=dt_split[1],day=dt_split[2])
+                    sim_datetime = datetime(year=int(dt_split[0]),month=int(dt_split[1]),day=int(dt_split[2]))
                 except ValueError as msg:
                     logging.error(f" The time_of_day '{date_time}' given is incorrect: '{msg}'.")
         except AssertionError:
             logging.error(f"'date_time format should be 'YYYY/MM/DD/HH/MM' or 'YYYY/MM/DD', but '{date_time}' was given, today is considered as datetime simulation.")
             sim_datetime = datetime.today()
+    print(f"==++==++datetime after check : {sim_datetime}")
     # weather
     try:
         weather = weather.lower()
@@ -345,7 +371,7 @@ def check_wheater_date(date_time: str, weather: str) -> Tuple[datetime, str]:
     return sim_datetime, sim_weather
 
 
-def check_window(wall:str, location_offset:float, size:float, room) -> Union[Tuple[None, None, None], Tuple[str, float, Tuple[float, float]]]:
+def check_window(wall:str, location_offset:float, size:Tuple[float, float], room) -> Union[Tuple[None, None, None], Tuple[str, float, Tuple[float, float]]]:
     """ 
     Check window object creation.
     

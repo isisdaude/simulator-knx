@@ -690,7 +690,7 @@ class World:
         room_insulation : 'perfect', 'good', 'average' or 'bad'
         """
         # Time
-        self.__date_time, self.__weather = tools.check_wheater_date(date_time, weather)
+        self.__date_time, self.__weather = tools.check_weather_date(date_time, weather)
         self.time = Time(simulation_speed_factor, system_dt, self.__date_time)
         # Brightness
         self.ambient_light = AmbientLight(self.__date_time, self.__weather)

@@ -37,9 +37,13 @@ class InRoomDevice:
 
             other_device : InRoomDevice
             """
-            return (self.device.name == other_device.device.name
-                    and self.location.pos == other_device.location.pos 
-                    and self.device.individual_addr == other_device.device.individual_addr)
+            if isinstance(self.device, Window):
+                return (self.device.name == other_device.device.name
+                    and self.location.pos == other_device.location.pos)
+            else:
+                return (self.device.name == other_device.device.name
+                        and self.location.pos == other_device.location.pos 
+                        and self.device.individual_addr == other_device.device.individual_addr)
 
         def update_location(self, new_x: int=None, new_y: int=None, new_z: int=None) -> None: 
             """ 
@@ -90,7 +94,7 @@ class Room:
         self.__test_mode = test_mode
         # Room main attributes
         self.name, self.width, self.length, self.height, self.__speed_factor, self.__group_address_style, self.__insulation = check_room_config(name, width, length, height, simulation_speed_factor, group_address_style, insulation)
-        self.world = world.World(self.__speed_factor, system_dt, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) #date_time is simply a string keyword from config file at this point"
+        self.world = world.World(self.__speed_factor, system_dt, date_time, weather, self.__insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in) #date_time is simply a string keyword from config file at this point"
         self.knxbus= KNXBus()
         self.devices: List[InRoomDevice] = []
         self.windows: List[InRoomDevice] = []
