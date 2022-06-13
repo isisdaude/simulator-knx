@@ -142,7 +142,7 @@ def configure_system_from_file(config_file_path: str, system_dt: float=1, test_m
             location_offset = room_config["windows"][window]["location_offset"]
             size = room_config["windows"][window]["size"]
             try:
-                window_object = Window(window, room, wall, location_offset, size)
+                window_object = Window(window, room, wall, location_offset, size, test_mode=test_mode)
                 windows.append(window_object)
                 room.add_window(window_object)
             except ValueError as msg:
