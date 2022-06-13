@@ -91,6 +91,17 @@ def test_dev_info():
     assert co2sensor1.get_dev_info() == {'co2level': '0 ppm', 'class_name': 'CO2Sensor', 'individual_address': '0.0.10'}
     assert airsensor1.get_dev_info() == {'class_name': 'AirSensor', 'individual_address': '0.0.11'}
 
+    room1 = Room("bedroom1", 20, 20, 3, 180, '3-levels', system_dt,
+        'good', 20.0, 50.0, 300, test_mode=False, 
+        svshi_mode=False, telegram_logging=False)
+
+    from svshi_interface.main import Interface
+    interface = Interface(room1, False, testing=True)
+    interface_device = dev.IPInterface('ipinterface', IndividualAddress(0,0,14), interface)
+
+    assert interface_device.get_dev_info() is None
+
+
 
 def test_user_input_functional_modules():
     #FUNCTIONAL MODULES
@@ -211,4 +222,16 @@ def test_update_state_actuator():
     parser = TelegramParser()
     element = interface_device.interface._Interface__sending_queue.get()
     assert str(parser.from_knx_telegram(element)) == str(Telegram(led1.individual_addr, ga, BinaryPayload(False)))
+    
+def test_fails_on_wrong_update_value():
+    
+    with pytest.raises(SystemExit) as exc_info:
+        heater1 = dev.Heater("heater1", IndividualAddress(0,0,2), 400, update_rule=-1) #400W max power
+        assert "The Heater should have update_rule > 0, but -1 was given." in exc_info
+
+
+    with pytest.raises(SystemExit) as exc_info:
+        ac1 = dev.AC("ac1", IndividualAddress(0,0,3), 400, update_rule=1)
+        assert "The AC should have update_rule < 0, but 1 was given." in exc_info
+
     
