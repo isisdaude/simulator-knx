@@ -183,3 +183,32 @@ def test_update_state_actuator():
 
     switch1.update_state(dimmer_telegram)
     assert before == switch1.state
+
+    # Declaration of the physical system
+    room1 = Room("bedroom1", 20, 20, 3, 180, '3-levels', system_dt,
+            'good', 20.0, 50.0, 300, test_mode=False, 
+            svshi_mode=False, telegram_logging=False)
+
+    from svshi_interface.main import Interface
+    interface = Interface(room1, False, testing=True)
+    interface_device = dev.IPInterface('ipinterface', IndividualAddress(0,0,14), interface)
+
+    float_telegram = Telegram(led1.individual_addr, ga, FloatPayload(2.1))
+    interface_device.update_state(bin_telegram)
+    interface_device.update_state(float_telegram)
+    interface_device.update_state(dimmer_telegram)
+    
+    from svshi_interface.telegram_parser import TelegramParser
+    parser = TelegramParser({'0/0/0': BinaryPayload})
+
+    element = interface_device.interface._Interface__sending_queue.get()
+    assert str(parser.from_knx_telegram(element)) == str(bin_telegram)
+
+    parser = TelegramParser({'0/0/0': FloatPayload})
+    element = interface_device.interface._Interface__sending_queue.get()
+    assert str(parser.from_knx_telegram(element)) == str(float_telegram)
+
+    parser = TelegramParser()
+    element = interface_device.interface._Interface__sending_queue.get()
+    assert str(parser.from_knx_telegram(element)) == str(Telegram(led1.individual_addr, ga, BinaryPayload(False)))
+    
