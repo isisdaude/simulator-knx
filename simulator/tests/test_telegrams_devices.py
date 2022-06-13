@@ -136,3 +136,50 @@ def test_user_input_functional_modules():
     after = led1.state
 
     assert before!= after
+
+def test_update_state_actuator():
+    # ACTUATORS
+    led1 = dev.LED("led1", IndividualAddress(0,0,1)) #Area 0, Line 0, Device 0
+    heater1 = dev.Heater("heater1", IndividualAddress(0,0,2), 400) #400W max power
+    ac1 = dev.AC("ac1", IndividualAddress(0,0,3), 400)
+    switch1 = dev.Switch("switch1", IndividualAddress(0,0,4))
+    
+    from system.telegrams import Telegram, BinaryPayload, DimmerPayload, FloatPayload
+    from system import GroupAddress
+
+    ga = GroupAddress('3-levels', 0, 0, 0)
+
+    bin_telegram = Telegram(led1.individual_addr, ga, BinaryPayload(True))
+    dimmer_telegram = Telegram(led1.individual_addr, ga, DimmerPayload(False, 100))
+    
+    before = led1.state
+    led1.update_state(bin_telegram)
+    
+    assert before != led1.state
+
+    led1.update_state(dimmer_telegram)
+    assert before == led1.state
+
+    before = heater1.state
+    heater1.update_state(bin_telegram)
+    
+    assert before != heater1.state
+
+    heater1.update_state(dimmer_telegram)
+    assert before == heater1.state
+
+    before = ac1.state
+    ac1.update_state(bin_telegram)
+    
+    assert before != ac1.state
+
+    ac1.update_state(dimmer_telegram)
+    assert before == ac1.state
+
+    before = switch1.state
+    switch1.update_state(bin_telegram)
+    
+    assert before != switch1.state
+
+    switch1.update_state(dimmer_telegram)
+    assert before == switch1.state
