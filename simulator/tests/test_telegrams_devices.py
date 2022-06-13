@@ -255,4 +255,63 @@ def test_fails_on_wrong_update_value():
         ac1 = dev.AC("ac1", IndividualAddress(0,0,3), 400, update_rule=1)
         assert "The AC should have update_rule < 0, but 1 was given." in exc_info
 
+class TestingReceiveDevice(dev.Actuator):
+    def __init__(self, name: str, individual_addr: IndividualAddress, received: bool=False) -> None:
+        """ Initialization of a LED device object"""
+        super().__init__(name, individual_addr, received)
+
+    from system.telegrams import Telegram
+    def update_state(self, telegram: Telegram) -> None:
+        self.state = True
+
+    def get_dev_info(self):
+        pass
+
     
+def test_sensors_send_telegrams():
+    # SENSORS
+    bright1 = dev.Brightness("brightness1", IndividualAddress(0,0,6))
+    therm1 = dev.Thermometer("thermometer1", IndividualAddress(0,0,7))
+    humidity_air1 = dev.HumidityAir("humidityair1", IndividualAddress(0,0,8))
+    humidity_soil1 = dev.HumiditySoil("humiditysoil1", IndividualAddress(0,0,9))
+    co2sensor1 = dev.CO2Sensor("co2sensor1", IndividualAddress(0,0,10))
+    
+
+    # TO TEST FUNCTIONING
+    led1 = dev.LED("led1", IndividualAddress(0,0,1))
+
+    test_receive = TestingReceiveDevice('testingreceivedevice', IndividualAddress(0,0,30))
+
+    # Declaration of the physical system
+    room1 = Room("bedroom1", 20, 20, 3, 180, '3-levels', system_dt,
+                'good', 20.0, 50.0, 300, test_mode=False, 
+                svshi_mode=False, telegram_logging=False)
+                
+    room1.add_device(bright1, 5, 5, 1)
+    bright1.knxbus = room1.knxbus
+    room1.add_device(therm1, 10, 10, 1)
+    therm1.knxbus = room1.knxbus
+    room1.add_device(humidity_air1, 11, 10, 1)
+    humidity_air1.knxbus = room1.knxbus
+    room1.add_device(humidity_soil1, 12, 10, 1)
+    humidity_soil1.knxbus = room1.knxbus
+    room1.add_device(co2sensor1, 13, 10, 1)
+    co2sensor1.knxbus = room1.knxbus
+    room1.add_device(led1, 0,0,0)
+    room1.add_device(test_receive, 0,1,0)
+    
+    def try_sending_state(sensor):
+        room1.attach(sensor, ga1)
+        sensor.send_state()
+        assert test_receive.state == True
+        room1.detach(sensor, ga1)
+        test_receive.state = False
+
+    ga1 = '1/1/1'
+    room1.attach(test_receive, ga1)
+
+    try_sending_state(bright1)
+    try_sending_state(therm1)
+    try_sending_state(humidity_air1)
+    try_sending_state(humidity_soil1)
+    try_sending_state(co2sensor1)
