@@ -8,14 +8,14 @@ from typing import Dict, Union, Tuple
 
 from .device_abstractions import FunctionalModule
 from system.telegrams import BinaryPayload, DimmerPayload
-from system.system_tools import Location
+from system.system_tools import IndividualAddress
 
 
 class Button(FunctionalModule):
     """ Concrete class to represent a Button"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of Button device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         self.state = False
         self.__str_state = "OFF"
 
@@ -42,9 +42,9 @@ class Button(FunctionalModule):
 
 class Dimmer(FunctionalModule):
     """ Concrete class to represent a Dimmer Button"""
-    def __init__(self, name, location: Location) -> None:
+    def __init__(self, name, individual_addr: IndividualAddress) -> None:
         """ Initialization of Dimmer device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         self.state = False
         self.__str_state = "OFF"
         self.state_ratio = 100

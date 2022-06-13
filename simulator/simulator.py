@@ -57,10 +57,9 @@ def launch_simulation(argv) -> None:
     elif INTERFACE_MODE == ct.CLI_INT_MODE: # run the simulation without the GUI window
         # Configure the start_time attribute of room's Time object
         start_time = time.time()
-        room1.world.time.start_time = start_time
         room1.world.time.scheduler_init()
         room1.world.time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object for scheduling
-        room1.world.time.scheduler_start()
+        room1.world.time.scheduler_start() # set start_time of world.time object 
 
         try:
             loop = asyncio.get_event_loop()

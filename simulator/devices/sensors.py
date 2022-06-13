@@ -7,15 +7,15 @@ import logging
 from typing import Dict, Union, Tuple
 
 from .device_abstractions import Sensor
-from system.system_tools import Location
+from system.system_tools import IndividualAddress
 
 
 
 class Brightness(Sensor):
     """Concrete class to represent Brightness sensor"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of Brightness device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         self.brightness = 0
     
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
@@ -43,9 +43,9 @@ class Brightness(Sensor):
 
 class Thermometer(Sensor):
     """Concrete class to represent a Temperature sensor"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of Thermometer device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         # DTP
         self.temperature = 0
 
@@ -74,9 +74,9 @@ class Thermometer(Sensor):
 
 class HumidityAir(Sensor):
     """Concrete class to represent a Air Humidity sensor"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of HumidityAir device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         self.humidity = 0
 
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
@@ -104,9 +104,9 @@ class HumidityAir(Sensor):
 
 class CO2Sensor(Sensor):
     """Concrete class to represent a CO2 Sensor"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of CO2Sensor device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         self.co2level = 0
 
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
@@ -134,9 +134,9 @@ class CO2Sensor(Sensor):
 
 class AirSensor(Sensor):
     """Concrete class to represent an Air Sensor: CO2, Humidity and/or Temperature"""
-    def __init__(self, name: str, location: Location, temp_supported=False, hum_supported=False, co2_supported=False) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress, temp_supported: bool=False, hum_supported: bool=False, co2_supported: bool=False) -> None:
         """ Initialization of AirSensor device object"""
-        super().__init__(name, location)      
+        super().__init__(name, individual_addr)      
         self.temperature = None
         self.humidity = None
         self.co2level = None
@@ -179,9 +179,9 @@ class AirSensor(Sensor):
 
 class HumiditySoil(Sensor):
     """Concrete class to represent a Soil Moisture sensor"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of HumiditySoil device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         self.humiditysoil = 10 # arbitrary init of soil humidity
 
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
@@ -221,9 +221,9 @@ class HumiditySoil(Sensor):
 
 class PresenceSensor(Sensor):
     """Concrete class to represent a Presence Sensor"""
-    def __init__(self, name: str, location: Location) -> None:
+    def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of PresenceSensor device object"""
-        super().__init__(name, location)
+        super().__init__(name, individual_addr)
         # self.presence = False
         self.state = False
 

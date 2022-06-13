@@ -17,30 +17,37 @@ from .world_tools import outdoor_light, compute_distance, compute_distance_from_
 
 
 class Time:
-    """Class to represent time in simulation, manage scheduling of updates and evolution of the time and date."""
+    """
+    Class to represent time in simulation, manage scheduling of world updates and evolution of the time and date.
+    The scheduler methods manage the regular world updates only when GUI is not used, in the latter case, pyglet library manage scheduling.
+
+    Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 by default)
+    update_rule_ratio : fraction of a simulated hour between two system updates = simulated time corresponding to system_dt
+    Actuators are defined with their evolution per hour, this ratio allows to compute their effect on the corresponding ambient during system_dt
+    """
     def __init__(self, simulation_speed_factor: float, system_dt: float, date_time: datetime) -> None:
-        # Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 for now)
         self.speed_factor = simulation_speed_factor
         self.__system_dt = system_dt
         self.__datetime_init = date_time
         self.date_time = date_time
         self.__simtim_tick_counter = 0
-        # ratio for physical state update, pro rata per hour
         self.update_rule_ratio = (self.__system_dt * self.speed_factor)/3600
-
 
     # Scheduler management, if not in GUI mode
     def scheduler_init(self) -> AsyncIOScheduler:
+        """ Initialize the asyncio scheduler."""
         self.__scheduler = AsyncIOScheduler()
         return self.__scheduler
 
     def scheduler_add_job(self, job_function) -> None:
+        """ Add a job (function) to the scheduler, and define the interval in seconds between two calls (here system_dt)."""
         try:
             self.__update_job = self.__scheduler.add_job(job_function, 'interval', seconds = self.__system_dt)
         except AttributeError:
             logging.warning("The Scheduler is not initialized: update job cannnot be added.")
 
     def scheduler_start(self) -> None:
+        """ Start the scheduler and initialize the start simulation time."""
         try:
             self.__scheduler.start()
             self.start_time = time.time()
@@ -50,6 +57,10 @@ class Time:
 
     # Simulation time management 
     def simulation_time(self, str_mode: bool=False) -> Union[str, float, None]:
+        """ 
+        Return the current elapsed simulation time since the start of the simulation (or last reload/pause).
+        At each update that occur every system_dt, the tick_counter is increased by system_dt,
+        and the simulated time is computed by multiplying with the speed_factor (simulated seconds corresponding to one update = system_dt)."""
         try:
             elapsed_time = (self.__simtim_tick_counter)*self.speed_factor
             if str_mode:
@@ -64,49 +75,60 @@ class Time:
     def update_datetime(self) -> datetime:
         """ Increment simtime with system_dt=interval between two tick/updates"""
         self.__simtim_tick_counter += self.__system_dt 
-        self.date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
+        self.date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False))
         return self.date_time
 
 
 class AmbientLight:
     """Class to represent Light/Brightness in a simulation"""
     def __init__(self, date_time: datetime, weather: str) -> None:
-        self.__light_sources: List = []
-        self.__light_sensors: List = [] # inroom devices
-        self.__windows: List = []
-        # values fo global brightness # https://www.fuzionlighting.com.au/technical/room-index, considering light on 3m ceiling 
-        self.__utilization_factor = 0.52 
-        self.__light_loss_factor = 0.8  # TODO magic number 
+        """ Initialization of an ambient light object. """
+        from system.room import InRoomDevice
+        from system.system_tools import Window
+        self.__light_sources: List[InRoomDevice] = []
+        self.__light_sensors: List[InRoomDevice] = []
+        self.__windows: List[Window] = []
+        # values fo global brightness, utilization and light loss factor:
+        # https://www.fuzionlighting.com.au/technical/room-index, considering light on 3m ceiling 
+        self.__utilization_factor = 0.52
+        self.__light_loss_factor = 0.8 
         self.__weather = weather
         self.__lux_out, self.__time_of_day = outdoor_light(date_time, weather)
 
     def add_source(self, lightsource) -> None: 
         """ 
-        
+        Add a light source (LED or Window) to the sources list.
+        If Window, we compute its resulting lumen from its area and outdoor lux. 
+
         lightsource: InRoomDevice 
         """
         from system import Window
         self.__light_sources.append(lightsource) 
         if isinstance(lightsource.device, Window):
             self.__windows.append(lightsource)
-            # Compute window lumen from out_lux and window area
+            # Compute window max_lumen from out_lux and window area
             lightsource.device.max_lumen_from_out_lux(self.__lux_out)
 
     def add_sensor(self, lightsensor) -> None:
         """ 
-        
+        Add a light sensor (Brightness sensor) to the sensors list.
+
         lightsensor: InRoomDevice 
         """
         self.__light_sensors.append(lightsensor)
     
     def __lux_from_lightsource(self, source, distance: float) -> float:
         """ 
+        Compute resulting lux at a certain distance of a light source emitting lumens.
+        lux = lumen/square meter
+        With the beam angle of source, we compute the total sphere surface reached by lumens at a certaindistance from source,
+        we then take the fraction corresponding to 1 square meter: (effective_lumen * lumen_ratio) / lux_area = lux/m^2 at a certain distance.
 
         source: InRoomDevice 
         """
-        lux_area = 1 # Lux consider lumen per square meter (1 m^2)
+        lux_area = 1 # 1 m^2
         # Total surface of sphere reached by light around lightsource
-        # https://en.wikipedia.org/wiki/Solid_angle and 
+        # https://en.wikipedia.org/wiki/Solid_angle 
         solid_angle = 4 * math.pi * (math.sin(source.device.beam_angle/4))**2
         total_beam_cone_surface = solid_angle * distance**2
         # Fraction of lumen reaching a 1m^2 area at a specific distance from source
@@ -118,7 +140,7 @@ class AmbientLight:
 
     def __compute_sensor_brightness(self, brightness_sensor) -> float: # Read brightness at a particular sensor
         """ 
-        
+        Compute 
         brightness_sensor: InRoomDevice 
         """
         from system import Window
