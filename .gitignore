@@ -95,3 +95,4 @@ ENV/
 .vscode
 .tags
 .bash_profile
+.pytest_cache
