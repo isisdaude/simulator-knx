@@ -11,7 +11,6 @@ import pyglet
 from time import time, sleep
 from typing import List, Tuple
 import numpy as np
-from pynput.keyboard import Key, Controller
 # Application libraries
 import gui.gui_tools as gt
 import gui.gui_config as gc
