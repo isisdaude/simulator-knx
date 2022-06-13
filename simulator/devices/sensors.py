@@ -136,13 +136,10 @@ class AirSensor(Sensor):
     """Concrete class to represent an Air Sensor: CO2, Humidity and/or Temperature"""
     def __init__(self, name: str, location: Location, temp_supported=False, hum_supported=False, co2_supported=False) -> None:
         """ Initialization of AirSensor device object"""
-        super().__init__(name, location)
-        if temp_supported:
-            self.temperature = None
-        if hum_supported:
-            self.humidity = None
-        if co2_supported:
-            self.co2level = None
+        super().__init__(name, location)      
+        self.temperature = None
+        self.humidity = None
+        self.co2level = None
 
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
@@ -150,10 +147,29 @@ class AirSensor(Sensor):
 
         value : if True, send the numeric values only, if False, send the string value and basic device info."""
         if value:
-            dev_specific_dict = {"temperature":round(self.temperature, 2), "humidity":round(self.humidity, 2), "co2level":round(self.co2level, 2)}
+            dev_specific_dict = {}
+            if self.temperature is not None:
+                dev_specific_dict.update(("temperature",round(self.temperature, 2)))
+            
+            if self.humidity is not None:
+                dev_specific_dict.update(("humidity",round(self.humidity, 2)))
+            
+            if self.co2level is not None:
+                dev_specific_dict.update(("co2level",round(self.co2level, 2)))
+            
         if not value:
-            dev_specific_dict = {"temperature":str(round(self.temperature, 2))+" °C", "humidity":str(round(self.humidity, 2))+" %", "co2level":str(round(self.co2level, 2))+" ppm"}
+            dev_specific_dict = {}
+            if self.temperature is not None:
+                dev_specific_dict.update(("temperature",str(round(self.temperature, 2))+" °C"))
+            
+            if self.humidity is not None:
+                dev_specific_dict.update(("humidity",str(round(self.humidity, 2))+" %"))
+            
+            if self.co2level is not None:
+                dev_specific_dict.update(("co2level",str(round(self.co2level, 2))+" ppm"))
+            
             dev_specific_dict.update(self._dev_basic_dict)
+            
         return dev_specific_dict
 
     def send_state(self) -> None:
