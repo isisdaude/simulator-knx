@@ -20,12 +20,19 @@ class Time:
     """
     Class to represent time in simulation, manage scheduling of world updates and evolution of the time and date.
     The scheduler methods manage the regular world updates only when GUI is not used, in the latter case, pyglet library manage scheduling.
-
-    Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 by default)
-    update_rule_ratio : fraction of a simulated hour between two system updates = simulated time corresponding to system_dt
-    Actuators are defined with their evolution per hour, this ratio allows to compute their effect on the corresponding ambient during system_dt
     """
     def __init__(self, simulation_speed_factor: float, system_dt: float, date_time: datetime) -> None:
+        """ 
+        Initialization of a time object.
+        Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 by default)
+        Actuators are defined with their evolution per hour, this ratio allows to compute their effect on the corresponding ambient during system_dt
+
+        simulation_speed_factor : corresponding simulated time between two world updates
+        system_dt : interval in seconds between two world updates
+        date_time : current date and time, to kkep track of simulation date.
+
+        update_rule_ratio : fraction of a simulated hour between two system updates = simulated time corresponding to system_dt
+        """
         self.speed_factor = simulation_speed_factor
         self.__system_dt = system_dt
         self.__datetime_init = date_time
@@ -82,7 +89,11 @@ class Time:
 class AmbientLight:
     """Class to represent Light/Brightness in a simulation, Brightness is location-dependant in the room."""
     def __init__(self, date_time: datetime, weather: str) -> None:
-        """ Initialization of an ambient light object, brightness in luc=lumen/m^2 """
+        """ 
+        Initialization of an ambient light object, brightness in luc=lumen/m^2.
+        
+        weather : can be 'slear', 'overcast' or 'dark'
+        datetime : datetime.datetime object to represent simulation date and time"""
         from system.room import InRoomDevice
         from system.system_tools import Window
         self.__light_sources: List[InRoomDevice] = []
@@ -665,45 +676,61 @@ class World:
     Class to represnt the physical world simulation and evolution in time.
     Time, Temperature, Humidity, CO2, SoilHumidity and Presence.
     """
-    def __init__(self, simulation_speed_factor: float, system_dt: float, room_insulation: str, temp_out: float, hum_out: float, co2_out: float, temp_in: float, hum_in: float, co2_in: float, date_time: datetime, weather: str) -> None:
+    def __init__(self, simulation_speed_factor: float, system_dt: float,  date_time: datetime, weather: str, room_insulation: str, temp_out: float, hum_out: float, co2_out: float, temp_in: float, hum_in: float, co2_in: float) -> None:
         """ 
         Initialization of a world object.
-
+        
+        # Time
+        simulation_speed_factor : corresponding simulated time between two world updates
+        system_dt : interval in seconds between two world updates
+        date_time : current date and time, to keep track of simulation date.
+        # Brightness
+        weather : 'clear', 'overcast' or 'dark'
+        # Temperature, Humidity, CO2
+        room_insulation : 'perfect', 'good', 'average' or 'bad'
         """
-         #date_time is simply a string keyword from config file at this point
-        self.__date_time, self.__weather = tools.check_wheater_date(date_time, weather) # self.__date_time is a datetime.datetime instance, self.__weather is a string
-        self.time = Time(simulation_speed_factor, system_dt, self.__date_time) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
+        # Time
+        self.__date_time, self.__weather = tools.check_wheater_date(date_time, weather)
+        self.time = Time(simulation_speed_factor, system_dt, self.__date_time)
+        # Brightness
+        self.ambient_light = AmbientLight(self.__date_time, self.__weather)
+        # Temperature
         self.__room_insulation = room_insulation
         self.__temp_out, self.__hum_out, self.__co2_out = temp_out, hum_out, co2_out # does not change during simulation
-        # self.speed_factor = simulation_speed_factor
-        self.ambient_temperature = AmbientTemperature(self.time.update_rule_ratio, self.__temp_out, temp_in, room_insulation)
-        self.ambient_light = AmbientLight(self.__date_time, self.__weather) #TODO: set a default brightness depending on the time of day (day/night), blinds state (open/closed), and wheather state(clear, overcast,...)
+        self.ambient_temperature = AmbientTemperature(self.time.update_rule_ratio, self.__temp_out, temp_in, self.__room_insulation)
+        # Humidity
         self.ambient_humidity = AmbientHumidity(self.__temp_out, self.__hum_out, temp_in, hum_in,  self.__room_insulation, self.time.update_rule_ratio)
+        # CO2
         self.ambient_co2 = AmbientCO2(self.__co2_out, co2_in, self.__room_insulation, self.time.update_rule_ratio)
+        # Soil Moisture
         self.soil_moisture = SoilMoisture(self.time.update_rule_ratio)
+        # Presence
         self.presence = Presence()
-        # self.ambient_world = [self.ambient_temperature, self.ambient_light, self.ambient_humidity, self.ambient_co2, self.soil_moisture]
 
     def update(self) -> Tuple[datetime, str, datetime, float, List[Tuple[str, float]], List[Tuple[str, float]], bool, List[Tuple[str, float]], List[Tuple[str, float]], List[Tuple[str, float]], List[Tuple[str, bool]]]:
-        # co2 and humidity update need temperature update to be done before
+        """
+        World states update, call all ambient states updates methods.
+        
+        Return world info and states, and ambient levels for GUI updates."""
         date_time = self.time.update_datetime()
         brightness_levels, weather, time_of_day, out_lux = self.ambient_light.update(date_time)
         temperature_levels, rising_temp = self.ambient_temperature.update()
         humidity_levels = self.ambient_humidity.update(self.ambient_temperature.get_temperature(str_mode=False))
         co2_levels = self.ambient_co2.update()
-        humiditysoil_levels = self.soil_moisture.update() #self.ambient_humidity.get_humidity(str_mode=False)
+        humiditysoil_levels = self.soil_moisture.update()
         presence_sensors_states = self.presence.update()
         return date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states
 
-    # def get_world_state(self): # one world per room, so status of the room
-    #     print("+---------- STATUS ----------+")
-    #     print(f" Temperature: {self.ambient_temperature.temperature_in}")
-    #     #TODO: add others when availaible
-    #     print("+----------------------------+")
+    # API, CLI methods
     def set_ambient_value(self, ambient: str, value: Union[str, float]) -> Union[None, int]:
         """
-        
-        value : ambient value or presence bool(in str) or weather string"""
+        Set the world states values, called only in Script Mode with API commands. 
+
+        ambient : world state to set,
+        value : ambient value or presence bool(in str) or weather string.
+
+        Return 1 or None if the value given was appropriate.
+        """
         if 'temperature' in ambient:
             if ambient == 'temperature_in':
                 ret = self.ambient_temperature.set_temperature('in', value)
@@ -728,6 +755,7 @@ class World:
         return ret # None or 1
     
     def get_info(self, ambient: str, room, str_mode: bool) -> Dict[str, str]:
+        """ Return the current world states values, called with CLI 'getinfo' command."""
         basic_dict_out = {"room_insulation":self.__room_insulation, "temperature_out":str(self.__temp_out)+" °C", "humidity_out":str(self.__hum_out)+" %", "co2_out":str(self.__co2_out)+" ppm", "brightness_out":self.ambient_light.get_global_brightness(room, str_mode=str_mode, out=True)}
         basic_dict = {"simtime": self.time.simulation_time(str_mode=str_mode)}
         if 'temperature' == ambient:

@@ -33,7 +33,7 @@ You can start the simulator by being at the root of the simulator (**simulator-k
 
 You can run `python3 run.py -h` in the folder to display the following:
 
-```
+
 usage: run.py [-h] [-l {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}] [-i {gui,cli}]
               [-c {script,cli}] [-f FILESCRIPT_NAME] [-C {file,default,empty,dev}] [-F FILECONFIG_NAME]
               [-s] [-t]
@@ -41,6 +41,7 @@ usage: run.py [-h] [-l {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}] [-
 Process Interface, Command, Config and Logging modes.
 
 options:
+```
   -h, --help            show this help message and exit
   -l {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}, --log {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}
                         Provide logging level.
