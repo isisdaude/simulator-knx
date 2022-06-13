@@ -301,6 +301,7 @@ def test_sensors_send_telegrams():
     room1.add_device(test_receive, 0,1,0)
     
     def try_sending_state(sensor):
+        """Helper function for sending the state, receiving the telegram and reinitalizing the state"""
         room1.attach(sensor, ga1)
         sensor.send_state()
         assert test_receive.state == True
