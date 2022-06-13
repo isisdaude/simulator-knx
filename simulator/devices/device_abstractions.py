@@ -10,9 +10,6 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import List
 
-# FUNCTIONAL_MODULE_TYPES = ["button", "switch", "dimmer"]
-# SENSOR_TYPES = ["button", "brightness", "temperature", "humidity", "co2"]
-# ACTUATOR_TYPES = ["light", "heater", "cooler", "ip_interface"]
 
 class Device(ABC):
     """ Abstract root class to represent simulated KNX Devices """
@@ -22,6 +19,7 @@ class Device(ABC):
     def __init__(self, name: str, individual_addr: IndividualAddress) -> None: #The constructor is also a good place for imposing various checks on attribute values
         """ 
         Initializaion of a simulated device instance
+
         class_name : name of the device's class (e.g. LED, Button,...), only used to check the davice's name 
         name : should include its class name
         individual_addr : Individual Address of the device = position on the KNX bus (Area, Line, Device)
@@ -62,7 +60,7 @@ class Device(ABC):
 
     def connect_to(self, knxbus: KNXBus) -> None:
         """ Add the knxbus object to device's attributes to send telegrams by calling 'knxbus.transmit_telegram()' method"""
-        logging.info(f"The bus is added to device {self.name}'s class attributes.")
+        logging.info(f"{self.name} can send telegrams on the KNX Bus, knxbus object is added to device's class attributes.")
         self.knxbus = knxbus
     
     @abstractmethod
@@ -116,6 +114,7 @@ class Actuator(Device, ABC):
     def __init__(self, name: str, individual_addr:  IndividualAddress, default_state: bool=False) -> None:
         """ 
         Initialization of a Actuator instance.
+
         state : True/False if device is respectively turned ON/OF 
         """
         super().__init__(name, individual_addr)

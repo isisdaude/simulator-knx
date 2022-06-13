@@ -21,6 +21,7 @@ class Brightness(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the Brightness sensor device's states and configuration, method called via CLI commmand 'getinfo'.
+        
         value : if True, send the numeric value only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"brightness":round(self.brightness, 2)}
@@ -35,7 +36,7 @@ class Brightness(Sensor):
         only in svshi mode, 
         only if the sensor is assigned to a group address. """
         from system import FloatPayload
-        if self.interface is not None:
+        if len(self.group_addresses) and hasattr(self, 'knxbus'):
             payload = FloatPayload(self.brightness)
             self.send_telegram(payload) 
 
@@ -51,6 +52,7 @@ class Thermometer(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the Thermometer device's states and configuration, method called via CLI commmand 'getinfo'.
+
         value : if True, send the numeric value only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"temperature":round(self.temperature, 2)}
@@ -64,8 +66,8 @@ class Thermometer(Sensor):
         Send sensor's measured value on the bus, 
         only in svshi mode, 
         only if the sensor is assigned to a group address. """
-        from system import Telegram, GroupAddress, FloatPayload
-        if self.interface is not None and self.group_addresses:
+        from system import FloatPayload
+        if len(self.group_addresses) and hasattr(self, 'knxbus'):
             payload = FloatPayload(self.temperature)
             self.send_telegram(payload)
 
@@ -80,6 +82,7 @@ class HumidityAir(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the Air Humidity device's states and configuration, method called via CLI commmand 'getinfo'.
+
         value : if True, send the numeric value only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"humidity":round(self.humidity, 2)}
@@ -94,7 +97,7 @@ class HumidityAir(Sensor):
         only in svshi mode, 
         only if the sensor is assigned to a group address. """
         from system import FloatPayload
-        if self.interface is not None:
+        if len(self.group_addresses) and hasattr(self, 'knxbus'):
             payload = FloatPayload(self.humidity)
             self.send_telegram(payload) 
 
@@ -109,6 +112,7 @@ class CO2Sensor(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the CO2 Sensor device's states and configuration, method called via CLI commmand 'getinfo'.
+
         value : if True, send the numeric value only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"co2level":round(self.co2level, 2)}
@@ -123,7 +127,7 @@ class CO2Sensor(Sensor):
         only in svshi mode, 
         only if the sensor is assigned to a group address. """
         from system import FloatPayload
-        if self.interface is not None:
+        if len(self.group_addresses) and hasattr(self, 'knxbus'):
             payload = FloatPayload(self.co2level)
             self.send_telegram(payload) 
 
@@ -143,6 +147,7 @@ class AirSensor(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the Air Sensor device's states and configuration, method called via CLI commmand 'getinfo'.
+
         value : if True, send the numeric values only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"temperature":round(self.temperature, 2), "humidity":round(self.humidity, 2), "co2level":round(self.co2level, 2)}
@@ -166,6 +171,7 @@ class HumiditySoil(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the Soil Moisture device's states and configuration, method called via CLI commmand 'getinfo'.
+
         value : if True, send the numeric value only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"humiditysoil":round(self.humiditysoil, 2)}
@@ -192,7 +198,7 @@ class HumiditySoil(Sensor):
         only in svshi mode, 
         only if the sensor is assigned to a group address. """
         from system import FloatPayload
-        if self.interface is not None:
+        if len(self.group_addresses) and hasattr(self, 'knxbus'):
             payload = FloatPayload(self.humiditysoil)
             self.send_telegram(payload) 
 
@@ -208,6 +214,7 @@ class PresenceSensor(Sensor):
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
         Return information about the Presence Sensor device's states and configuration, method called via CLI commmand 'getinfo'.
+
         value : if True, send the boolean value only, if False, send the string value and basic device info."""
         if value:
             dev_specific_dict = {"presence":self.state}
@@ -233,6 +240,6 @@ class PresenceSensor(Sensor):
         only in svshi mode, 
         only if the sensor is assigned to a group address. """
         from system import FloatPayload
-        if self.interface is not None:
+        if len(self.group_addresses) and hasattr(self, 'knxbus'):
             payload = FloatPayload(self.humiditysoil)
             self.send_telegram(payload) 

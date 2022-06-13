@@ -3,12 +3,17 @@ Module that implement verification function to check correctness of variables, a
 """
 
 import logging
-import sys
 import numbers
+import sys
+import traceback
 from datetime import datetime, timedelta
+from typing import Union, Tuple
+
+from system.system_tools import IndividualAddress, GroupAddress
 
 
-def check_simulation_speed_factor(simulation_speed_factor:str):
+def check_simulation_speed_factor(simulation_speed_factor: str) -> Union[None, float]:
+    """ Check that the simulation factor has a suitable value."""
     try:
         speed_factor = float(simulation_speed_factor)
     except ValueError:
@@ -24,10 +29,12 @@ def check_simulation_speed_factor(simulation_speed_factor:str):
         return None
     return speed_factor
 
-def check_individual_address(area, line, device):
+def check_individual_address(area: Union[str, int], line: Union[str, int], device: Union[str, int]) -> Union[Tuple[None, None, None], Tuple[float, float, float]]:
+    """ Check that the individual address has the correct format and values."""
     ia_assert_msg = ""
     try:
         assert isinstance(area, numbers.Number), f"area='{area}' is not a number, "
+        area_check = int(area)
     except AssertionError as assert_msg:
         ia_assert_msg += str(assert_msg)
     else:
@@ -37,6 +44,7 @@ def check_individual_address(area, line, device):
             ia_assert_msg += str(assert_msg)
     try:
         assert isinstance(line, numbers.Number), f"line='{line}' is not a number, "
+        line_check = int(line)
     except AssertionError as assert_msg:
         ia_assert_msg += str(assert_msg)
     else:
@@ -46,6 +54,7 @@ def check_individual_address(area, line, device):
             ia_assert_msg += str(assert_msg)
     try:
         assert isinstance(device, numbers.Number), f"device number='{device}' is not a number, "
+        device_check = int(device)
     except AssertionError as assert_msg:
         ia_assert_msg += str(assert_msg)
     else:
@@ -58,12 +67,17 @@ def check_individual_address(area, line, device):
         logging.error(f"Individual address should be numbers in 0.0.0 - 15.15.255, here : {ia_assert_msg}.")
         return None, None, None
     try: # test if the indiv address has correct values
-        assert (area >= 0 and area <= 15 and line >= 0 and line <= 15 and device >= 0 and device <= 255)
+        assert (area_check >= 0 and area_check <= 15 and line_check >= 0 and line_check <= 15 and device_check >= 0 and device_check <= 255)
     except AssertionError:
-        logging.error(f"Individual address is out of bounds, should be in 0.0.0 - 15.15.255, but '{area}.{line}.{device}' given.")
+        logging.error(f"Individual address is out of bounds, should be in 0.0.0 - 15.15.255, but  given.")
+        return None, None, None
+    except:
+        exc = sys.exc_info()[0]
+        trace = traceback.format_exc()
+        logging.warning(f"Individual address creation with '{area_check}.{line_check}.{device_check}' failed: {exc} with trace \n{trace}.")
         return None, None, None
     else:
-        return area, line, device
+        return area_check, line_check, device_check
 
 # Constants for Group Addresses check
 MAX_MAIN = 31
@@ -72,21 +86,25 @@ MAX_SUB_LONG = 255
 MAX_SUB_SHORT = 2047
 MAX_FREE = 65535
 
-def check_group_address(group_address_style, text='', style_check=False): ## TODO: verify if the group address entered in text box is correct
-        from system import GroupAddress
-        ''' Verify that the group address entered by the user is correct (2, 3-levels or free) '''
+def check_group_address(group_address_style: str, text: str='', style_check: bool=False) -> Union[None, GroupAddress]:
+        """ 
+        Check that the group address entered by the user is correct.
+
+        style_check : indicate that only the endocing style and format should be checked,
+        group_address_style : should be 2-levels, 3-levels or free.
+        """
         if not style_check:
             text_split = text.split('/')
             for split in text_split:
                 if not split.lstrip('-').isdecimal():
                     logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only.")
                     return None
-                if int(split) == 0: # special case for -0
+                if int(split) == 0:
                     if not split.isdecimal():
                         logging.warning(f"Group address '{group_address_style}':'{text}' has wrong value type, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255) with positive int characters only.")
                         return None
         if group_address_style == '3-levels':
-            if style_check: # We just want to check if style exists
+            if style_check:
                 return group_address_style
             if len(text_split) == 3:
                 try:
@@ -104,7 +122,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
                 logging.warning("'3-levels' style is not respected, possible addresses: 0/0/0 -> 31/7/255.")
                 return None
         elif group_address_style == '2-levels':
-            if style_check: # We just want to check if style exists
+            if style_check:
                 return group_address_style
             if len(text_split) == 2:
                 try:
@@ -122,7 +140,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
                 logging.warning("'2-levels' style is not respected, possible addresses: 0/0 -> 31/2047.")
                 return None
         elif group_address_style == 'free':
-            if style_check: # We just want to check if style exists
+            if style_check:
                 return group_address_style
             if len(text_split) == 1:
                 try:
@@ -130,7 +148,7 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
                 except ValueError:
                     logging.warning(f"'free' group address {text} has wrong value type, should be int: 0 -> 65535.")
                     return None
-                try: # test if the group address has the correct format
+                try:
                     assert (main >= 0 and main <= MAX_FREE)
                     return GroupAddress('free', main = main)
                 except AssertionError:
@@ -143,8 +161,8 @@ def check_group_address(group_address_style, text='', style_check=False): ## TOD
             logging.error(f"Group address style '{group_address_style}' unknown, please use 'free'(0-65535), '2-levels'(0/0 -> 31/2047) or '3-levels'(0/0/0-31/7/255).")
             return None
 
-def check_room_config(name, width, length, height, speed_factor, ga_style, insulation):
-    # Room name check
+def check_room_config(name: str, width: float, length: float, height:float, speed_factor: float, ga_style: str, insulation: str) -> Tuple[str, float, float, float, float, str, str]:
+    """ Check Room configuration attributes."""
     try:
         assert isinstance(name, str)
     except AssertionError:
@@ -152,14 +170,14 @@ def check_room_config(name, width, length, height, speed_factor, ga_style, insul
         sys.exit(1)
     try:
         assert len(name) > 0
-        assert name.isalnum() # check alphanumericness
+        assert name.isalnum() # alphanumeric check
     except AssertionError:
         logging.error(f"A non-empty alphanumeric string name is required to create the room, but '{name}' was given -> program terminated.")
         sys.exit(1)
     # Room dimensions check
     dim_assert_msgs = ""
     try:
-        assert isinstance(width, numbers.Number), f"width='{width}' is not a number" # check not a string
+        assert isinstance(width, numbers.Number), f"width='{width}' is not a number"
     except AssertionError as assert_msg:
         dim_assert_msgs += str(assert_msg)+', '
     try:
@@ -175,15 +193,15 @@ def check_room_config(name, width, length, height, speed_factor, ga_style, insul
         logging.error("Room's dimensions are expected to be stricly positive numbers, here : "+dim_assert_msgs+' -> program terminated.')
         sys.exit(1)
     try:
-        assert width > 0, f"width={width} is not positive" # check positiveness
+        assert width > 0, f"width={width} is not positive"
     except AssertionError as assert_msg:
         dim_assert_msgs += str(assert_msg)+', '
     try:
-        assert length > 0, f"length={length} is not positive" # check positiveness
+        assert length > 0, f"length={length} is not positive"
     except AssertionError as assert_msg:
         dim_assert_msgs += str(assert_msg)+', '
     try:
-        assert height > 0, f"height={height} is not positive" # check positiveness
+        assert height > 0, f"height={height} is not positive"
     except AssertionError as assert_msg:
         dim_assert_msgs += str(assert_msg)+', '
     if len(dim_assert_msgs) > 0:
@@ -208,12 +226,12 @@ def check_room_config(name, width, length, height, speed_factor, ga_style, insul
     except AssertionError:
         logging.error(f"The insulation type {insulation} is not recognised, should be 'perfect', 'average', 'good' or 'bad'. 'average' is considered by default.")
         insulation = 'average'
-    
+
     return name, width, length, height, speed_factor, ga_style, insulation
 
 
-def check_device_config(class_name, name, individual_addr):
-    # Device name check
+def check_device_config(class_name: str, name: str, individual_addr: IndividualAddress) -> Tuple[str, IndividualAddress]:
+    """ Check device config attributes."""
     try:
         assert isinstance(name, str)
     except AssertionError:
@@ -221,8 +239,8 @@ def check_device_config(class_name, name, individual_addr):
         sys.exit(1)
     try:
         assert len(name) > 0
-        assert name.isalnum() # check alphanumericness
-        assert name.islower() # check lower case name
+        assert name.isalnum() # alphanumeric
+        assert name.islower()
     except AssertionError:
         logging.error(f"A non-empty alphanumeric string name is required to create the device, but '{name}' was given -> program terminated.")
         sys.exit(1)
@@ -241,7 +259,8 @@ def check_device_config(class_name, name, individual_addr):
     return name, individual_addr
 
 
-def check_location(bounds, x, y, z):
+def check_location(bounds: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]], x: float, y: float, z: float) -> Tuple[float, float, float]:
+    """ Check that Location coordinates are within bounds, sys.exit if wrong coordinates."""
     loc_assert_msg = ''
     try:
         assert isinstance(x, numbers.Number), f"x='{x}' is not a number, "
@@ -281,7 +300,8 @@ def check_location(bounds, x, y, z):
     else:
         return x, y, z
 
-def check_wheater_date(date_time, weather):
+def check_wheater_date(date_time: str, weather: str) -> Tuple[datetime, str]:
+    """ Check weather and time of day string from config file."""
     TIME_OF_DAY = ["today", "yesterday", "one_week_ago", "one_month_ago", "YYYY/MM/DD/HH/MM"]
     WEATHER = ["clear", "overcast", "dark"]
     # datetime
@@ -325,15 +345,19 @@ def check_wheater_date(date_time, weather):
     return sim_datetime, sim_weather
 
 
-def check_window(wall:str, location_offset:float, size:float, room):
-    """ location offse is location in m from strat of wall (left side of north/south walls, bottm side of east/west walls"""
+def check_window(wall:str, location_offset:float, size:float, room) -> Union[Tuple[None, None, None], Tuple[str, float, Tuple[float, float]]]:
+    """ 
+    Check window object creation.
+    
+    room : Room
+    location offset is location in meters from strat of wall (left side of north/south walls, bottom side of east/west walls
+    """
     # wall str check
     try:
         assert wall in ['north', 'south', 'east', 'west']
     except AssertionError:
         logging.error(f"The window's wall '{wall}' is incorrect, should be in 'north', 'south', 'east', 'west'] -> we do not consider this window in the simulation.")
         return None, None, None
-
     # size (width/length, height) in m
     size_height = size[1]
     size_width = size[0] # width or length depending on orientation
@@ -342,8 +366,6 @@ def check_window(wall:str, location_offset:float, size:float, room):
     except AssertionError:
         logging.error(f"The window's size '{size}' is incorrect, should be > 0 -> we do not consider this window in the simulation.")
         return None, None, None
-
-    # window dimensions & location
     # window height
     try:
         assert size_height <= room.height
@@ -375,14 +397,14 @@ def check_window(wall:str, location_offset:float, size:float, room):
         elif wall == 'south':
             loc_y = 0
         window_location = (window_loc, loc_y, room.height/2)
-    if wall in ['east', 'west']:
+    if wall in ['east', 'west']: # Vertical Window
         try: 
             log_bounds = ('length', room.length)
             assert size_width <= room.length
         except AssertionError:
             logging.error(f"The window's size '{size_width}' is incorrect, should be lower than room's {log_bounds[0]} = '{log_bounds[1]}' -> we do not consider this window in the simulation.")
             return None, None, None
-        window_loc = location_offset # concret location of window center
+        window_loc = location_offset # concrete location of window center
         try: # check if bottom side in the room's bounds
             assert (window_loc-size_width/2) > 0
         except AssertionError:
@@ -400,5 +422,3 @@ def check_window(wall:str, location_offset:float, size:float, room):
             loc_x = 0
         window_location = (loc_x, window_loc, room.height/2)
     return wall, window_location, size
-
-    

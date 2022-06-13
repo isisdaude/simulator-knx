@@ -4,11 +4,10 @@ Module that gather usefull functions and definitions for physical world states m
 
 import math
 from datetime import datetime, timezone
+from typing import Tuple
 
 from astral import LocationInfo
 from astral.sun import sun
-
-import system
 
 
 SOIL_MOISTURE_MIN = 10
@@ -21,7 +20,8 @@ INSULATION_TO_CO2_FACTOR = {"perfect": 0, "good": 10/100, "average": 25/100, "ba
 
 DATE_WEATHER_TO_LUX = {"clear_day":10752, "overcast_day":1075, "dark_day":107, "clear_sunrise_sunset":300, "overcast_sunrise_sunset":100, "dark_sunrise_sunset":10,  "clear_twilight":10.8, "overcast_twilight":1, "clear_night":0.108, "overcast_night":0.0001, "dark_night":0}
 
-def outdoor_light(date_time:datetime, weather:str):
+def outdoor_light(date_time:datetime, weather:str) -> Tuple[float, datetime]:
+    """ Return outdoor lux value from weather conditions and time of day in a certain location (e.g. Lausanne)"""
     city = LocationInfo("Lausanne", "Switzerland", "Europe", 46.516, 6.63282)
     date = date_time.date()
     date_time = date_time.replace(tzinfo=timezone.utc)
@@ -72,19 +72,30 @@ def outdoor_light(date_time:datetime, weather:str):
 
 
 
-def compute_distance(source, sensor) -> float: # in_room_devices
-    """ Computes euclidian distance between a sensor and a actuator"""
+def compute_distance(source, sensor) -> float:
+    """ 
+    Computes euclidian distance between a sensor and a source (or simply two room devices).
+    
+    source : InRoomDevice
+    sensor : InRoomDevice
+    """
     delta_x = abs(source.location.x - sensor.location.x)
     delta_y = abs(source.location.y - sensor.location.y)
     delta_z = abs(source.location.z - sensor.location.z)
-    dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2) # distance between light sources and brightness sensor
+    dist = math.sqrt(delta_x**2 + delta_y**2 + delta_z**2)
     return dist
 
-def compute_distance_from_window(window, sensor) -> float:   # wndow and sensor is in room device
-    """Compute closest distace between window and brightness sensor"""
-    # window_nearest_point = copy.deepcopy(window)
-    window_copy = system.Window("window_nearest", window.room, window.device.wall,window.device.location_offset, window.device.size)
-    window_nearest_point = system.InRoomDevice(window_copy, window.room, window_copy.window_loc[0], window_copy.window_loc[1], window_copy.window_loc[2])
+def compute_distance_from_window(window, sensor) -> float:  
+    """
+    Compute closest distace between window and brightness sensor (projection on window plane).
+    
+    window : Window
+    sensor : InRoomDevice
+    """
+    from system.room import InRoomDevice
+    from system.system_tools import Window
+    window_copy = Window("window_nearest", window.room, window.device.wall,window.device.location_offset, window.device.size)
+    window_nearest_point = InRoomDevice(window_copy, window.room, window_copy.window_loc[0], window_copy.window_loc[1], window_copy.window_loc[2])
     if window.device.wall in ['north', 'south']:
         win_left_x = window.location.x
         win_right_x = win_left_x + window.device.size[0]

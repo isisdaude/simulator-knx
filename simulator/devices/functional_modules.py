@@ -22,6 +22,7 @@ class Button(FunctionalModule):
     def user_input(self, state: bool=None, state_ratio=None) -> None:
         """ 
         Update its state and send a telegram with ButtonPayload on the bus.
+
         state_ratio=None is simply to have the same function structure for all functional modules, and avoid error in user command parser
         """
         self.state = not self.state
@@ -51,6 +52,7 @@ class Dimmer(FunctionalModule):
     def user_input(self, state: bool=None, state_ratio: float=100):
         """ 
         Update its state and send a telegram with DimmerPayload on the bus.
+
         state_ratio : fraction of the dimmer state, percentage in (0-100)
         """
         self.state = not self.state
@@ -65,7 +67,10 @@ class Dimmer(FunctionalModule):
             logging.info(f"The {self.name} has been turned {self.__str_state}.")
 
         dimmer_payload = DimmerPayload(binary_state=self.state, state_ratio=self.state_ratio)
-        self.send_telegram(dimmer_payload)
+        if hasattr(dimmer_payload, "state_ratio"):
+            self.send_telegram(dimmer_payload)
+        else:
+            logging.error(f"The Dimmer payload was not correctly created, the telegram cannot be sent.")
     
     def get_dev_info(self) -> Dict[str, Union[str, bool, float,  Tuple[float, float, float]]]:
         """ Return information about the Dimmer device's states and configuration, method called via CLI commmand 'getinfo'"""

@@ -1,24 +1,24 @@
 """
- Module defining classes for the simulation of the physical world states. 
+Classes definitions for the simulation of physical world states:
+Time, AmbienLight, AmbientTemperature, AmbientHumidity, AmbientCO2, SoilMoisture, Presence, World
 """
 
 import time
 import math
 import logging
-from datetime import timedelta
-from typing import List
+from datetime import timedelta, datetime
+from typing import List, Union, Tuple, Dict
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from numpy import mean, sign
 
 import tools
-from .world_tools import outdoor_light, compute_distance, compute_distance_from_window,  INSULATION_TO_TEMPERATURE_FACTOR, INSULATION_TO_HUMIDITY_FACTOR, INSULATION_TO_CO2_FACTOR, SOIL_MOISTURE_MIN
+from .world_tools import outdoor_light, compute_distance, compute_distance_from_window, INSULATION_TO_TEMPERATURE_FACTOR, INSULATION_TO_HUMIDITY_FACTOR, INSULATION_TO_CO2_FACTOR, SOIL_MOISTURE_MIN
 
 
 class Time:
-    '''Class that implements time by handling events that should be executed at regular intervals'''
-
-    def __init__(self, simulation_speed_factor:float, system_dt, date_time):
+    """Class to represent time in simulation, manage scheduling of updates and evolution of the time and date."""
+    def __init__(self, simulation_speed_factor: float, system_dt: float, date_time: datetime) -> None:
         # Real world simulated time = system_dt * simulation_speed_factor seconds (system_dt = 1 for now)
         self.speed_factor = simulation_speed_factor
         self.__system_dt = system_dt
@@ -30,17 +30,17 @@ class Time:
 
 
     # Scheduler management, if not in GUI mode
-    def scheduler_init(self):
+    def scheduler_init(self) -> AsyncIOScheduler:
         self.__scheduler = AsyncIOScheduler()
         return self.__scheduler
 
-    def scheduler_add_job(self, job_function):
+    def scheduler_add_job(self, job_function) -> None:
         try:
             self.__update_job = self.__scheduler.add_job(job_function, 'interval', seconds = self.__system_dt)
         except AttributeError:
             logging.warning("The Scheduler is not initialized: update job cannnot be added.")
 
-    def scheduler_start(self):
+    def scheduler_start(self) -> None:
         try:
             self.__scheduler.start()
             self.start_time = time.time()
@@ -49,7 +49,7 @@ class Time:
             logging.warning("The Scheduler is not initialized and cannot be started.")
 
     # Simulation time management 
-    def simulation_time(self, str_mode=False):
+    def simulation_time(self, str_mode: bool=False) -> Union[str, float, None]:
         try:
             elapsed_time = (self.__simtim_tick_counter)*self.speed_factor
             if str_mode:
@@ -59,18 +59,168 @@ class Time:
                 return elapsed_time 
         except AttributeError:
             logging.warning("The Simulation time is not initialized.")
+            return None
     
-    def update_datetime(self):
-        self.__simtim_tick_counter += self.__system_dt # Increment simtime with system_dt=interval between two tick/updates
+    def update_datetime(self) -> datetime:
+        """ Increment simtime with system_dt=interval between two tick/updates"""
+        self.__simtim_tick_counter += self.__system_dt 
         self.date_time = self.__datetime_init + timedelta(seconds = self.simulation_time(str_mode=False)) # current date time, timedelta from simulation start, elapsed time is the simulated seconds elapsed (real seconds not system's)
-        # print(self.__date_time.strftime("%Y-%m-%d %H:%M:%S"))
         return self.date_time
 
 
-class AmbientTemperature:
-    '''Class that implements temperature in a system'''
+class AmbientLight:
+    """Class to represent Light/Brightness in a simulation"""
+    def __init__(self, date_time: datetime, weather: str) -> None:
+        self.__light_sources: List = []
+        self.__light_sensors: List = [] # inroom devices
+        self.__windows: List = []
+        # values fo global brightness # https://www.fuzionlighting.com.au/technical/room-index, considering light on 3m ceiling 
+        self.__utilization_factor = 0.52 
+        self.__light_loss_factor = 0.8  # TODO magic number 
+        self.__weather = weather
+        self.__lux_out, self.__time_of_day = outdoor_light(date_time, weather)
 
-    def __init__(self, room_volume, update_rule_ratio, temp_out:float, temp_in:float, room_insulation):
+    def add_source(self, lightsource) -> None: 
+        """ 
+        
+        lightsource: InRoomDevice 
+        """
+        from system import Window
+        self.__light_sources.append(lightsource) 
+        if isinstance(lightsource.device, Window):
+            # print(f"window {lightsource.device.name} is added to light sources")
+            self.__windows.append(lightsource)
+            # Compute window lumen from out_lux and window area
+            lightsource.device.max_lumen_from_out_lux(self.__lux_out)
+
+    def add_sensor(self, lightsensor) -> None:
+        """ 
+        
+        lightsensor: InRoomDevice 
+        """
+        self.__light_sensors.append(lightsensor)
+    
+    def __lux_from_lightsource(self, source, distance: float) -> float:
+        """ 
+
+        source: InRoomDevice 
+        """
+        lux_area = 1 # Lux consider lumen per square meter (1 m^2)
+        # Total surface of sphere reached by light around lightsource
+        # https://en.wikipedia.org/wiki/Solid_angle and 
+        solid_angle = 4 * math.pi * (math.sin(source.device.beam_angle/4))**2
+        total_beam_cone_surface = solid_angle * distance**2
+        # Fraction of lumen reaching a 1m^2 area at a specific distance from source
+        lumen_ratio = lux_area / total_beam_cone_surface
+        # Lumen reaching the 1m^2 area at distance from source
+        resulting_lumen = source.device.effective_lumen() * lumen_ratio # result in lumen [lm]
+        return resulting_lumen / lux_area # result in [lm/m^2]
+        
+
+    def __compute_sensor_brightness(self, brightness_sensor) -> float: # Read brightness at a particular sensor
+        """ 
+        
+        brightness_sensor: InRoomDevice 
+        """
+        from system import Window
+        brightness = 0
+        for source in self.__light_sources:
+            # If the light is on and enabled on the bus
+            if isinstance(source.device, Window):
+                # Compute closest distance between sensor and windows
+                distance = compute_distance_from_window(source, brightness_sensor)
+                # print(f"sensor {brightness_sensor.name} is at {distance} from window {source.name}")
+            elif source.device.state:
+                # print(f"{source.device.name} is a light source")
+                # Compute distance between sensor and each source
+                distance = compute_distance(source, brightness_sensor)  
+            # Compute the new brightness (illuminance in lux=[lm/m^2])
+            partial_illuminance = self.__lux_from_lightsource(source, distance)
+            # We can linearly add lux values
+            brightness += partial_illuminance
+        return brightness
+    
+    def set_weather(self, date_time : datetime, value: str) -> Union[None, int]:
+        """
+        return 1 usefull?
+        """
+        if value not in ['clear', 'overcast', 'dark']:
+            logging.warning(f"The weather value should be in ['clear', 'overcast', 'dark'], but {value} was given.")
+            return None
+        else:
+            self.__weather = value
+            self.__lux_out, self.__time_of_day = outdoor_light(date_time, self.__weather)
+            for window in self.__windows: # update max_lumen
+                window.device.max_lumen_from_out_lux(self.__lux_out)
+            for sensor in self.__light_sensors:
+                sensor.device.brightness = self.__compute_sensor_brightness(sensor)
+            return 1
+
+
+    def update(self, date_time: datetime) -> Tuple[List[Tuple[str, float]], str, datetime, float]: # Updates all brightness sensors of the world (the room)
+        logging.info("Brightness update...")
+        brightness_levels = []
+        self.__lux_out, self.__time_of_day = outdoor_light(date_time, self.__weather)
+        for window in self.__windows: # update max_lumen
+            window.device.max_lumen_from_out_lux(self.__lux_out)
+        ## TODO window and blinds with out_lux
+        for sensor in self.__light_sensors:
+            # Update the sensor's brightness
+            sensor.device.brightness = self.__compute_sensor_brightness(sensor) # set the newly calculated sensor brightness
+            brightness_levels.append((sensor.device.name, sensor.device.brightness))
+
+        return brightness_levels, self.__weather, self.__time_of_day, self.__lux_out
+
+    # API functions    
+    def __compute_global_brightness(self, room) -> float:
+        """
+        
+        room : Room
+        """
+        # There is no fraction of lumen as all lumen reach the room's ground
+        # We don't consider light getting out through the window
+        # https://www.engineeringtoolbox.com/light-level-rooms-d_708.html
+        source_lumen = 0
+        for source in self.__light_sources: # InRoomDevice
+            source_lumen += source.device.effective_lumen()
+        N = len(self.__light_sources)
+        avg_lumen = source_lumen / N
+        room_area = room.width * room.length
+        UF, LLF = self.__utilization_factor, self.__light_loss_factor
+        global_brightness = N * avg_lumen * UF * LLF / room_area
+        return global_brightness
+
+
+    def get_global_brightness(self, room = None, str_mode: bool=False, out: bool=False) -> Union[str, float]:
+        """
+        
+        room : Room
+        """
+        if out == True:
+            if str_mode:
+                bright = str(round(self.__lux_out, 2)) + " lux"
+                return bright
+            else:
+                return self.__lux_out
+        if room is None: # simply make an average of all sensors' brightness
+            brightness_levels = []
+            for sensor in self.__light_sensors:
+                brightness_levels.append(self.__compute_sensor_brightness(sensor)) # We recompute to have the latest value
+            bright = mean(brightness_levels) if len(brightness_levels) else 0
+        else:
+            bright = self.__compute_global_brightness(room)
+        
+        if str_mode:
+            bright = str(round(bright, 2)) + " lux"
+            return bright
+        else:
+            return round(bright, 2)
+
+
+
+class AmbientTemperature:
+    """Class to represent Temperature in a simulation"""
+    def __init__(self, update_rule_ratio: float, temp_out:float, temp_in:float, room_insulation: str) -> None:
         # self.simulation_speed_factor = simulation_speed_factor
         # self.simulated_dt = system_dt * simulation_speed_factor # e.g., update called every 1*180seconds = 3min
         self.__update_rule_ratio = update_rule_ratio # update rules are per hour, ratio translate it to the system dt
@@ -89,8 +239,11 @@ class AmbientTemperature:
         self.__max_power_heater = 0
         self.__max_power_ac = 0
 
-    def add_source(self, tempsource): # Heatsource is an object that heats the room
-        """ tempsource: InRoomDevice """
+    def add_source(self, tempsource) -> None: 
+        """ 
+        
+        tempsource: InRoomDevice 
+        """
         from devices import Heater, AC
         self.__temp_sources.append(tempsource) #add check on source
         if isinstance(tempsource.device, Heater):
@@ -98,8 +251,12 @@ class AmbientTemperature:
         if isinstance(tempsource.device, AC):
             self.__max_power_ac += tempsource.device.max_power
 
-    def add_sensor(self, tempsensor): 
-        """ tempsensor: InRoomDevice """
+    def add_sensor(self, tempsensor) -> None: 
+        """ 
+        
+        tempsensor: InRoomDevice 
+        
+        """
         self.__temp_sensors.append(tempsensor) #add check on sensor
 
     # def add_temp_controllers(self, temp_controllers):
@@ -126,7 +283,7 @@ class AmbientTemperature:
     def update(self):
         from devices import Heater, AC
         '''Apply the update rules taking into consideration the maximum power of each heating device, if none then go back progressively to default outside temperature'''
-        logging.debug("Temperature update...")
+        logging.info("Temperature update...")
         previous_temp = self.__temperature_in
         max_temp = 30.0 #self.max_temperature_in_room(self.__room_volume, self.__max_power_heater, "good") ##mean(max_temps)
         min_temp = 10.0
@@ -184,142 +341,19 @@ class AmbientTemperature:
         return temp
 
 
-class AmbientLight:
-    '''Class that implements Light in a room'''
-    def __init__(self, date_time, weather):
-        self.__light_sources: List = []
-        self.__light_sensors: List = [] # inroom devices
-        self.__windows: List = []
-        # values fo global brightness # https://www.fuzionlighting.com.au/technical/room-index, considering light on 3m ceiling 
-        self.__utilization_factor = 0.52 
-        self.__light_loss_factor = 0.8  # TODO magic number 
-        self.__weather = weather
-        self.__lux_out, self.__time_of_day = outdoor_light(date_time, weather)
 
-    def add_source(self, lightsource): 
-        """ lightsource: InRoomDevice """
-        from system import Window
-        self.__light_sources.append(lightsource) 
-        if isinstance(lightsource.device, Window):
-            # print(f"window {lightsource.device.name} is added to light sources")
-            self.__windows.append(lightsource)
-            # Compute window lumen from out_lux and window area
-            lightsource.device.max_lumen_from_out_lux(self.__lux_out)
-
-    def add_sensor(self, lightsensor):
-        """ lightsensor: InRoomDevice """
-        self.__light_sensors.append(lightsensor)
-
-    
-    def __lux_from_lightsource(self, source, distance):
-        """ source: InRoomDevice """
-        lux_area = 1 # Lux consider lumen per square meter (1 m^2)
-        # Total surface of sphere reached by light around lightsource
-        # https://en.wikipedia.org/wiki/Solid_angle and 
-        solid_angle = 4 * math.pi * (math.sin(source.device.beam_angle/4))**2
-        total_beam_cone_surface = solid_angle * distance**2
-        # Fraction of lumen reaching a 1m^2 area at a specific distance from source
-        lumen_ratio = lux_area / total_beam_cone_surface
-        # Lumen reaching the 1m^2 area at distance from source
-        resulting_lumen = source.device.effective_lumen() * lumen_ratio # result in lumen [lm]
-        return resulting_lumen / lux_area # result in [lm/m^2]
-        
-
-    def __compute_sensor_brightness(self, brightness_sensor): # Read brightness at a particular sensor
-        """ brightness_sensor: InRoomDevice """
-        from system import Window
-        brightness = 0
-        for source in self.__light_sources:
-            # If the light is on and enabled on the bus
-            if isinstance(source.device, Window):
-                # Compute closest distance between sensor and windows
-                distance = compute_distance_from_window(source, brightness_sensor)
-                # print(f"sensor {brightness_sensor.name} is at {distance} from window {source.name}")
-            elif source.device.state:
-                # print(f"{source.device.name} is a light source")
-                # Compute distance between sensor and each source
-                distance = compute_distance(source, brightness_sensor)  
-            # Compute the new brightness (illuminance in lux=[lm/m^2])
-            partial_illuminance = self.__lux_from_lightsource(source, distance)
-            # We can linearly add lux values
-            brightness += partial_illuminance
-        return brightness
-    
-    def set_weather(self, date_time, value):
-        if value not in ['clear', 'overcast', 'dark']:
-            logging.warning(f"The weather value should be in ['clear', 'overcast', 'dark'], but {value} was given.")
-            return None
-        else:
-            self.__weather = value
-            self.__lux_out, self.__time_of_day = outdoor_light(date_time, self.__weather)
-            for window in self.__windows: # update max_lumen
-                window.device.max_lumen_from_out_lux(self.__lux_out)
-            for sensor in self.__light_sensors:
-                sensor.device.brightness = self.__compute_sensor_brightness(sensor)
-            return 1
-
-
-    def update(self, date_time): # Updates all brightness sensors of the world (the room)
-        logging.debug("Brightness update")
-        brightness_levels = []
-        self.__lux_out, self.__time_of_day = outdoor_light(date_time, self.__weather)
-        for window in self.__windows: # update max_lumen
-            window.device.max_lumen_from_out_lux(self.__lux_out)
-        ## TODO window and blinds with out_lux
-        for sensor in self.__light_sensors:
-            # Update the sensor's brightness
-            sensor.device.brightness = self.__compute_sensor_brightness(sensor) # set the newly calculated sensor brightness
-            brightness_levels.append((sensor.device.name, sensor.device.brightness))
-
-        return brightness_levels, self.__weather, self.__time_of_day, self.__lux_out
-
-    # API functions    
-    def __compute_global_brightness(self, room):
-        # There is no fraction of lumen as all lumen reach the room's ground
-        # We don't consider light getting out through the window
-        # https://www.engineeringtoolbox.com/light-level-rooms-d_708.html
-        source_lumen = 0
-        for source in self.__light_sources: # InRoomDevice
-            source_lumen += source.device.effective_lumen()
-        N = len(self.__light_sources)
-        avg_lumen = source_lumen / N
-        room_area = room.width * room.length
-        UF, LLF = self.__utilization_factor, self.__light_loss_factor
-        global_brightness = N * avg_lumen * UF * LLF / room_area
-        return global_brightness
-
-
-    def get_global_brightness(self, room = None, str_mode=False, out=False):
-        if out == True:
-            if str_mode:
-                bright = str(round(self.__lux_out, 2)) + " lux"
-                return bright
-            else:
-                return self.__lux_out
-        if room is None: # simply make an average of all sensors' brightness
-            brightness_levels = []
-            for sensor in self.__light_sensors:
-                brightness_levels.append(self.__compute_sensor_brightness(sensor)) # We recompute to have the latest value
-            bright = mean(brightness_levels) if len(brightness_levels) else 0
-        else:
-            bright = self.__compute_global_brightness(room)
-        
-        if str_mode:
-            bright = str(round(bright, 2)) + " lux"
-            return bright
-        else:
-            return round(bright, 2)
 
 
 
 
 class AmbientHumidity:
-    """ Class for relative humidity in a room (relative compared to max humidity or vapour pressure"""
+    """Class to represent Air Humidity in a simulation"""
+    # """ Class for relative humidity in a room (relative compared to max humidity or vapour pressure"""
     # elements that influence humidity:
     # - windows
     # - heater/cooler
     # - insulation
-    def __init__(self, temp_out, hum_out, temp_in, hum_in, room_insulation, update_rule_ratio):
+    def __init__(self, temp_out, hum_out, temp_in, hum_in, room_insulation, update_rule_ratio) -> None:
         self.__temperature_out = temp_out ## NOTE maybe useless as we use it once in init
         self.__temperature_in = temp_in
         self.humidity_out = hum_out
@@ -369,7 +403,7 @@ class AmbientHumidity:
         return 1
 
     def update(self, temperature):
-        logging.debug("Humidity update...")
+        logging.info("Humidity update...")
         # We recompute sat vapor pressure from new temp
         self.__saturation_vapour_pressure_in = self.compute_saturation_vapor_pressure_water(temperature)
         self.__temperature_in = temperature
@@ -398,6 +432,7 @@ class AmbientHumidity:
 
 
 class AmbientCO2:
+    """Class to represent CO2 in a simulation"""
     # elements that influence humidity:
     # - windows
 
@@ -408,7 +443,7 @@ class AmbientCO2:
     # 5,000	Workplace exposure limit (as 8-hour TWA) in most jurisdictions.
     # >40,000 ppm	Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
 
-    def __init__(self, co2_out, co2_in, room_insulation, update_rule_ratio):
+    def __init__(self, co2_out, co2_in, room_insulation, update_rule_ratio) -> None:
         self.__co2_in = co2_in # ppm
         self.co2_out = co2_out
         self.__room_insulation = room_insulation
@@ -429,7 +464,7 @@ class AmbientCO2:
         return 1
     
     def update(self, temperature, humidity):  ### TODO remove temp et humif not used
-        logging.debug("CO2 update...")
+        logging.info("CO2 update...")
         # self.__co2_in = compute_co2level(temperature, humidity) # totally wrong values...
         ## TODO : change CO2 if window opened, co2 rise until window is opened
         ## TODO: check of presence 
@@ -451,7 +486,8 @@ class AmbientCO2:
 
 
 class SoilMoisture:
-    def __init__(self, update_rule_ratio):
+    """Class to represent Soil Moisture in a simulation"""
+    def __init__(self, update_rule_ratio) -> None:
         self.__humiditysoil_sensors = []
         self.__update_rule_ratio = update_rule_ratio
         self.__update_rule_down = -0.5 # -0.5% of soil moisture per hour, limited to SOIL_MOISTURE_MIN
@@ -462,7 +498,7 @@ class SoilMoisture:
         self.__humiditysoil_sensors.append(humiditysoilsensor)
 
     def update(self): #, humidity_in
-        logging.debug("Soil Moisture update...")
+        logging.info("Soil Moisture update...")
         moisture_levels = []
         for sensor in self.__humiditysoil_sensors:
             if sensor.device.humiditysoil > SOIL_MOISTURE_MIN:
@@ -478,7 +514,8 @@ class SoilMoisture:
 
 
 class Presence:
-    def __init__(self):
+    """Class to represent Presence Detection in a simulation"""
+    def __init__(self) -> None:
         self.presence = False
         self.entities = [] # person or object detectable by presence sensor
         self.presence_sensors = []
@@ -525,7 +562,7 @@ class Presence:
 class World:
     '''Class that implements a representation of the physical world with attributes such as time, temperature...'''
     ## INITIALISATION ##
-    def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt, room_insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather): #date_time is simply a string keyword from config file at this point
+    def __init__(self, room_width, room_length, room_height, simulation_speed_factor, system_dt, room_insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in, date_time, weather) -> None: #date_time is simply a string keyword from config file at this point
         self.__date_time, self.__weather = tools.check_wheater_date(date_time, weather) # self.__date_time is a datetime.datetime instance, self.__weather is a string
         self.time = Time(simulation_speed_factor, system_dt, self.__date_time) # simulation_speed_factor=240 -> 1h of simulated time = 1min of simulation
         self.__room_insulation = room_insulation

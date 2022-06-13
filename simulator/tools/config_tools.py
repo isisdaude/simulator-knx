@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from typing import Tuple
 
 import devices as dev
 from system.system_tools import IndividualAddress, Window
@@ -25,9 +26,9 @@ SCRIPT_MODE     = 'script'
 CLI_COM_MODE    = 'cli'  
 ## Configuration mode
 FILE_CONFIG     = 'file'     # configuration from json file
-DEFAULT_CONFIG  = 'default'     # configuration from default json file (~3devices)
-EMPTY_CONFIG    = 'empty'     # configuration with no devices
-DEV_CONFIG      = 'dev'     # configuration from python function
+DEFAULT_CONFIG  = 'default'  # configuration from default json file (~3devices)
+EMPTY_CONFIG    = 'empty'    # configuration with no devices
+DEV_CONFIG      = 'dev'      # configuration from python function
 # Path to save system configuration when modified using the GUI
 SAVED_CONFIG_PATH = os.path.abspath("config/") + '/'
 # Config file paths
@@ -38,7 +39,12 @@ SVSHI_CONFIG_PATH = "./config/svshi_config.json"
 
 interface = None
 
-def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svshi_mode=False, telegram_logging=False):
+def configure_system(simulation_speed_factor: float, system_dt: float=1, test_mode: bool=False, svshi_mode: bool=False, telegram_logging: bool=False):
+    """ 
+    System configuration "manually" with python functions and classes.
+    
+    return room, system_dt : Tuple[Room, float]
+    """
     from system import Room
     global interface, interface_device
     system_dt=1
@@ -59,9 +65,8 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     # Declaration of the physical system
     room1 = Room("bedroom1", 20, 20, 3, simulation_speed_factor, '3-levels', system_dt,
                 room_insulation, outside_temperature, humidity_out, outside_co2, test_mode=test_mode, 
-                svshi_mode=svshi_mode, telegram_logging=telegram_logging, interface=interface) #creation of a room of 20*20m2, we suppose the origin of the room (right-bottom corner) is at (0, 0)
+                svshi_mode=svshi_mode, telegram_logging=telegram_logging, interface=interface)
     interface = room1.get_interface()
-    # room1.__.group_address_style = '3-levels'
     room1.add_device(led1, 5, 5, 1)
     room1.add_device(led2, 10, 19, 1)
     room1.add_device(button1, 0, 0, 1)
@@ -72,15 +77,14 @@ def configure_system(simulation_speed_factor, system_dt=1, test_mode=False, svsh
     room1.add_device(ac1, 20, 5, 1)
     print(room1)
 
-    # Group addresses # '3-levels', '2-levels' or 'free'
-    # ga1 = GroupAddress('3-levels', main = 1, middle = 1, sub = 1)
     ga1 = '1/1/1'
-    room1.attach(led1, ga1) # Actuator is linked to the group address ga1 through the KNXBus
+    room1.attach(led1, ga1)
     room1.attach(button1, ga1)
-    # return the room object to access all elements of the room (world included)
+
     return room1, system_dt
 
-def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, svshi_mode=False, telegram_logging=False):
+def configure_system_from_file(config_file_path: str, system_dt: float=1, test_mode: bool=False, svshi_mode: bool=False, telegram_logging: bool=False):
+    """ System configuration from JSON configuration file parsing."""
     from system import Room
     global interface, interface_device
     with open(config_file_path, "r") as file:
@@ -105,7 +109,6 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     # Physical initial states indoor/outdoor
     temperature_out = world_config["outside_temperature"]
     temperature_in = world_config["inside_temperature"]
-    # print(f"++++++++ config init temp in: {temperature_in}")
     humidity_out = world_config["outside_relativehumidity"]
     humidity_in = world_config["inside_relativehumidity"]
     co2_out = world_config["outside_co2"]
@@ -114,20 +117,22 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
     weather = world_config["weather"]
     system_dt_config = world_config["system_dt"]
 
-    rooms_builders = [] # will contain list of list of room obj and device dict in the shape: [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
+    # rooms_builders will contain list of list of room obj and device dict in the shape: 
+    # [[room_object1, {'led1': [5, 5, 1], 'led2': [10, 19, 1], 'button': [0, 1, 1], 'bright1': [20, 20, 1]}], [room_object2, ]
+    rooms_builders = []
     rooms = []
     ga_builders = []
     rooms_config = world_config["rooms"]
-    for r in range(1,number_of_rooms+1):
-        room_key = "room"+str(r) #room1, room2,...
+    for r in range(1,number_of_rooms+1): # if multiple rooms
+        room_key = "room"+str(r)
         try:
             room_config = rooms_config[room_key]
         except (KeyError):
             logging.warning(f"'{room_key}' not defined in config file, or wrong number of rooms.")
-            continue # get out of the for loop iteratiom
+            continue
         x, y, z = room_config["dimensions"]
         room_insulation = room_config["insulation"]
-        # creation of a room of x*y*zm3, TODO: check coordinate and origin we suppose the origin of the room (right-bottom corner) is at (0, 0)
+        # creation of a room of x*y*zm3
         room = Room(room_config["name"], x, y, z, simulation_speed_factor, group_address_encoding_style, system_dt_config, 
                     room_insulation, temperature_out, humidity_out, co2_out, temperature_in, humidity_in, co2_in, 
                     datetime, weather, test_mode=test_mode, svshi_mode=svshi_mode, telegram_logging=telegram_logging, interface=interface)
@@ -143,16 +148,14 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                 room.add_window(window_object)
             except ValueError as msg:
                 logging.error(msg)                
-        # room.__.group_address_style = group_address_encoding_style
         # Store room object to return to main
         rooms.append(room)
         room_devices_config = room_config["room_devices"]
-        # print(" ------- Room config dict -------")
-        # print(room_devices_config)
         # Store temporarily the room object with devices and their physical position
         rooms_builders.append([room, room_devices_config])
     # Parsing of devices to add in the room
     print(" ------- Room devices from configuration file -------")
+    logging.info(" ------- Room devices from configuration file -------")
     for a in range(number_of_areas):
         area_key = "area"+str(a) #area0, area1,...
         number_of_lines = knx_config[area_key]["number_of_lines"]
@@ -162,7 +165,7 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                 line_config = knx_config[area_key][line_key]
             except (KeyError):
                 logging.warning(f"'{area_key}' and/or '{line_key}' not defined in config file. Check number of areas/lines and their names.")
-                break # get out of the for loop
+                break
             line_device_keys = list(line_config["devices"].keys())
             line_devices_config = line_config["devices"]
             for dev_key in line_device_keys:
@@ -171,29 +174,27 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
                     dev_class = device_config["class"]
                 except (KeyError):
                     logging.warning(f"'{dev_key}' configuration is incomplete on {area_key}.{line_key}.")
-                    continue # get out of the for loop iteration
-                # print(f"{dev_key}, {dev_class}, loc = {device_config['location']}")
+                    continue
                 _a, _l, _d = [int(loc) for loc in device_config["knx_location"].split(".")] # parse individual addresses 'area/line/device' in 3 variables
                 if (_a != a or _l != l):
                     logging.warning(f"{dev_key} on {area_key}.{line_key} is wrongly configured with area{_a}.line{_l} ==> device is rejected.")
-                    continue # get out of the for loop iteration
+                    continue
                 if (_a < 0 or _a > 15 or _l < 0 or _l > 15 or _d < 0 or _d > 255):
                     logging.warning(f"Individual address out of bounds, should be in 0.0.0 -> 15.15.255 ==> device is rejected.")
-                    continue # get out of the for loop iteration
+                    continue
                 print(dev_key)
-                for room_builder in rooms_builders: # list of [room_object, room_devices_config] for all rooms of the system
+                # room_builder = list of [room_object, room_devices_config] for all rooms of the system
+                for room_builder in rooms_builders: 
                     if dev_key in room_builder[1].keys():
                         dev_pos = room_builder[1][dev_key]
                         # Create the device object before adding it to the room
-                        dev_object = DEV_CLASSES[dev_class](dev_key, IndividualAddress(_a, _l, _d)) # we don't set up the state, False(OFF) by default
+                        dev_object = DEV_CLASSES[dev_class](dev_key, IndividualAddress(_a, _l, _d)) # state False(OFF) by default
                         room_builder[0].add_device(dev_object, dev_pos[0], dev_pos[1], dev_pos[2])
                     else:
                         logging.warning(f"{dev_key} is defined on KNX system but no physical location in the room was given ==> device is rejected.")
-                        continue # get out of the for loop iteration
-    # print(" ----------------------------------------------------")
+                        continue
     # Parsing of group addresses to connect devices together
-    #TODO: link GAs to interface IP SVSHI
-    # print(" ------- KNX System Configuration -------")
+    logging.info(" ------- KNX System Configuration -------")
     ga_style =  knx_config["group_address_style"]
     ga_builders = knx_config["group_addresses"]
     if len(ga_builders):
@@ -204,11 +205,10 @@ def configure_system_from_file(config_file_path, system_dt=1, test_mode=False, s
             for dev_name in group_devices:
                 for room in rooms:
                     for in_room_device in room.devices:
-                        # Find the device object
                         if in_room_device.name == dev_name:
                             dev_object = in_room_device.device
                             # Link the device to the ga (internal test to check Group Address format)
                             room.attach(dev_object, group_address)
     else:
         logging.info("No group address is defined in config file.")
-    return rooms[0], system_dt # only one room
+    return rooms[0], system_dt # only one room for now

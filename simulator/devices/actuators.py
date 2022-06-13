@@ -19,6 +19,7 @@ class LightActuator(Actuator, ABC):
     def __init__(self,name: str, individual_addr: IndividualAddress, state: bool, lumen: float, beam_angle: float) -> None:
         """ 
         Initialization of the light actuator object
+        
         lumen : Luminous flux of light source = quantity of visible light emitted from a source per unit of time
         beam_angle : Angle at which the light is emitted (e.g. 180° for a LED bulb)"""
         super().__init__(name, individual_addr, state)
@@ -36,6 +37,7 @@ class LED(LightActuator):
     def update_state(self, telegram: Telegram) -> None:
         """ 
         Update the state and/or state_ratio of the LED actuator
+
         telegram : packet with new devices states
         """
         if isinstance(telegram.payload, DimmerPayload):
@@ -65,6 +67,7 @@ class TemperatureActuator(Actuator, ABC):
     def __init__(self, name: str, individual_addr: IndividualAddress, state: bool, update_rule: float, max_power: float=0) -> None:
         """ 
         Initialization of the temperature actuator device object
+
         update_rule : +/- 1 for now, indicate whether the temperature actuator can heat up or cool down room's temperature
         max_power : power in Watts of the temperature actuator"""
         super().__init__(name, individual_addr, state)
@@ -88,6 +91,7 @@ class Heater(TemperatureActuator):
     def __init__(self, name: str, individual_addr: IndividualAddress, max_power: float=400, state: bool=False, update_rule: float=1) -> None:
         """
         Initialization of a heater device object
+
         update_rule : should be > 0
         """
         try:
@@ -101,6 +105,7 @@ class Heater(TemperatureActuator):
     def update_state(self, telegram: Telegram) -> None:
         """ 
         Update the state and/or state_ratio of the heater actuator
+
         telegram : packet with new devices states
         """
         if isinstance(telegram.payload, BinaryPayload):
@@ -116,6 +121,7 @@ class AC(TemperatureActuator):
     def __init__(self, name: str, individual_addr: IndividualAddress, max_power: float=400, state: bool=False, update_rule: float=-1) -> None:
         """
         Initialization of an AC device object
+
         update_rule : should be < 0
         """
         try:
@@ -128,6 +134,7 @@ class AC(TemperatureActuator):
     def update_state(self, telegram: Telegram) -> None:
         """ 
         Update the state and/or state_ratio of the AC actuator
+
         telegram : packet with new devices states
         """
         if isinstance(telegram.payload, BinaryPayload):
@@ -148,6 +155,7 @@ class Switch(Actuator):
     def update_state(self, telegram: Telegram) -> None:
         """ 
         Update the state and/or state_ratio of the Switch actuator
+
         telegram : packet with new devices states
         """
         if isinstance(telegram.payload, BinaryPayload):
@@ -178,6 +186,7 @@ class IPInterface(Actuator):
     def update_state(self, telegram: Telegram) -> None:
         """ 
         Update the state and/or state_ratio of the Switch actuator
+
         telegram : packet with new devices states
         """
         if isinstance(telegram.payload, BinaryPayload):
@@ -188,3 +197,7 @@ class IPInterface(Actuator):
             self.interface.add_to_sending_queue([telegram])
         elif isinstance(telegram.payload, FloatPayload): # Sensors values sent regularly on bus
             self.interface.add_to_sending_queue([telegram])
+    
+    def get_dev_info(self) -> None:
+        """ IP Interface is not considered as a real device and has no specific attributes/characteristics, method implemented to respect the definition of abstract class Actuators"""
+        return None

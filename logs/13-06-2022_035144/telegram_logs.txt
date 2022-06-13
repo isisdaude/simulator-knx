@@ -1,0 +1,43 @@
+
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x76]" />" />" />
+++++++++++ Telegram received ++++++++++
+SVSHI -> Simulator: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/4" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/4" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x7f]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x87]" />" />" />
+++++++++++ Telegram received ++++++++++
+SVSHI -> Simulator: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/1" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/1" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x8e]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x94]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0x9a]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.1" destination_address="0/0/2" payload="<GroupValueWrite value="<DPTBinary value="1" />" />" />
+++++++++++ Telegram received ++++++++++
+SVSHI -> Simulator: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/4" payload="<GroupValueWrite value="<DPTBinary value="1" />" />" />
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/4" payload="<GroupValueWrite value="<DPTBinary value="1" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0xcd]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0x7,0xfa]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x11]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x23]" />" />" />
+++++++++++ Telegram received ++++++++++
+SVSHI -> Simulator: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/1" payload="<GroupValueWrite value="<DPTBinary value="1" />" />" />
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/1" payload="<GroupValueWrite value="<DPTBinary value="1" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x34]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x43]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x50]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x5c]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x67]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x71]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x7a]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x81]" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.1" destination_address="0/0/2" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+++++++++++ Telegram received ++++++++++
+SVSHI -> Simulator: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/4" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+---------- Telegram sent ----------
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="0.0.0" destination_address="0/0/4" payload="<GroupValueWrite value="<DPTBinary value="0" />" />" />
+Simulator -> SVSHI: <Telegram direction="Outgoing" source_address="1.1.3" destination_address="0/0/3" payload="<GroupValueWrite value="<DPTArray value="[0xc,0x72]" />" />" />
