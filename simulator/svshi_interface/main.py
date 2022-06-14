@@ -21,16 +21,16 @@ from xknx.io.request_response import *
 from xknx.knxip import TunnellingRequest
 
 
-
 sys.path.append(".")
 sys.path.append("..")
 
+
 class Interface:
-    
     def __init__(self, room, telegram_logging: bool, testing=False) -> None:
         """Initalizes the interface used for communication with SVSHI"""
         from svshi_interface.telegram_parser import TelegramParser
         import system.telegrams as sim_t
+
         self.__telegram_logging = telegram_logging
         self.__last_tel_logged = None
         self.__sending_queue: queue.Queue[sim_t.Telegram] = queue.Queue()
@@ -46,16 +46,15 @@ class Interface:
 
         server_address = (self.__IPAddr, 3671)
         self.__sock.bind(server_address)
-        self.room = room # to get telegram file path because fails when reloading (cannot stop thread)
-        
+        self.room = room  # to get telegram file path because fails when reloading (cannot stop thread)
+
         if not testing:
             self.main()
-        
 
     # INITIALIZATION OF THE CONNECTION #
     def __create_connection(self, xknx: XKNX) -> Tuple[KNXIPFrame, Any]:
         """Creates a connection between a client and ourselves, with sequence number 0 and individual address 0.0.0"""
-        
+
         data, addr = self.__sock.recvfrom(1024)
 
         print("Address of SVSHI:", addr)
@@ -77,7 +76,7 @@ class Interface:
             frame.from_knx(data)
             if isinstance(frame.body, TunnellingRequest):
                 self.__sock.sendto(self.__create_ack_data(frame), addr)
-            
+
             elif isinstance(frame.body, DisconnectRequest):
                 frame = KNXIPFrame(xknx)
                 frame.from_knx(data)
@@ -87,7 +86,7 @@ class Interface:
                 data_to_send = bytes(frame.to_knx())
                 self.__sock.sendto(data_to_send, addr)
                 break
-        
+
         data, addr = self.__sock.recvfrom(1024)
 
         # Initializing the KNX/IP Frame to be sent
@@ -109,30 +108,34 @@ class Interface:
         return bytes(frame.to_knx())
 
     # RECEIVING TELEGRAMS
-    def __receiving_telegrams(self, frame: KNXIPFrame, data: bytes, addr: Any, knxbus=None) -> None:
+    def __receiving_telegrams(
+        self, frame: KNXIPFrame, data: bytes, addr: Any, knxbus=None
+    ) -> None:
         """Receives telegrams and forwards them to the system"""
-        
 
         frame.from_knx(data)
-        
+
         if isinstance(frame.body, TunnellingRequest):
             telegram: real_t.Telegram = frame.body.cemi.telegram
             import system.telegrams as sim_t
+
             sim_telegram: sim_t.Telegram = self.__telegram_parser.from_knx_telegram(
                 telegram
             )
             print("Received a telegram :\n", sim_telegram)
             if self.__telegram_logging:
                 with open(self.room.telegram_logging_file_path, "a+") as log_file:
-                    if self.__last_tel_logged is None or self.__last_tel_logged == 'sent':
+                    if (
+                        self.__last_tel_logged is None
+                        or self.__last_tel_logged == "sent"
+                    ):
                         log_file.write("\n++++++++++ Telegram received ++++++++++")
-                        self.__last_tel_logged = 'recv'
+                        self.__last_tel_logged = "recv"
                     log_file.write(f"\nSVSHI -> Simulator: {telegram}")
-                    
+
             if sim_telegram is not None:
                 knxbus.transmit_telegram(sim_telegram)
                 self.__sock.sendto(self.__create_ack_data(frame), addr)
-                
 
         elif isinstance(frame.body, ConnectionStateRequest):
             frame.init(KNXIPServiceType.CONNECTIONSTATE_RESPONSE)
@@ -168,11 +171,13 @@ class Interface:
             self.__sock.sendto(bytes(sender.to_knx()), addr)
             if self.__telegram_logging:
                 with open(self.room.telegram_logging_file_path, "a+") as log_file:
-                    if self.__last_tel_logged is None or self.__last_tel_logged == 'recv':
+                    if (
+                        self.__last_tel_logged is None
+                        or self.__last_tel_logged == "recv"
+                    ):
                         log_file.write("\n---------- Telegram sent ----------")
-                        self.__last_tel_logged = 'sent'
+                        self.__last_tel_logged = "sent"
                     log_file.write(f"\nSimulator -> SVSHI: {teleg}")
-                    
 
     # MAIN
     def main(self) -> None:
@@ -198,17 +203,17 @@ class Interface:
                     if ready_socket is self.__sock:
                         data = self.__sock.recv(1024)
                         # Ready socket is sock, we receive telegrams from SVSHI
-                        if data == b'\x11':
+                        if data == b"\x11":
                             break
                         self.__receiving_telegrams(frame, data, addr, self.room.knxbus)
                     else:
                         # Ready_socket is rsock, we need to send to SVSHI
                         signal = self.__rsock.recv(1)  # Dump the ready mark
-                        
+
                         # Send the data.
                         self.__process_telegram_queue(addr)
 
-                if data == b'\x11':
+                if data == b"\x11":
                     break
 
         main_functions = threading.Thread(target=threaded, args=())
