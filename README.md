@@ -4,6 +4,7 @@
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Running](#running)
+    - [With SVSHI](#with-svshi)
   - [CLI](#cli)
   - [GUI](#gui)
   - [Script API](#script-api)
@@ -80,6 +81,17 @@ options:
                         Specifies that the telegrams sent and received should be logged in a file located in logs/ folder
 
 ```
+
+### With SVSHI
+If you want to be able to run the simulator with SVSHI, you can follow the following steps:
+
+1. Run the command `python3 run.py -s` (you can add other options if you want to couple SVSHI mode with the GUI, CLI, script API...)
+The simulator will start waiting for a connection with SVSHI at the address that it prints on the terminal.
+2. Configure a SVSHI app and start SVSHI (either through CLI or GUI, you can refer to more detailed explanations [here](https://github.com/dslab-epfl/svshi) for running SVSHI), when running SVSHI you have to make sure that:
+    - The address given to SVSHI for the interface corresponds to the one displayed by our simulator when started.
+    - You assigned group addresses to the devices according to the ones SVSHI generated with your application. If not, change the configuration of the system before pressing the **run** button of SVSHI.
+3. Wait for the connection between the simulator and SVSHI to be completed, and then enjoy!
+
 ## CLI
 
 ### `set [device] <['ON'/'OFF'][value]>`
