@@ -295,13 +295,13 @@ class ScriptParser():
             if len(command_split) == 3:
                 if command_split[2] in ['h', 'hour', 'hours']: # time to wait in simulated hours, not computer seconds
                     speed_factor = room.world.time.speed_factor
-                    sleep_time = int(int(command_split[1]) * 3600 / speed_factor) # time to wait in computer system seconds
+                    sleep_time = int(float(command_split[1]) * 3600 / speed_factor) # time to wait in computer system seconds
                 elif command_split[2] in ['m', 'minute', 'minutes']: # time to wait in simulated minutes, not computer seconds
                     speed_factor = room.world.time.speed_factor
-                    sleep_time = int(int(command_split[1]) / 60 * 3600 / speed_factor) # time to wait in computer system seconds
+                    sleep_time = int(float(command_split[1]) / 60 * 3600 / speed_factor) # time to wait in computer system seconds
                 elif command_split[2] in ['s', 'second', 'seconds']: # time to wait in simulated seconds, not computer seconds
                     speed_factor = room.world.time.speed_factor
-                    sleep_time = int(int(command_split[1]) / 3600 * 3600 / speed_factor) # time to wait in computer system seconds
+                    sleep_time = int(float(command_split[1]) / 3600 * 3600 / speed_factor) # time to wait in computer system seconds
                 else:
                     logging.error(f"'wait' command expect 'h', 'm' or 's' as second argument, but {command_split[2]} was given.")
                     return None, self.assertions
@@ -356,8 +356,10 @@ class ScriptParser():
             value = None
             if command_split[3] in self.stored_values: # if we compare to a stored variable
                 var = str(self.stored_values[command_split[3]])
+                var_to_compare = command_split[3]
             else : # if we compare to a value
                 var = str(command_split[3]) # can be a bool, or a str for weather (e.g. 'clear')
+                var_to_compare = 'new_var'
             try:
                 if 'false' in var:
                     var = False
@@ -391,7 +393,7 @@ class ScriptParser():
                 else:
                     logging.error(f"The comparison sign should be in ['=='/'!='/'<='/'>='], but {command_split[2]} was given.")
                     return None, self.assertions
-                recap_str = f"({value}) {var_name} {command_split[2]} {command_split[3]} ({var})"
+                recap_str = f"({value}) {var_name} {command_split[2]} {var_to_compare} ({var})"
                 logging.info(f"[SCRIPT] The comparison '{recap_str}' is correct.")
                 print(f"Assertion True")
                 simtime = room.world.time.simulation_time(str_mode=True)
@@ -399,7 +401,7 @@ class ScriptParser():
                 self.assert_counter += 1
                 return 1, self.assertions
             except AssertionError:
-                recap_str = f"({value}) {var_name} {command_split[2]} {command_split[3]} ({value})"
+                recap_str = f"({value}) {var_name} {command_split[2]} {var_to_compare} ({value})"
                 logging.info(f"[SCRIPT] The comparison '{recap_str}' is not correct.")
                 print(f"Assertion False")
                 simtime = room.world.time.simulation_time(str_mode=True)
