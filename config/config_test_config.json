@@ -72,7 +72,7 @@
     "outside_co2": 300.0,
     "inside_co2": 800.0,
     "datetime": "2022/06/13/11/00",
-    "weather": "dark",
+    "weather": "clear",
     "number_of_rooms": 1,
     "rooms": {
       "room1": {
