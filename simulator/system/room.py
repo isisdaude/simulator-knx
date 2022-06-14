@@ -102,6 +102,7 @@ class Room:
         # Manage paused simulation
         self.simulation_status = True
         self.__paused_tick_counter = 0
+        self.__first_update = True
         # SVSHI mode handling
         if telegram_logging:
             tel_logging_path = "./logs/" + datetime.now().strftime("%d-%m-%Y_%H%M%S")
@@ -206,30 +207,29 @@ class Room:
         test_mode : Simply update sensors values.
         gui_mode : update graphical representation of teh room and devices.
         """
-        if self.__test_mode == False:
-            if self.simulation_status:
-                if self.__paused_tick_counter > 0:
-                    logging.info(f"Simulation was paused for {self.__paused_tick_counter * self.__system_dt} seconds.")
-                    self.__paused_tick_counter = 0
-                # Update KNX devices' states and World's physical states
-                date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update()
-                if gui_mode:
-                    import gui
-                    try: # Update GUI devices' main graphical states and representations
-                        gui.update_gui_window(interval, self.gui_window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux, self.svshi_mode)
-                    except AttributeError as msg:
-                        logging.error(f"Cannot update GUI window due to Room/World attributes missing : '{msg}'.")
-                    except Exception:
-                        logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'.")
-                    try: # Update GUI sensors' graphical states and representations
-                        self.gui_window.update_sensors(brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
-                    except Exception:
-                        logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'.")
-            else: # Simulation on pause
-                self.__paused_tick_counter += 1
-                print(f" Simulation paused for {self.__paused_tick_counter * self.__system_dt} seconds"+30*" ", end='\r') 
-        elif self.__test_mode:
-            self.world.update()
+        if self.simulation_status:
+            if self.__paused_tick_counter > 0:
+                logging.info(f"Simulation was paused for {self.__paused_tick_counter * self.__system_dt} seconds.")
+                self.__paused_tick_counter = 0
+            # Update KNX devices' states and World's physical states
+            date_time, weather, time_of_day, out_lux, brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states = self.world.update(self.__first_update)
+            self.__first_update = False
+            if gui_mode and not self.__test_mode: # testing with pyglet blocked by gui during github CI
+                import gui
+                try: # Update GUI devices' main graphical states and representations
+                    gui.update_gui_window(interval, self.gui_window, date_time, self.world.time.simulation_time(str_mode=True), weather, time_of_day, out_lux, self.svshi_mode)
+                except AttributeError as msg:
+                    logging.error(f"Cannot update GUI window due to Room/World attributes missing : '{msg}'.")
+                except Exception:
+                    logging.error(f"Cannot update GUI window: '{sys.exc_info()[0]}'.")
+                try: # Update GUI sensors' graphical states and representations
+                    self.gui_window.update_sensors(brightness_levels, temperature_levels, rising_temp, humidity_levels, co2_levels, humiditysoil_levels, presence_sensors_states) 
+                except Exception:
+                    logging.error(f"Cannot update sensors value on GUI window: '{sys.exc_info()[0]}'.")
+        else: # Simulation on pause
+            self.__paused_tick_counter += 1
+            print(f" Simulation paused for {self.__paused_tick_counter * self.__system_dt} seconds"+30*" ", end='\r') 
+
     
     def get_interface(self) -> Union[Interface, None]:
         """ Return the interface used to set up svshi connection if in svshi mode. Used to store it and reusi it if simulation reloaded."""

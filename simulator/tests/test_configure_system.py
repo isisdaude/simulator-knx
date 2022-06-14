@@ -19,31 +19,29 @@ co2sensor1 = dev.CO2Sensor("co2sensor1", system.IndividualAddress(0,0,35))
 airsensor1 = dev.AirSensor("airsensor1", system.IndividualAddress(0,0,55))
 presencesensor1 = dev.PresenceSensor("presencesensor1", system.IndividualAddress(0,0,66))
 
-
-
 simulation_speed_factor = 180
+system_dt = 1
 room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
 knx_bus = room1.knxbus
 
-
-ir_button1 = system.InRoomDevice(button1, room1, 0, 0, 1)
-ir_dimmer1 = system.InRoomDevice(dimmer1, room1, 0, 0, 2)
-ir_led1 = system.InRoomDevice(led1, room1, 0, 1, 1)
-ir_heater1 = system.InRoomDevice(heater1, room1, 0, 1, 2)
+ir_button1 = system.InRoomDevice(button1, room1, 0.5, 3.1, 1.0)
+ir_dimmer1 = system.InRoomDevice(dimmer1, room1, 0.525, 7.6375, 1.0)
+ir_led1 = system.InRoomDevice(led1, room1, 5.7125, 7.5875, 1.0)
+ir_heater1 = system.InRoomDevice(heater1, room1, 1.5625, 3.0375, 1.0)
 ir_ac1 = system.InRoomDevice(ac1, room1, 0, 1, 3)
-ir_switch1 = system.InRoomDevice(switch1, room1, 0, 2, 0)
-ir_brightness1 = system.InRoomDevice(brightness1, room1, 1, 1, 1)
+ir_switch1 = system.InRoomDevice(switch1, room1, 4.1625, 1.5375, 1.0)
+ir_brightness1 = system.InRoomDevice(brightness1, room1, 11.6625, 5.8, 1.0)
 ir_thermometer1 = system.InRoomDevice(thermometer1, room1, 1, 1, 2)
-ir_humiditysoil1 = system.InRoomDevice(humiditysoil1, room1, 1, 1, 3)
+ir_humiditysoil1 = system.InRoomDevice(humiditysoil1, room1, 7.25, 1.1875, 1.0)
 ir_co2sensor1 = system.InRoomDevice(co2sensor1, room1, 1, 2, 0)
-ir_airsensor1 = system.InRoomDevice(airsensor1, room1, 1, 2, 1)
-ir_presencesensor1 = system.InRoomDevice(presencesensor1, room1, 1, 2, 2)
+ir_airsensor1 = system.InRoomDevice(airsensor1, room1, 0.5375, 5.5, 1.0)
+ir_presencesensor1 = system.InRoomDevice(presencesensor1, room1, 5.8375, 4.1, 1.0)
 
 devices = [button1, dimmer1, led1, heater1, ac1, switch1, brightness1, thermometer1, humiditysoil1, co2sensor1, airsensor1, presencesensor1]
 ir_devices = [ir_button1, ir_dimmer1, ir_led1, ir_heater1, ir_ac1, ir_switch1, ir_brightness1, ir_thermometer1, ir_humiditysoil1, ir_co2sensor1, ir_airsensor1, ir_presencesensor1]
 devices_name = ["button1", "dimmer1", "led1", "heater1", "ac1", "switch1", "brightness1", "thermometer1", "humiditysoil1", "co2sensor1", "airsensor1", "presencesensor1"]
 devices_class = [dev.Button, dev.Dimmer, dev.LED, dev.Heater, dev.AC, dev.Switch, dev.Brightness, dev.Thermometer, dev.HumiditySoil, dev.CO2Sensor, dev.AirSensor, dev.PresenceSensor]
-devices_loc = [(0, 0, 1), (0, 0, 2), (0, 1, 1), (0, 1, 2), (0, 1, 3), (0, 2, 0), (1, 1, 1), (1, 1, 2), (1, 1, 3), (1, 2, 0), (1, 2, 1), (1, 2, 2)]
+devices_loc = [(0.5, 3.1, 1.0), (0.525, 7.6375, 1.0), (5.7125, 7.5875, 1.0), (1.5625, 3.0375, 1.0), (0, 1, 3), (4.1625, 1.5375, 1.0), (11.6625, 5.8, 1.0), (1, 1, 2), (7.25, 1.1875, 1.0), (1, 2, 0), (0.5375, 5.5, 1.0), (5.8375, 4.1, 1.0)]
 
 def test_correct_device_addition():
     room1 = system.Room("bedroom1", 12.5, 10, 3, simulation_speed_factor, '3-levels', test_mode=True)
@@ -56,7 +54,7 @@ def test_correct_device_addition():
         # Test addition to ambient list for each device type
         if isinstance(devices[d], dev.Actuator):
             if isinstance(devices[d], dev.LightActuator):
-                assert ir_devices[d] in room1.world.ambient_light._AmbientLight__light_sources  ##TODO chqnge privqte attr
+                assert ir_devices[d] in room1.world.ambient_light._AmbientLight__light_sources
             elif isinstance(devices[d], dev.TemperatureActuator):
                 assert ir_devices[d] in room1.world.ambient_temperature._AmbientTemperature__temp_sources
         elif isinstance(devices[d], dev.Sensor):
@@ -78,12 +76,9 @@ def test_correct_device_addition():
         elif isinstance(devices[d], dev.FunctionalModule):
             assert hasattr(devices[d], 'knxbus')
             assert room1.knxbus == devices[d].knxbus
-        
-## TODO test world creation first
 
 
 ga1 = system.GroupAddress('3-levels', main=1, middle=1, sub=1)
-# ga1_bus = system.GroupAddressBus(ga1)
 ga1_bus = None
 ga1_str = '1/1/1'
 
@@ -111,7 +106,6 @@ def test_correct_attachement_to_bus():
 
 
 ga2 = system.GroupAddress('3-levels', main=2, middle=2, sub=2)
-# ga2_bus = system.GroupAddressBus(ga2)
 ga2_bus = None
 ga2_str = '2/2/2'
 led22 = dev.LED("led22", system.IndividualAddress(2,2,2)) #Area 0, Line 0, Device 0
@@ -171,7 +165,7 @@ def test_correct_window_creation_addition():
     room1.add_window(window1)
     ir_window1 = system.InRoomDevice(window1, room1, 4, 10, 1.5)
     assert ir_window1 in room1.windows
-    assert ir_window1 in room1.world.ambient_light._AmbientLight__light_sources
+    assert ir_window1 in room1.world.ambient_light._AmbientLight__windows
 
 
 def test_correct_update_loc():
@@ -180,7 +174,6 @@ def test_correct_update_loc():
 
 
 from tools import configure_system, configure_system_from_file
-system_dt = 1
 
 def test_configure_system():
     room_conf, system_dt_conf = configure_system(simulation_speed_factor, system_dt, test_mode=True)
@@ -193,13 +186,14 @@ def test_configure_system():
     # and the test is simply to show that configuration works and does not fail with correct values
 
 
-devices_conf = [button1, brightness1, airsensor1, heater1, dimmer1, led1]
-devices_name_conf = ["button1", "brightness1", "airsensor1", "heater1", "dimmer1", "led1"]
-devices_class_conf = [dev.Button, dev.Brightness, dev.AirSensor, dev.Heater, dev.Dimmer, dev.LED]
-devices_loc_conf = [(0, 0, 1), (1, 1, 1), (1, 2, 1), (0, 1, 2), (0, 0, 2), (0, 1, 1)]
+devices_conf = [button1, dimmer1, led1, heater1, switch1, brightness1, humiditysoil1, airsensor1, presencesensor1]
+devices_name_conf = ["button1", "dimmer1", "led1", "heater1", "switch1", "brightness1", "humiditysoil1", "airsensor1", "presencesensor1"]
+devices_class_conf = [dev.Button, dev.Dimmer, dev.LED, dev.Heater, dev.Switch, dev.Brightness, dev.HumiditySoil, dev.AirSensor, dev.PresenceSensor]
+devices_loc_conf = [(0.5, 3.1, 1.0), (0.525, 7.6375, 1.0), (5.7125, 7.5875, 1.0), (1.5625, 3.0375, 1.0), (4.1625, 1.5375, 1.0), (11.6625, 5.8, 1.0), (7.25, 1.1875, 1.0), (0.5375, 5.5, 1.0), (5.8375, 4.1, 1.0)]
 group_addresses = {"1/1/1": [button1, heater1],
                     "1/1/2": [dimmer1, led1]}
 world_states = {"temp_out":20.0, "temp_in":25.0, "hum_out": 50.0, "hum_in":35.0, "co2_out": 300.0, "co2_in": 800.0, "datetime":"today", "weather":"clear", "room_insulation":"average"}
+
 def test_configure_system_from_file():
     config_path = "config/config_test_config.json"
     # devices: brightness1, airsensor1, button1, heater1, dimmer1, led1
@@ -211,13 +205,16 @@ def test_configure_system_from_file():
     assert room_conf._Room__speed_factor == simulation_speed_factor
 
     # Check correct devices, with correct locations
-    ir_button1_conf = system.InRoomDevice(button1, room_conf, 0, 0, 1)
-    ir_brightness1_conf = system.InRoomDevice(brightness1, room_conf, 1, 1, 1)
-    ir_airsensor1_conf = system.InRoomDevice(airsensor1, room_conf, 1, 2, 1)
-    ir_heater1_conf = system.InRoomDevice(heater1, room_conf, 0, 1, 2)
-    ir_dimmer1_conf = system.InRoomDevice(dimmer1, room_conf, 0, 0, 2)
-    ir_led1_conf = system.InRoomDevice(led1, room_conf, 0, 1, 1)
-    ir_devices_conf = [ir_button1_conf, ir_brightness1_conf, ir_airsensor1_conf, ir_heater1_conf, ir_dimmer1_conf, ir_led1_conf]
+    ir_button1_conf = system.InRoomDevice(button1, room_conf, 0.5, 3.1, 1.0)
+    ir_dimmer1_conf = system.InRoomDevice(dimmer1, room_conf, 0.525, 7.6375, 1.0)
+    ir_led1_conf = system.InRoomDevice(led1, room_conf, 5.7125, 7.5875, 1.0)
+    ir_heater1_conf = system.InRoomDevice(heater1, room_conf, 1.5625, 3.0375, 1.0)
+    ir_switch1_conf = system.InRoomDevice(switch1, room_conf, 4.1625, 1.5375, 1.0)
+    ir_brightness1_conf = system.InRoomDevice(brightness1, room_conf, 11.6625, 5.8, 1.0)
+    ir_humiditysoil1_conf = system.InRoomDevice(humiditysoil1, room_conf, 7.25, 1.1875, 1.0)
+    ir_airsensor1_conf = system.InRoomDevice(airsensor1, room_conf, 0.5375, 5.5, 1.0)
+    ir_presencesensor1_conf = system.InRoomDevice(presencesensor1, room_conf, 5.8375, 4.1, 1.0)
+    ir_devices_conf = [ir_button1_conf, ir_dimmer1_conf, ir_led1_conf, ir_heater1_conf, ir_switch1_conf, ir_brightness1_conf, ir_humiditysoil1_conf, ir_airsensor1_conf, ir_presencesensor1_conf]
     index = 0
     for ir_device in ir_devices_conf:
         assert ir_device in room_conf.devices
@@ -231,7 +228,7 @@ def test_configure_system_from_file():
     window1_config = {"name": "window1", "room":room1, "wall":"north", "loc_offset":4, "size":[2, 1.5], "win_loc":(4, 10, 1.5)}
     ir_window1 = system.InRoomDevice(window1, room1, 4, 10, 1.5)
     assert ir_window1 in room_conf.windows
-    assert ir_window1 in room_conf.world.ambient_light._AmbientLight__light_sources
+    assert ir_window1 in room_conf.world.ambient_light._AmbientLight__windows
     ir_window1_room = room_conf.windows[room_conf.windows.index(ir_window1)]
     assert ir_window1_room.name == ir_window1_room.device.name == window1_config["name"]
     window1_room = ir_window1_room.device
@@ -259,7 +256,7 @@ def test_configure_system_from_file():
                     if isinstance(device, dev.FunctionalModule):
                         assert device in ga_bus.functional_modules
                     
-    # check correct world states
+    # check correct world states in test_world_creation_update
 
 
 

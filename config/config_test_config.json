@@ -28,6 +28,18 @@
           "led1": {
             "class": "LED",
             "knx_location": "0.0.1"
+          },
+          "switch1": {
+            "class": "Switch",
+            "knx_location": "0.0.44"
+          },
+          "presencesensor1": {
+            "class": "PresenceSensor",
+            "knx_location": "0.0.66"
+          },
+          "humiditysoil1": {
+            "class": "HumiditySoil",
+            "knx_location": "0.0.34"
           }
         }
       }
@@ -51,12 +63,12 @@
     ]
   },
   "world": {
-    "system_dt":1,
+    "system_dt": 1,
     "simulation_speed_factor": 180,
     "outside_temperature": 20.0,
     "inside_temperature": 25.0,
-    "outside_relativehumidity": 50.0,
-    "inside_relativehumidity": 35.0,
+    "outside_relativehumidity": 35.0,
+    "inside_relativehumidity": 50.0,
     "outside_co2": 300.0,
     "inside_co2": 800.0,
     "datetime": "2022/06/13/11/00",
@@ -74,41 +86,59 @@
         "windows": {
           "window1": {
             "wall": "north",
-            "size": [2, 1.5],
+            "size": [
+              2,
+              1.5
+            ],
             "location_offset": 4,
-            "blinds1":0.0
+            "blinds1": 0.0
           }
         },
         "room_devices": {
           "brightness1": [
-            1,
-            1,
-            1
+            11.6625,
+            5.8,
+            1.0
           ],
           "airsensor1": [
-            1,
-            2,
-            1
+            0.5375,
+            5.5,
+            1.0
           ],
           "button1": [
-            0,
-            0,
-            1
+            0.5,
+            3.1,
+            1.0
           ],
           "heater1": [
-            0,
-            1,
-            2
+            1.5625,
+            3.0375,
+            1.0
           ],
           "dimmer1": [
-            0,
-            0,
-            2
+            0.525,
+            7.6375,
+            1.0
+          ],
+          "presencesensor1": [
+            5.8375,
+            4.1,
+            1.0
+          ],
+          "humiditysoil1": [
+            7.25,
+            1.1875,
+            1.0
+          ],
+          "switch1": [
+            4.1625,
+            1.5375,
+            1.0
           ],
           "led1": [
-            0,
-            1,
-            1
+            5.7125,
+            7.5875,
+            1.0
           ]
         }
       }
