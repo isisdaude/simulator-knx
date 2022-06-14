@@ -1,4 +1,4 @@
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
+""" test World creation, updates and state changes"""
 import pytest
 import logging
 from datetime import timedelta, datetime

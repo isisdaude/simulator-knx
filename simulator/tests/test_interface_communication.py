@@ -1,3 +1,5 @@
+""" Test communication through IP interface"""
+
 import os
 import socket
 

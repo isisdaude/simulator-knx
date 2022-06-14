@@ -1,4 +1,4 @@
-#pylint: disable=[W0223, C0301, C0114, C0115, C0116]
+""" Test Speed Factor"""
 import pytest
 
 import tools

@@ -1,3 +1,5 @@
+""" Test exchange of telegrams"""
+
 import pytest
 import sys
 sys.path.append('..')

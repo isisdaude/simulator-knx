@@ -1,3 +1,5 @@
+""" Test parsing of telegrams"""
+
 import sys
 sys.path.append('..')
 import system.telegrams as sim_t
