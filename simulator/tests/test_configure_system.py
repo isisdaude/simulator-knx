@@ -255,12 +255,7 @@ def test_configure_system_from_file():
                         assert device in ga_bus.sensors
                     if isinstance(device, dev.FunctionalModule):
                         assert device in ga_bus.functional_modules
-                    
-    # check correct world states in test_world_creation_update
 
-
-
-# TODO: test wrong config files, test good/wrong attachement to bus, detachement
 
 
 

@@ -102,10 +102,6 @@ class Window:
         size : window [width, height] in meters 
         """
         from tools import check_window
-        # if not test_mode:
-        #     from gui.gui_config import ROOM_WIDTH, ROOM_LENGTH
-        # elif test_mode:
-        #     ROOM_WIDTH, ROOM_LENGTH = 1000, 800
         self.WINDOW_PIXEL_SIZE = 300 # from png img library (folder png_simulator/)
         ROOM_PIXEL_WIDTH = ROOM_WIDTH
         self.location_offset = location_offset

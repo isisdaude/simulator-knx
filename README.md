@@ -104,6 +104,8 @@ The simulator will start waiting for a connection with SVSHI at the address that
     - You assigned group addresses to the devices according to the ones SVSHI generated with your application. If not, you can assign group addresses dynamically when using the GUI, or restart the simulator in CLI mode with the correct group addresses configuration.
 3. Wait for the connection between the simulator and SVSHI to be completed, and then enjoy!
 
+An example app can be found in foler simulator-knx/svshi_apps. It has a basic functioning: the button turn on the heater, and the light is turned on when the temperature reach 21°C. The prototypical file and main app are in the folder. The assignements can be downloaded from [**SVSHI**](https://github.com/dslab-epfl/svshi) directly.
+
 &nbsp;
 ## CLI
 The CLI command are usable during simulation, through shell if interface_mode=CLI, or through the GUI command box if interface_mode=GUI. \
