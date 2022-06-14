@@ -70,7 +70,7 @@ def test_cli_commands(capfd):
     assert system_led1.state_ratio == 60
     assert system_led1.effective_lumen() == 800*0.6
     # actuators' state check
-    ret = tools.user_command_parser("set button1 OFF", room_conf)
+    ret = tools.user_command_parser("set button1", room_conf) # if no state entioned, switch state
     assert ret == 1
     assert system_button1.state == False
     assert system_button1._Button__str_state == "OFF"
@@ -83,7 +83,15 @@ def test_cli_commands(capfd):
     
     ret = tools.user_command_parser("set brightness1 OFF", room_conf) # test if wrong device case handled
     assert ret == 0
+    ret = tools.user_command_parser("set button22 ON", room_conf) # test if wrong device case handled
+    assert ret == 0
+    ret = tools.user_command_parser("set brightness1", room_conf) # test if wrong device case handled
+    assert ret == 0
+    ret = tools.user_command_parser("set button22", room_conf) # test if wrong device case handled
+    assert ret == 0
     ret = tools.user_command_parser("set dummy_device OFF", room_conf) # test if wrong device case handled
+    assert ret == 0
+    ret = tools.user_command_parser("set dimmer1 ON 150", room_conf) # test if state_ratio device case handled
     assert ret == 0
     
     # 'getvalue' sensor
@@ -109,6 +117,9 @@ def test_cli_commands(capfd):
     captured = capfd.readouterr()
     device_got = captured.out.split(':>')[-1].strip()
     assert device_got == "presencesensor1"
+
+    ret = tools.user_command_parser("getvalue button1", room_conf) # test with worn device type
+    assert ret == 0
 
     # 'getinfo'
     capfd.readouterr() # empty buffer
@@ -226,29 +237,45 @@ def test_cli_commands(capfd):
     captured = capfd.readouterr()
     syst_component = captured.out.split(':>')[-1].strip()
     assert syst_component == "dev humiditysoil1"
-    ret = tools.user_command_parser("getinfo dev airsensor1", room_conf)
+    ret = tools.user_command_parser("getinfo airsensor1", room_conf) # works without specifying 'dev'
     assert ret == 1
     captured = capfd.readouterr()
     syst_component = captured.out.split(':>')[-1].strip()
-    assert syst_component == "dev airsensor1"
+    assert syst_component == "airsensor1"
     ret = tools.user_command_parser("getinfo dev presencesensor1", room_conf)
     assert ret == 1
     captured = capfd.readouterr()
     syst_component = captured.out.split(':>')[-1].strip()
     assert syst_component == "dev presencesensor1"
+    
     ret = tools.user_command_parser("getinfo dev dummy_device", room_conf) # test if wrong device case handled
     assert ret == 0
+    ret = tools.user_command_parser("getinfo dev", room_conf) # test if wrong device case handled
+    assert ret == 0
+    ret = tools.user_command_parser("value of brightness1", room_conf) # test if wrong command case handled
+    assert ret == 0
+
+    # 'help' and 'quit' commands
+    ret = tools.user_command_parser("h", room_conf) 
+    assert ret == 1
+    ret = tools.user_command_parser("q", room_conf) #
+    assert ret == None
+
 
 @pytest.mark.asyncio
 async def test_api_commands(capfd):
     parser_object = tools.ScriptParser()
     # 'wait'
-    ret,_ = await parser_object.script_command_parser(room_conf, "wait 1")
+    ret,_ = await parser_object.script_command_parser(room_conf, "wait 0.1 h")
     assert ret == 1
     ret,_ = await parser_object.script_command_parser(room_conf, "wait 6 m")
     assert ret == 1
     ret,_ = await parser_object.script_command_parser(room_conf, "wait 180 s")
     assert ret == 1
+    ret,_ = await parser_object.script_command_parser(room_conf, "wait 2 x") # Test with wrong option
+    assert ret == None
+    ret,_ = await parser_object.script_command_parser(room_conf, "wait 2 3 m") # Test with wrong number of option
+    assert ret == None
 
     ## 'set [device]'
     # 'set button'
@@ -285,10 +312,19 @@ async def test_api_commands(capfd):
     ret,_ = await parser_object.script_command_parser(room_conf, "set humiditysoil1 97")
     assert ret == 1
     assert system_humiditysoil1.humiditysoil == 97
+    
     # test with wrong arguments
     ret,_ = await parser_object.script_command_parser(room_conf, "set brightness1 ON") # test if wrong device case handled
     assert ret is None
     ret,_ = await parser_object.script_command_parser(room_conf, "set dummy_device ON") # test if wrong device case handled
+    assert ret is None
+    ret,_ = await parser_object.script_command_parser(room_conf, "set humiditysoil1 2f") # test if wrong option case handled
+    assert ret is None
+    ret,_ = await parser_object.script_command_parser(room_conf, "set presencesensor1 24") # test if wrong option case handled
+    assert ret is None
+    ret,_ = await parser_object.script_command_parser(room_conf, "set presencesensor22 True") # test if unknown device case handled
+    assert ret is None
+    ret,_ = await parser_object.script_command_parser(room_conf, "set button1") # test if options missing case handled
     assert ret is None
 
     # 'set temperature'
@@ -330,10 +366,14 @@ async def test_api_commands(capfd):
     assert ret == 1
     assert room_conf.world.presence.presence == False
     assert system_presencesensor1.state == False
+
     ret,_ = await parser_object.script_command_parser(room_conf, "set presence dummy_state") # test if wrong value case handled
     assert ret is None
     ret,_ = await parser_object.script_command_parser(room_conf, "set presence True in") # test if wrong value case handled
     assert ret is None
+    ret,_ = await parser_object.script_command_parser(room_conf, "set Temperature 21 in memory") # test if wrong number of options case handled
+    assert ret is None
+
     # 'set weather'
     ret,_ = await parser_object.script_command_parser(room_conf, "set weather dark")
     assert ret == 1
@@ -406,17 +446,25 @@ async def test_api_commands(capfd):
     ret,_ = await parser_object.script_command_parser(room_conf, "store presencesensor1 state presensor1_state1")
     assert ret == 1
 
+    ret,_ = await parser_object.script_command_parser(room_conf, "store presencesensor1 state presensor1_state1 in memory") # Test with wrong number of options
+    assert ret == None
+    ret,_ = await parser_object.script_command_parser(room_conf, "store world state world_1") # Test with wrong world ambient
+    assert ret == None
+
     ## 'assert'
     await parser_object.script_command_parser(room_conf, "set temperature 20 in") # < previous 32
     await parser_object.script_command_parser(room_conf, "set humidity 70 in") # > previous 20
     await parser_object.script_command_parser(room_conf, "set co2 550 in") # = previous 550
     await parser_object.script_command_parser(room_conf, "set weather dark") # != previous 'clear'
+    await parser_object.script_command_parser(room_conf, "set presencesensor1 True") # != previous 'False'
     await parser_object.script_command_parser(room_conf, "# wait 1") # '#' comment is not considered
     await parser_object.script_command_parser(room_conf, "store world temperature temp2") # 20°
     await parser_object.script_command_parser(room_conf, "store world humidity hum2") # 70%
     await parser_object.script_command_parser(room_conf, "store world co2 co22") # 550 ppm
     await parser_object.script_command_parser(room_conf, "store world brightness bright2") # 38.6 lux
     await parser_object.script_command_parser(room_conf, "store world weather weather2") # 'dark'
+    await parser_object.script_command_parser(room_conf, "store presencesensor1 state presensor1_state2")
+
 
     ret, assertions = await parser_object.script_command_parser(room_conf, "assert temp2 <= temp1")
     assert ret == 1
@@ -448,23 +496,52 @@ async def test_api_commands(capfd):
     for key in assertions.keys(): # key with simtime
         if "Assertion True5" in key:
             assert "bright2 <= bright1" in assertions[key]
+    ret, assertions = await parser_object.script_command_parser(room_conf, "assert presensor1_state2 != presensor1_state1")
+    assert ret == 1
+    assert len(assertions) > 0
+    for key in assertions.keys(): # key with simtime
+        if "Assertion True6" in key:
+            assert "presensor1_state2 != presensor1_state1" in assertions[key]
     
+    await parser_object.script_command_parser(room_conf, "store presencesensor1 state presensor1_state3")
     await parser_object.script_command_parser(room_conf, "store world brightness bright3") # 38.6 lux
     await parser_object.script_command_parser(room_conf, "store world weather weather3") # 'dark'
     await parser_object.script_command_parser(room_conf, "wait 2")
     ret, assertions = await parser_object.script_command_parser(room_conf, "assert weather3 == weather2")
+    assert ret == 1
     for key in assertions.keys(): # key with simtime
-        if "Assertion True6" in key:
+        if "Assertion True7" in key:
             assert "weather3 == weather2" in assertions[key]
+    ret, assertions = await parser_object.script_command_parser(room_conf, "assert weather3 == dark")
+    assert ret == 1
+    for key in assertions.keys(): # key with simtime
+        if "Assertion True8" in key:
+            assert "weather3 == new_var" in assertions[key]
     ret, assertions = await parser_object.script_command_parser(room_conf, "assert bright3 == bright2")
     assert ret == 1
     assert len(assertions) > 0
     for key in assertions.keys(): # key with simtime
-        if "Assertion True7" in key:
+        if "Assertion True9" in key:
             assert "bright3 == bright2" in assertions[key]
+    ret, assertions = await parser_object.script_command_parser(room_conf, "assert presensor1_state3 == True")
+    assert ret == 1
+    assert len(assertions) > 0
+    for key in assertions.keys(): # key with simtime
+        if "Assertion True10" in key:
+            assert "presensor1_state2 != new_var" in assertions[key]
+    
+    ret, assertions = await parser_object.script_command_parser(room_conf, "assert weather3 != weather2") # Test with false assertion
+    assert ret == None
+    for key in assertions.keys(): # key with simtime
+        if "Assertion True11" in key:
+            assert "weather3 != weather2" in assertions[key]
+    ret,_ = await parser_object.script_command_parser(room_conf, "assert bright3 == or <= bright2") # Test with wrong number of options
+    assert ret == None
 
     # 'show' and 'end' commands
     ret,_ = await parser_object.script_command_parser(room_conf, "show bright2")
     assert ret == 1
+    ret,_ = await parser_object.script_command_parser(room_conf, "show bright1 in terminal") # Test with too many options
+    assert ret == None
     ret,_ = await parser_object.script_command_parser(room_conf, "end")
     assert ret == 0
