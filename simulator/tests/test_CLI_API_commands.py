@@ -1,4 +1,4 @@
-
+""" Test CLI and API commands"""
 import sys
 
 import pytest

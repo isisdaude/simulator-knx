@@ -8,14 +8,19 @@
   - [CLI](#cli)
   - [GUI](#gui)
   - [Script API](#script-api)
+  - [Details for developers](#details-for-developers)
+    - [Physical world modeling](#physical-world-modeling)
+    - [Configuration JSON file](#configuration-json-file)
+    - [GUI Implementation details](#gui-implementation-details)
 
 The **KNX Smart Home Simulator** is a development tool that can be used when designing smart infrastructures, such as smart buildings.
 
 
-This simulator software represents a [KNX system](https://www.knx.org/knx-en/for-professionals/index.php), without real physical devices but virtual ones, and models its evolution through time in response to user interactions and to a simulated physical world's influences. With this simulator, one user can configure a KNX system with visual feedback, interact with it and even test applications developed with [**SVSHI**](https://github.com/dslab-epfl/svshi) (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) before implementing them in a real physical KNX system.
+This simulator software represents a [KNX system](https://www.knx.org/knx-en/for-professionals/index.php), without real physical devices but virtual ones instead, and models its evolution through time in response to user interactions and to a simulated physical world's influences. With this simulator, one user can configure a KNX system with visual feedback, interact with it and even test applications developed with [**SVSHI**](https://github.com/dslab-epfl/svshi) (**S**ecure and **V**erified **S**mart **H**ome **I**nfrastructure) before implementing them in a real physical KNX system. 
 
 It provides a [CLI](#cli), a [GUI](#gui) to easily interact  with the platform and a script [Script API](#script-api) to run automated tests.
 
+&nbsp;
 ## Installation
 
 In order to work, the simulator needs Python 3.9 or newer ([download here](https://www.python.org/downloads/)). 
@@ -26,31 +31,38 @@ Being at the root of the simulator (**simulator-knx/**), you can install all the
 ```
 pip3 install -r requirements/requirements.txt
 ```
-
+&nbsp;
 ## Configuration
 The system configuration can be done either by:
-- Parsing a JSON file provided by the user **<-- RECOMMENDED**:
-You can configure the configuration file by copying the template from *simulator-knx/config/empty_config.json* and modifying the fields according to your needs.
-- Calling configuration functions and methods in the source code by directly modifying `configure_system` in *simulator-knx/tools/config_tools*,
+- Parsing a JSON file provided by the user **<-- RECOMMENDED**:\
+You can configure the configuration file by copying the template from *simulator-knx/config/empty_config.json* and modifying the fields according to your needs. Other more complete templates are accessible in config/ folder.\
+  - To use this configuration mode, the following options should be set in argument:\
+    -C=file             : indicate that a config file will be used (although it is the default setting)\
+    -F=fileconfig_name  : specify name of the config file to use (without .json) 
+- Calling configuration functions and methods in the source code by directly modifying `configure_system()` in *simulator-knx/tools/config_tools*,
+  - To use this mode, the following options should be set in argument:\
+  -C=dev : indicate that the configuration will be done in developper mode, with python functions and methods
 - Dynamically interacting with the system through the Graphical User Interface described in [GUI](#gui),
+  - To use this mode, the following options should be set in argument:\
+  -i=cli or gui
+  -c=cli : indicates that CLI commands can be used, opposed to script mode 
 - Combining these approaches
 
-
+&nbsp;
 ## Running
 
 You can start the simulator by being at the root of the simulator (**simulator-knx/**) and running `python3 run.py` with the options according to your needs.
 
-You can run `python3 run.py -h` in the folder to display the following:
+You can run `python3 run.py -h` to display the following help:
 
-
+```
 usage: run.py [-h] [-l {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}] [-i {gui,cli}]
               [-c {script,cli}] [-f FILESCRIPT_NAME] [-C {file,default,empty,dev}] [-F FILECONFIG_NAME]
               [-s] [-t]
 
 Process Interface, Command, Config and Logging modes.
 
-options:
-```
+optional arguments:
   -h, --help            show this help message and exit
   -l {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}, --log {CRITICAL,FATAL,ERROR,WARN,WARNING,INFO,DEBUG,NOTSET}
                         Provide logging level.
@@ -81,18 +93,25 @@ options:
                         Specifies that the telegrams sent and received should be logged in a file located in logs/ folder
 
 ```
-
+&nbsp;
 ### With SVSHI
-If you want to be able to run the simulator with SVSHI, you can follow the following steps:
+If you want to run the simulator with SVSHI, here are the steps:
 
 1. Run the command `python3 run.py -s` (you can add other options if you want to couple SVSHI mode with the GUI, CLI, script API...)
 The simulator will start waiting for a connection with SVSHI at the address that it prints on the terminal.
 2. Configure a SVSHI app and start SVSHI (either through CLI or GUI, you can refer to more detailed explanations [here](https://github.com/dslab-epfl/svshi) for running SVSHI), when running SVSHI you have to make sure that:
     - The address given to SVSHI for the interface corresponds to the one displayed by our simulator when started.
-    - You assigned group addresses to the devices according to the ones SVSHI generated with your application. If not, change the configuration of the system before pressing the **run** button of SVSHI.
+    - You assigned group addresses to the devices according to the ones SVSHI generated with your application. If not, you can assign group addresses dynamically when using the GUI, or restart the simulator in CLI mode with the correct group addresses configuration.
 3. Wait for the connection between the simulator and SVSHI to be completed, and then enjoy!
 
+&nbsp;
 ## CLI
+The CLI command are usable during simulation, through shell if interface_mode=CLI, or through the GUI command box if interface_mode=GUI. \
+They are not callable in script_mode.\
+To make use of CLI commands, the following options can be set in argument:\
+-i=cli or gui : in both interface_mode, CLI commands are usable\
+-c=cli : CLI commands are not usable in script mode\
+
 
 ### `set [device] <['ON'/'OFF'][value]>`
 
@@ -171,9 +190,15 @@ Prints a dict representation of the physical state measured by the sensor (e.g. 
             - Soil Moisture for HumiditySoil sensor
             - Brightness for Brightness sensors
 
+&nbsp;
 ## GUI
+To launch the simulation in GUI mode, the following options must be set in argument:\
+-i=gui : choose the interface_mode GUI to visualize the system\
+SVSHI can be run in parrallel and this can be indicated to the simulator by using:\
+-s : indicate use of SVSHI\
+-t : activate log of telegrams exchanged between svshi and the simulator
 
-### Main Buttons:
+### **Main Buttons:**
 
 - Play/Pause [CTRL+P] : pause the simulation time
 - Stop [CTRL+ESCAPE] : Stop the simulation and terminate the program
@@ -183,11 +208,11 @@ Prints a dict representation of the physical state measured by the sensor (e.g. 
   - LEFT click : reload with a default config (~3 devices)
   - RIGHT click : reload with an empty config (no devices)
 
-### Command Box:
+### **Command Box:**
 
 Write any CLI command (set, get,...) and press enter to get the result either in the GUI or in the terminal window where the process is running
 
-### Device configuration/Management
+### **Device configuration/Management**
 
 #### **Add device**:
 
@@ -216,7 +241,7 @@ While pressing [SHIFT], LEFT click on a activable device (Functional Modules)
 
 Scroll up/down with the mouse above the devices' list on bottom left of the window
 
-### Special actions
+### **Special actions**
 
 - Soil Humidity sensor : [SHIFT] + LEFT click to "water" the plants
 - Presence sensor :
@@ -225,7 +250,13 @@ Scroll up/down with the mouse above the devices' list on bottom left of the wind
 - Vacuum cleaner :
   - [ALT/OPTION] + [SPACE] to toggle vacuum cleaner presence
 
+&nbsp;
 ## Script API
+The API commands should be written in a script .txt file, that should be located in the scripts/ folder. The script terminates when the script is finished, an 'end' command is met or an 'assert' is False, and the program terminates also.\
+To launch the simulation in script_mode, the following options must be set in argument:\
+-i=cli          : choose shell interface (opposed to GUI)\
+-c=script       : choose script command mode (opposed to cli, to call CLI command for instance)\
+-f=script_name  : specify the name of teh script to run (without .txt extension)
 
 ### `wait [time]<['h']>`
 
@@ -306,3 +337,42 @@ launch pytest command
 pytest -q --log-cli-level error simulator/tests/
 
 Code conventions: black formatting (for alignement mainly), PEP8(spaces and names conventions) and PEP257 (docstring), PEP526 (variable typing)
+
+&nbsp;
+## Details for developers
+
+This section is destined to future developers willing to improve or modify the code. It aim is to demystify som subtilities in teh code, the configuration and the global functioning.
+
+### Physical world modeling
+One important aspcet of this simulator is the modeling of physical states evolution in time (Brightness, Temperature, Humidity, CO2). For instance, If users turn ON a heater, the temperature should rise, but there is no heating sources, and the outdoor temperature is lower than indoor's, the temperature should decrease.
+
+We based the logic on online references, physical knowledge and intuition, but it can in no case be considered as a 100% truthful representation of the world states. This project only waits for one thing, thta a physicist improve the modeling of physical states :) In the mean time, we provide a arbitrarly acceptable modeling of these states, allowing users to test application involving temperature value for instance.
+
+### Configuration JSON file
+The configuration using a json prototype is the most easy way to configure the system. Nevertheless, there are many fields. Let's detail some of them:
+- **simulation_speed_factor** and **system_dt**: system_dt corresponds to th etime interval between two consecutive updates, the speed factor allows to compute the concrete simulated time during this interval.
+- inside and outside values can be set be the user to configure the intial system state
+- **datetime**: indicate when the simulation is launched, possible values are: 
+  - 'today', 'yesterday', 'one_week_ago', 'one_month_ago'
+  - datetime can also be indicated using format 'YYYY/MM/DD/HH/MM'
+  - this config will be integrated to the simulator using a datetime.datetime object
+- **weather**: indicates the outdoor weather during the simulation, supposed to be constant (except in script mode), possible values are:
+  - 'clear', 'overcast', 'dark'
+  - each weather, associated to the datetime, allows to define the outdoor brightness, which can be used to compute indoor resulting brightness on sensors if teh room has windows imlemented.
+- **insulation**: represents the room's insulation quality, it will have an effect on evolution of temperature, humidity and co2. Possible values are:
+  -  'perfect', 'good', 'average', 'bad'
+  - The impact of each insulation type is arbitrarly define through a ratio in world/world_tools.py module.
+- **windows' location offset**: define the offset of window's location from start of the wall.
+  - windows are defined on walls ('north', 'south', 'east', 'west')
+  - the origin of the offset is the south-west room's corner
+  - the location offset represnts the distance between this origin and window's location.
+  - Take precaution when defining windows, as they should fit in the room or they will be discarded.
+- **devices' names**: For usability and understandability of teh code and the system, it is reauired to inser the lower-case class name of a device in its name, associated with a number.
+
+### GUI implementation details
+A little detail to note is the difference between the pyglet 'height' and the simulator 'height'.\
+The simulation, although it is represented in 2D, implements a room in 3D. The simulator 'height' is thus logically the 3rd axis z getting out of the plan (in GUI mode).\
+For pyglet, 'height' is the 2nd axis y (vertical) on the screen plan. Be aware that we call 'length' the pyglet 'height' in the wole code.\
+For instance, a Room is defined by its width, length and height.
+
+

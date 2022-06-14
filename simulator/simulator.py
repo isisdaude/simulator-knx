@@ -47,7 +47,6 @@ def launch_simulation(argv) -> None:
         start_time = time.time()
         room1.world.time.start_time = start_time 
         try:
-            #loop = asyncio.new_event_loop()
             pyglet.app.run()
         except (KeyboardInterrupt, SystemExit):
             print("\nThe simulation program has been ended.")
@@ -55,12 +54,10 @@ def launch_simulation(argv) -> None:
         print("The GUI window has been closed and the simulation terminated.")
 
     # Terminal interface with the user (no visual feedback)
-    elif INTERFACE_MODE == ct.CLI_INT_MODE: # run the simulation without the GUI window
-        # Configure the start_time attribute of room's Time object
-        start_time = time.time()
+    elif INTERFACE_MODE == ct.CLI_INT_MODE:
         room1.world.time.scheduler_init()
         room1.world.time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object for scheduling
-        room1.world.time.scheduler_start() # set start_time of world.time object 
+        room1.world.time.scheduler_start() # set also start_time of world.time object 
 
         try:
             loop = asyncio.get_event_loop()
@@ -75,15 +72,12 @@ def launch_simulation(argv) -> None:
             print("\nThe simulation program has been ended.")
             sys.exit(1)
 
-
 async def user_input_loop(room: Room) -> None:
     """Asyncio loop to await user command from terminal"""
     while True:
         message = ">>> What do you want to do?\n"
         command = await aioconsole.ainput(message)
         if tools.user_command_parser(command, room) is None:
-            # # await kill_tasks()
-            # return None
             sys.exit(1)
 
 async def simulator_script_loop(room: Room, file_path: str) -> int:
@@ -105,7 +99,7 @@ async def simulator_script_loop(room: Room, file_path: str) -> int:
                 pp.pprint(script_parser.stored_values)
                 pp.pprint(assertions)
                 return 1
-        if ret is not None: # of no end command, script ends when no more commands/lines
+        if ret is not None: # if no end command, script ends when no more commands/lines
             logging.info("The script has completed successfully.")
             print("Successful script recap:")
             pp.pprint(script_parser.stored_values)
@@ -123,7 +117,6 @@ async def kill_tasks() -> None:
     except AttributeError:
         return None
 
-
 async def async_main(loop, room: Room, command_mode: str, script_path: str) -> None:
     """ Manager function of asyncio tasks
     
@@ -138,7 +131,6 @@ async def async_main(loop, room: Room, command_mode: str, script_path: str) -> N
         print(">>>>>> The Command mode is set to SCRIPT (commands from .txt script file)")
         script_task = loop.create_task(simulator_script_loop(room, script_path))
         tasks.append(script_task) 
-
     await asyncio.wait(tasks)
 
 

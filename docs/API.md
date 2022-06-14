@@ -1,28 +1,26 @@
 # Script API
 
-## wait [time]<['h']>
+All command are case-insensitive.
+
+## wait [time]<['h'/'m'/'s']>
 
 waits during [time] seconds (system/computer seconds)
 
-- if 'h' is mentionned, time indicated corresponds to simulated hours
+- if 'h', 'hour' or 'hours' is mentioned, time indicated corresponds to simulated hours
+- if 'm', 'minute' or 'minutes' is mentioned, time indicated corresponds to simulated minutes
+- if 's', 'second' or 'seconds' is mentioned, time indicated corresponds to simulated seconds
 
 ## set [device] <['on'/'off']> <[value]>
 
 If device is a Functional Module:
 
-- Turn ON/OFF a activable device (Functional Module)
-- If [value] is given, it sets the activable device with the value as ratio
+- Turn ON/OFF a actionable device (Functional Module)
+- If [value] is given, it sets the actionable device with the value as ratio
 
 If device is a Sensor, no ['on'/'off'] argument (other sensors can not be set individually):
 
 - HumiditySoil Sensor, sets moisture to [value]=(0-100)
-- Presence Sensor, sets presence to [value]=(True/False/ON/OFF)\
-
-##### other devices??
-
-<!-- if device is a Sensor:
-* Turn ON/OFF the sending of telegrams
-*  -->
+- Presence Sensor, sets presence to [value]=(True/False)\
 
 ## set [ambient_state][value] <['in'/'out']>
 

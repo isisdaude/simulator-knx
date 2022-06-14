@@ -2,12 +2,12 @@
 
 ## set [device] <['ON'/'OFF'][value]>
 
-[device] must be an activable device = Functional Module \
+[device] must be an actionable device = Functional Module \
 [value] should be a percentage (0-100)
 
 - If only [device] is mentioned, switch its state
-- If 'ON'/'OFF' specified, put the activable device in the corresponding state
-- If [value] is given, it sets the activable device with the value as ratio (0-100) if the device accepts it (e.g., a button can only have 2 states and specifying a ratio won't be taken into account)
+- If 'ON'/'OFF' specified, put the actionable device in the corresponding state
+- If [value] is given, it sets the actionable device with the value as ratio (0-100) if the device accepts it (e.g., a button can only have 2 states and specifying a ratio won't be taken into account)
 
 ## getvalue [device]
 
