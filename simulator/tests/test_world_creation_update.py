@@ -16,7 +16,7 @@ def test_correct_world_creation():
     insulation = "good"
     temp_out, hum_out, co2_out = 20.0, 35, 400
     temp_in, hum_in, co2_in = 20.0, 35, 800
-    datetime = "today"
+    datetime = "2022/06/13/11/00"
     weather="clear"
     p_sat = 2339.32074966 # NOTE: or temp = 20.0 and hum = 35
     vapor_pressure = 818.76226238 # NOTE: for temp = 20.0 and hum = 35
@@ -54,6 +54,12 @@ def test_correct_world_creation():
     assert world_object.ambient_co2._AmbientCO2__room_insulation == insulation 
     assert world_object.ambient_co2._AmbientCO2__update_rule_ratio == update_rule_ratio 
 
+    weathers = ["clear", "overcast", "dark"]
+    datetimes = ["2022/06/13/11/00", "2022/06/13/19/30", "2022/06/13/23/00", "2022/06/13/03/30"]
+    for dt in datetimes:
+        for wth in weathers:
+            world_object_weather = world.World(speed_factor, system_dt, dt, wth, insulation, temp_out, hum_out, co2_out, temp_in, hum_in, co2_in)
+
 
 def test_world_configfile_creation_and_update():
     config_path = "config/config_test_config.json"
@@ -75,7 +81,7 @@ def test_world_configfile_creation_and_update():
     time_of_day = "sun"
     weather = "clear"
     lux_out = 10752
-    brightness = 71.0
+    brightness = 3877.0
     insulation = "average"
     humiditysoil = 10.0
     presence = False
@@ -159,7 +165,7 @@ def test_world_configfile_creation_and_update():
     system_airsensor1 = world_conf.ambient_co2._AmbientCO2__co2_sensors[world_conf.ambient_co2._AmbientCO2__co2_sensors.index(ir_airsensor1)].device
     assert round(system_airsensor1.temperature, 1) == temp_in
     assert round(system_airsensor1.humidity, 2) == hum_in
-    assert int(system_airsensor1.co2level) == co2_in
+    assert int(system_airsensor1.co2) == co2_in
     system_humiditysoil1 = world_conf.soil_moisture._SoilMoisture__humiditysoil_sensors[world_conf.soil_moisture._SoilMoisture__humiditysoil_sensors.index(ir_humiditysoil1)].device
     assert system_humiditysoil1.humiditysoil == humiditysoil
     system_presence1 = world_conf.presence._Presence__presence_sensors[world_conf.presence._Presence__presence_sensors.index(ir_presencesensor1)].device
@@ -188,7 +194,7 @@ def test_world_configfile_creation_and_update():
     assert round(system_airsensor1.humidity, 2) == new_hum_in
     # CO2
     assert int(world_conf.ambient_co2._AmbientCO2__co2_in) == new_co2_in
-    assert system_airsensor1.co2level == new_co2_in
+    assert system_airsensor1.co2 == new_co2_in
     # Presence and humidity did not change
     assert system_presence1.state == presence
     assert system_humiditysoil1.humiditysoil == humiditysoil

@@ -261,8 +261,8 @@ Store a system value into the [variable_name], to check it later in the script
   - **Thermometer Sensor** : temperature
   - **HumiditySoil Sensor** : humiditysoil
   - **HumidityAir Sensor** : humidity
-  - **CO2Sensor** : co2level
-  - **AirSensor** : temperature, humidity, co2level
+  - **CO2Sensor** : co2
+  - **AirSensor** : temperature, humidity, co2
   - **PresenceSensor** : state
 
 ### `assert [variable_name]['=='/'!='/'<='/'>='][value/variable_name]`

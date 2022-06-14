@@ -21,10 +21,10 @@ store brightness1 brightness br1
 Store thermometer1 temperature t1
 store humiditysoil1 humiditysoil hs1
 Store humidityair1 humidity hum1
-store co2sensor1 co2level co1
+store co2sensor1 co2 co1
 store airsensor1 temperature ast1
 store airsensor1 humidity ash1
-store airsensor1 co2level asco1
+store airsensor1 co2 asco1
 store presencesensor1 state pr1
 store led1 beam_angle l6
 assert l5 == l6
@@ -56,8 +56,8 @@ Wait 1
 Set humidity 67 out
 Set humidity 25 in
 Wait 1
-Set co2level 450 out
-Set co2level 320 in
+Set co2 450 out
+Set co2 320 in
 Wait 1
 Set presence true
 Wait 1

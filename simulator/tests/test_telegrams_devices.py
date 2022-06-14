@@ -96,15 +96,15 @@ def test_dev_info():
     assert humidity_soil1.get_dev_info() == {'humiditysoil': '10 %', 'class_name': 'HumiditySoil', 'individual_address': '0.0.9'}
     assert humidity_soil1.get_dev_info(True) == {'humiditysoil': 10}
 
-    assert co2sensor1.get_dev_info(True) == {'co2level': 0}
-    assert co2sensor1.get_dev_info() == {'co2level': '0 ppm', 'class_name': 'CO2Sensor', 'individual_address': '0.0.10'}
+    assert co2sensor1.get_dev_info(True) == {'co2': 0}
+    assert co2sensor1.get_dev_info() == {'co2': '0 ppm', 'class_name': 'CO2Sensor', 'individual_address': '0.0.10'}
     
     assert airsensor1.get_dev_info() == {'class_name': 'AirSensor', 'individual_address': '0.0.11'}
     airsensor1.temperature = 1.0
     airsensor1.humidity = 40
-    airsensor1.co2level = 400
-    assert airsensor1.get_dev_info(True) == {'temperature': 1.0, 'humidity': 40, 'co2level': 400}
-    assert airsensor1.get_dev_info() == {'temperature': '1.0 °C', 'humidity': '40 %', 'co2level': '400 ppm', 'class_name': 'AirSensor', 'individual_address': '0.0.11'}
+    airsensor1.co2 = 400
+    assert airsensor1.get_dev_info(True) == {'temperature': 1.0, 'humidity': 40, 'co2': 400}
+    assert airsensor1.get_dev_info() == {'temperature': '1.0 °C', 'humidity': '40 %', 'co2': '400 ppm', 'class_name': 'AirSensor', 'individual_address': '0.0.11'}
 
     room1 = Room("bedroom1", 20, 20, 3, 180, '3-levels', system_dt,
         'good', 20.0, 50.0, 300, test_mode=False, 

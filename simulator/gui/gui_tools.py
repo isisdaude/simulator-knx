@@ -168,24 +168,28 @@ class WindowWidget(object):
     def __init__(self, window_object: Window, window_file: str, batch: Batch, group: OrderedGroup, room_width_ratio: float, room_height_ratio: float, room_origin_x: float, room_origin_y: float) -> None:
         """
         Initialization of pyglet Window widget object.
+
         room_width_ratio and room_height_ratio translate simulation meters to GUI pixels.
         room_origin_x and room_origin_y are the bottom left corner of the room widget.
+        loc for room's location in meters, pos for GUI position in pixels.
         """
         self.__batch = batch
         self.__group = group
         self.__img = pyglet.image.load(window_file)
-        self.__width, self.__length = self.__img.width, self.__img.height
+        self.__img.anchor_x = self.__img.width // 2
+        self.__img.anchor_y = self.__img.height // 2
         self.__loc_x, self.__loc_y = window_object.window_loc[0], window_object.window_loc[1]
         self.__pos_x, self.__pos_y = system_loc_to_gui_pos(self.__loc_x, self.__loc_y, room_width_ratio, room_height_ratio, room_origin_x, room_origin_y)
         self.__pos_x, self.__pos_y = window_pos_from_gui_loc(self.__pos_x, self.__pos_y, window_object)
-        self.__pos_x -= self.__width / 2
-        self.__pos_y -= self.__length / 2
+
         if hasattr(window_object, "scale_x"): # Horizontal window, north or south
             self.sprite = pyglet.sprite.Sprite(self.__img, self.__pos_x, self.__pos_y, batch=self.__batch, group=self.__group)
             self.sprite.scale_x = window_object.scale_x
         elif hasattr(window_object, "scale_y"): # Vertical window, east or west
             self.sprite = pyglet.sprite.Sprite(self.__img, self.__pos_x, self.__pos_y, batch=self.__batch, group=self.__group)
             self.sprite.scale_y = window_object.scale_y
+        if window_object.wall == "south" or window_object.wall == "west": # problem of perspective in GUI
+                self.sprite.rotation = 180
     
     def delete(self):
         """ Delete window sprite (img) from simulation"""
@@ -585,6 +589,8 @@ class VacuumWidget(object):
         self.__batch, self.__group = batch, group
         self.__pos_x, self.__pos_y = x, y
         self.__img = pyglet.image.load(img_path)
+        self.__img.anchor_x = self.__img.width // 2
+        self.__img.anchor_y = self.__img.height // 2
         self.__width, self.__length = self.__img.width, self.__img.height
         self.__origin_x, self.__origin_y = self.__pos_x - self.__width//2, self.__pos_y - self.__length//2
         self.__sprite = pyglet.sprite.Sprite(self.__img, self.__origin_x, self.__origin_y, batch=self.__batch, group=self.__group)

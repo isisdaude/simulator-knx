@@ -240,7 +240,8 @@ class Room:
 
     def get_device_info(self, device_name: str, attribute: str=None) -> Union[None, Dict[str, Union[str, float, bool, Tuple[float, float, float]]]]:
         """ 
-        Return information about the Room Devics's' states, location and configuration, method called via CLI commmand 'getinfo'.
+        Return information about the Room Devics's' states, location and configuration. 
+        Method called via CLI commmand 'getinfo', or when storing a particular attribute with acript API 'store.
 
         attribute is for Script API mode, to get specific device's attributes.
         """

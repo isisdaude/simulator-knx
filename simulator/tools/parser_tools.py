@@ -168,12 +168,15 @@ def user_command_parser(command: str, room) -> Union[int, None]: # room : Room
         # Global info info asked by user
         if command.strip() == 'getinfo': # only 'getinfo' keyword -> we give all info to user (exceot device specific info)
             world_dict = room.get_world_info('all')
+
             print("> World information:")
             pp.pprint(world_dict)
             room_dict = room.get_room_info()
+
             print("> Room information:")
             pp.pprint(room_dict)
             bus_dict = room.get_bus_info()
+
             print("> Bus information:")
             pp.pprint(bus_dict)
             return 1
@@ -181,36 +184,47 @@ def user_command_parser(command: str, room) -> Union[int, None]: # room : Room
         # World info asked by user
         if 'world' in command_split[1]: 
             if len(command_split) > 2:
-                ambient = command_split[2] # can be 'time', 'temperature', 'humidity', 'co2level', 'co2', 'brightness', 'all'
+                ambient = command_split[2] # can be 'time', 'temperature', 'humidity', 'co2', 'co2', 'brightness', 'all'
                 if len(ambient) >= len('all'): # smallest str acceptable after 'getinfo world' command
                     if 'time' in ambient:
                         world_dict = room.get_world_info('time')
-                    if 'temperature' in ambient:
+                    elif 'weather' in ambient:
+                        world_dict = room.get_world_info('weather')
+                    elif 'temperature' in ambient:
                         world_dict = room.get_world_info('temperature')
-                    if 'humidity' in ambient:
+                    elif 'humidity' in ambient:
                         world_dict = room.get_world_info('humidity')
-                    if 'co2' in ambient:
-                        world_dict = room.get_world_info('co2level')
-                    if 'brightness' in ambient: # brightness is a global brightness from room's ground perspective
+                    elif 'co2' in ambient:
+                        world_dict = room.get_world_info('co2')
+                    elif 'brightness' in ambient: # brightness is a global brightness from room's ground perspective
                         world_dict = room.get_world_info('brightness')
-                    if 'out' in ambient:
+                    elif 'out' in ambient:
                         world_dict = room.get_world_info('out')
-                    if 'all' in ambient:
+                    elif 'all' in ambient:
                         world_dict = room.get_world_info('all')
+                    else:
+                        logging.warning(f"The option {ambient} is not supported with 'getinfo world' command")
+                        return 0
             else: # if nothing specified, just get all world info
                 world_dict = room.get_world_info('all')
             pp.pprint(world_dict)
-            return world_dict
+            return 1
         # Room info asked by user
         elif 'room' in command_split[1]:
+            if len(command_split) > 2:
+                logging.warning(f"'getinfo room' command expect no arguments, but {command_split[2]} was given.")
+                return 0
             room_dict = room.get_room_info()
             pp.pprint(room_dict)
-            return room_dict
+            return 1
         # Bus info asked by user
         elif 'bus' in command_split[1]:
+            if len(command_split) > 2:
+                logging.warning(f"'getinfo bus' command expect no arguments, but {command_split[2]} was given.")
+                return 0
             bus_dict = room.get_bus_info()
             pp.pprint(bus_dict)
-            return bus_dict
+            return 1
         # Device specific info asked by user
         elif len(command_split) > 1:  # at least one keyword after 'getinfo' but None of the above
             if 'dev' in command_split[1]: # user ask for info on a device
@@ -226,9 +240,9 @@ def user_command_parser(command: str, room) -> Union[int, None]: # room : Room
             if device_dict is not None:
                 pp.pprint(device_dict)
             else:
-                print(f"Device {name} not found in Room or antoher problem occured when getting information on this device.")
+                logging.warning(f"Device {name} not found in Room or antoher problem occured when getting information on this device.")
                 return 0
-            return device_dict
+            return 1
         else:
             logging.warning("The command is not recognized by the parser: either wrong or incomplete.")
             print(COMMAND_HELP)
@@ -281,9 +295,15 @@ class ScriptParser():
             if len(command_split) == 3:
                 if command_split[2] in ['h', 'hour', 'hours']: # time to wait in simulated hours, not computer seconds
                     speed_factor = room.world.time.speed_factor
-                    sleep_time = int(int(command_split[1])*3600/speed_factor) # time to wait in computer system seconds
+                    sleep_time = int(int(command_split[1]) * 3600 / speed_factor) # time to wait in computer system seconds
+                elif command_split[2] in ['m', 'minute', 'minutes']: # time to wait in simulated minutes, not computer seconds
+                    speed_factor = room.world.time.speed_factor
+                    sleep_time = int(int(command_split[1]) / 60 * 3600 / speed_factor) # time to wait in computer system seconds
+                elif command_split[2] in ['s', 'second', 'seconds']: # time to wait in simulated seconds, not computer seconds
+                    speed_factor = room.world.time.speed_factor
+                    sleep_time = int(int(command_split[1]) / 3600 * 3600 / speed_factor) # time to wait in computer system seconds
                 else:
-                    logging.error(f"'wait' command expect 'h' or 'hour(s)' as second argument, but {command_split[2]} was given.")
+                    logging.error(f"'wait' command expect 'h', 'm' or 's' as second argument, but {command_split[2]} was given.")
                     return None, self.assertions
             elif len(command_split) == 2:
                 try:
@@ -333,7 +353,7 @@ class ScriptParser():
                 logging.error(f"The 'assert' command requires 3 arguments, but only {len(command_split)-1} were given.")
                 return None, self.assertions
             var_name = command_split[1]
-
+            value = None
             if command_split[3] in self.stored_values: # if we compare to a stored variable
                 var = str(self.stored_values[command_split[3]])
             else : # if we compare to a value
@@ -348,7 +368,11 @@ class ScriptParser():
                 else:
                     var = float(var)
                     value = float(self.stored_values[var_name])
+                if value is None:
+                    value = self.stored_values[var_name]
                 if command_split[2] == '==':
+                    if type(value) == float:
+                        var, value = str(var), str(value)
                     assert value == var
                 elif command_split[2] == '!=':
                     assert value != var
@@ -367,29 +391,35 @@ class ScriptParser():
                 else:
                     logging.error(f"The comparison sign should be in ['=='/'!='/'<='/'>='], but {command_split[2]} was given.")
                     return None, self.assertions
-                recap_str = f"{var_name} {command_split[2]} {var}"
+                recap_str = f"({value}) {var_name} {command_split[2]} {command_split[3]} ({var})"
                 logging.info(f"[SCRIPT] The comparison '{recap_str}' is correct.")
                 print(f"Assertion True")
                 simtime = room.world.time.simulation_time(str_mode=True)
-                self.assertions["Assertion True"+str(self.assert_counter)+" at "+str(simtime)] = recap_str
+                self.assertions["Assertion True"+str(self.assert_counter)+" at simtime "+str(simtime)] = recap_str
                 self.assert_counter += 1
                 return 1, self.assertions
             except AssertionError:
-                recap_str = f"{var_name} {command_split[2]} {value}"
+                recap_str = f"({value}) {var_name} {command_split[2]} {command_split[3]} ({value})"
                 logging.info(f"[SCRIPT] The comparison '{recap_str}' is not correct.")
                 print(f"Assertion False")
                 simtime = room.world.time.simulation_time(str_mode=True)
-                self.assertions["Assertion False"+str(self.assert_counter)+" FAILED at "+str(simtime)] = recap_str
+                self.assertions["Assertion False"+str(self.assert_counter)+" FAILED at simtime "+str(simtime)] = recap_str
                 self.assert_counter += 1
                 return None, self.assertions
         # 'set' command
         elif command.startswith('set'):
             if len(command_split) in [3, 4]:
-                if command_split[1] in ['temperature', 'humidity', 'co2level', 'presence', 'weather']: # set ambient state
+                if command_split[1] in ['temperature', 'humidity', 'co2', 'presence', 'weather']: # set ambient state
                     value = command_split[2]
                     if command_split[1] == 'presence':
+                        if len(command_split) == 4:
+                            logging.warning(f" 'set presence' command accepts only 1 additional argument, but '{command_split[3]}' was given.")
+                            return None, self.assertions
                         ret = room.world.set_ambient_value('presence', value)
                     elif command_split[1] == 'weather':
+                        if len(command_split) == 4:
+                            logging.warning(f" 'set weather' command accepts only 1 additional argument, but '{command_split[3]}' was given.")
+                            return None, self.assertions
                         ret = room.world.set_ambient_value('weather', value)
                     else:
                         if len(command_split) == 4:
@@ -402,14 +432,14 @@ class ScriptParser():
                             ambient = command_split[1]+"_"+command_split[3] # we add '_in' or '_out'
                             ret = room.world.set_ambient_value(ambient, value)
                         else:
-                            logging.warning(f"No specification of indoor/outdoor ambient to set, the third argument of 'set' command should be 'in' or 'out' with temperature, humidity and co2level.")
+                            logging.warning(f"No specification of indoor/outdoor ambient to set, the third argument of 'set' command should be 'in' or 'out' with temperature, humidity and co2.")
                             return None, self.assertions
                     return ret, self.assertions # ret is None or 1
                 else:
                     # Sensors humiditysoil and presence or ON/OFF a functional module -> user command parser
                     if len(command_split) >= 3: 
                         # set sensor value
-                        if 'humiditysoil' in command_split[1] or 'presence' in command_split[1]:
+                        if 'humiditysoil' in command_split[1] or 'presencesensor' in command_split[1]:
                             if 'humiditysoil' in command_split[1]:
                                 try:
                                     assert command_split[2].isnumeric()
@@ -417,7 +447,7 @@ class ScriptParser():
                                     logging.warning(f"The value {command_split[2]} given to set {command_split[1]} is not a number.")
                                     return None, self.assertions
                                 value = float(command_split[2])
-                            elif 'presence' in command_split[1]:
+                            elif 'presencesensor' in command_split[1]:
                                 try:
                                     assert command_split[2].lower() in ('true', 'on', 'false', 'off')
                                 except AssertionError:
@@ -438,6 +468,9 @@ class ScriptParser():
                                 return None, self.assertions
                             else: # return 1
                                 return 1, self.assertions
+                        else:
+                            logging.warning(f"Device {command_split[1]} cannot be set with 'set' API command, or does not exist.")
+                            return None, self.assertions
             else:
                 logging.error(f"'set' command requires 2 or 3 arguments, but {len(command_split)-1} was provided.")
                 return None, self.assertions

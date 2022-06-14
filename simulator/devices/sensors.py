@@ -107,7 +107,7 @@ class CO2Sensor(Sensor):
     def __init__(self, name: str, individual_addr: IndividualAddress) -> None:
         """ Initialization of CO2Sensor device object"""
         super().__init__(name, individual_addr)
-        self.co2level = 0
+        self.co2 = 0
 
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
@@ -115,9 +115,9 @@ class CO2Sensor(Sensor):
 
         value : if True, send the numeric value only, if False, send the string value and basic device info."""
         if value:
-            dev_specific_dict = {"co2level":round(self.co2level, 2)}
+            dev_specific_dict = {"co2":round(self.co2, 2)}
         else:
-            dev_specific_dict = {"co2level":str(round(self.co2level, 2))+" ppm"}
+            dev_specific_dict = {"co2":str(round(self.co2, 2))+" ppm"}
             dev_specific_dict.update(self._dev_basic_dict)
         return dev_specific_dict
 
@@ -128,7 +128,7 @@ class CO2Sensor(Sensor):
         only if the sensor is assigned to a group address. """
         from system import FloatPayload
         if len(self.group_addresses) and hasattr(self, 'knxbus'):
-            payload = FloatPayload(self.co2level)
+            payload = FloatPayload(self.co2)
             self.send_telegram(payload) 
 
 
@@ -139,7 +139,7 @@ class AirSensor(Sensor):
         super().__init__(name, individual_addr)      
         self.temperature = None
         self.humidity = None
-        self.co2level = None
+        self.co2 = None
 
     def get_dev_info(self, value: bool=False) -> Dict[str, Union[str, float, Tuple[float, float, float]]]:
         """ 
@@ -154,8 +154,8 @@ class AirSensor(Sensor):
             if self.humidity is not None:
                 dev_specific_dict["humidity"] = round(self.humidity, 2)
             
-            if self.co2level is not None:
-                dev_specific_dict["co2level"] = round(self.co2level, 2)
+            if self.co2 is not None:
+                dev_specific_dict["co2"] = round(self.co2, 2)
             
         if not value:
             dev_specific_dict = {}
@@ -165,8 +165,8 @@ class AirSensor(Sensor):
             if self.humidity is not None:
                 dev_specific_dict["humidity"] = str(round(self.humidity, 2))+" %"
             
-            if self.co2level is not None:
-                dev_specific_dict["co2level"] = str(round(self.co2level, 2))+" ppm"
+            if self.co2 is not None:
+                dev_specific_dict["co2"] = str(round(self.co2, 2))+" ppm"
             
             dev_specific_dict.update(self._dev_basic_dict)
 
@@ -232,10 +232,9 @@ class PresenceSensor(Sensor):
         Return information about the Presence Sensor device's states and configuration, method called via CLI commmand 'getinfo'.
 
         value : if True, send the boolean value only, if False, send the string value and basic device info."""
-        if value:
-            dev_specific_dict = {"presence":self.state}
-        else:
-            dev_specific_dict.update(self._dev_basic_dict)
+        dev_specific_dict = {"presence":self.state}
+        if not value:
+            dev_specific_dict = self._dev_basic_dict
         return dev_specific_dict
 
     def set_value(self, value: bool) -> Union[None, int]:

@@ -72,7 +72,7 @@
     "outside_co2": 300.0,
     "inside_co2": 800.0,
     "datetime": "2022/06/13/11/00",
-    "weather": "clear",
+    "weather": "dark",
     "number_of_rooms": 1,
     "rooms": {
       "room1": {
@@ -86,12 +86,23 @@
         "windows": {
           "window1": {
             "wall": "north",
-            "size": [
-              2,
-              1.5
-            ],
-            "location_offset": 4,
-            "blinds1": 0.0
+            "size": [2,1.5],
+            "location_offset": 4
+          },
+          "window2": {
+            "wall": "south",
+            "size": [2,1.5],
+            "location_offset": 4
+          },
+          "window3": {
+            "wall": "east",
+            "size": [2,1.5],
+            "location_offset": 4
+          },
+          "window4": {
+            "wall": "west",
+            "size": [2,1.5],
+            "location_offset": 4
           }
         },
         "room_devices": {

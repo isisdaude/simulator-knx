@@ -173,14 +173,12 @@
           "window1": {
             "wall": "north",
             "size": [2, 1.5],
-            "location_offset": 4,
-            "blinds1":0.0
+            "location_offset": 4
           },
           "window2": {
             "wall": "east",
             "size": [4, 1.5],
-            "location_offset": 5.5,
-            "blinds2":0.0
+            "location_offset": 5.5
           }
         },
         "room_devices": {

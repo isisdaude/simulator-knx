@@ -1,0 +1,75 @@
+## Test script for API command testing
+
+#Wait 1
+#wait 6 m
+wait 180 s
+set button1 ON
+set button1 OFF
+set dimmer1 ON 60
+set dimmer1 OFF
+set presencesensor1 True
+set presencesensor1 False
+set humiditysoil1 97
+set temperature 32 in
+set temperature 30 out
+set humidity 20 in
+set humidity 53 out
+set co2 550 in
+set co2 660 out
+set presence True
+set presence False
+set weather dark
+set weather overcast
+set weather clear
+# store current values
+store world simtime sim_time1
+store world temperature temp1
+store world humidity hum1
+store world co2 co21
+store world brightness bright1
+store world weather weather1
+store button1 state button1_state1
+store dimmer1 state dimmer1_state1
+store dimmer1 state_ratio dimmer1_stateratio1
+store led1 state led1_state1
+store led1 max_lumen led1_maxlumen1
+store led1 effective_lumen led1_efflumen1
+store led1 state_ratio led1_stateratio1
+store led1 beam_angle led1_beamangle1
+store heater1 state heater1_state1
+store heater1 max_power heater1_maxpower1
+store heater1 effective_power heater1_effpower1
+store heater1 state_ratio heater1_stateratio1
+store switch1 state switch1_state1
+store brightness1 brightness brightness1_bright1
+store humiditysoil1 humiditysoil humiditysoil1_moisture1
+store airsensor1 temperature airsensor1_temp1
+store airsensor1 humidity airsensor1_temp1
+store airsensor1 co2 airsensor1_co21
+store presencesensor1 state pressensor1_state1
+
+# set values before assert changes
+set temperature 20 in
+set humidity 70 in
+set co2 550 in
+set weather dark
+
+# store new values to compare
+store world temperature temp2
+store world humidity hum2
+store world co2 co22
+store world brightness bright2
+store world weather weather2
+# assert comparison
+assert temp2 <= temp1
+assert hum2 >= hum1
+assert co22 == co21
+assert weather2 != weather1
+assert bright2 <= bright1
+# store and assert identical values
+Store world weather weather3
+store world brightness bright3
+Wait 2
+assert weather3 == weather2
+assert bright3 == bright2
+End

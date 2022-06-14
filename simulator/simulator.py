@@ -59,7 +59,7 @@ def launch_simulation(argv) -> None:
         # Configure the start_time attribute of room's Time object
         start_time = time.time()
         room1.world.time.scheduler_init()
-        room1.world.time.scheduler_add_job(room1.update_world, interval=system_dt) # we pass the update function as argument to the Time class object for scheduling
+        room1.world.time.scheduler_add_job(room1.update_world) # we pass the update function as argument to the Time class object for scheduling
         room1.world.time.scheduler_start() # set start_time of world.time object 
 
         try:
@@ -96,16 +96,19 @@ async def simulator_script_loop(room: Room, file_path: str) -> int:
             if ret is None:
                 logging.warning("The script has failed.")
                 print("Failed script recap:")
+                pp.pprint(script_parser.stored_values)
                 pp.pprint(assertions)
                 return 0
             elif ret == 0: # ret=0 is signal from end command to termninate script
                 logging.info("The script has completed successfully.")
                 print("Successful script recap:")
+                pp.pprint(script_parser.stored_values)
                 pp.pprint(assertions)
                 return 1
         if ret is not None: # of no end command, script ends when no more commands/lines
             logging.info("The script has completed successfully.")
             print("Successful script recap:")
+            pp.pprint(script_parser.stored_values)
             pp.pprint(assertions)
             return 1
 

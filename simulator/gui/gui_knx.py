@@ -23,7 +23,7 @@ class GUIWindow(pyglet.window.Window):
         """
         Initialization of pyglet GUI Window object.
         """
-        super(GUIWindow, self).__init__(gc.WIN_WIDTH, gc.WIN_LENGTH, caption='KNX Simulation Window', resizable=False)
+        super(GUIWindow, self).__init__(gc.WIN_WIDTH, gc.WIN_LENGTH, caption='KNX Simulator', resizable=False)
         from tools import configure_system_from_file
         # Configure batch of modules to draw on events (mouse click, moving,...)
         self.__batch = pyglet.graphics.Batch()
@@ -257,7 +257,7 @@ class GUIWindow(pyglet.window.Window):
     def __display_airsensors_levels(self, airsensor_dict) -> None:
         """ 
         Display levels of air quality (T°, HR, CO2) for corresponding labels (sensors).
-        airsensor_dict = dict[sensor_name][type][value], type can be 'temperature', 'humidity' or 'co2level'.
+        airsensor_dict = dict[sensor_name][type][value], type can be 'temperature', 'humidity' or 'co2'.
         """
         for airsensor in airsensor_dict: # AirSensor names are the keys
             temp = hum = co2 = None
@@ -272,8 +272,8 @@ class GUIWindow(pyglet.window.Window):
                         airquality_level_text += str(temp)+' °C/'
                     else:
                         airquality_level_text += '-/'
-                    if "co2level" in airsensor_dict[airsensor]:
-                        co2 = airsensor_dict[airsensor]["co2level"]
+                    if "co2" in airsensor_dict[airsensor]:
+                        co2 = airsensor_dict[airsensor]["co2"]
                         airquality_level_text += str(co2)+' ppm/'
                     else:
                         airquality_level_text += '-/'
@@ -298,7 +298,7 @@ class GUIWindow(pyglet.window.Window):
                 elif 'co2sensor' in airsensor and airsensor == room_airquality_label.text:
                     air_level_x = room_airquality_label.x + room_airquality_counter*gc.OFFSET_SENSOR_LEVELS
                     air_level_y = room_airquality_label.y - gc.OFFSET_SENSOR_TITLE
-                    co2 = str(airsensor_dict[airsensor]["co2level"])+' ppm'
+                    co2 = str(airsensor_dict[airsensor]["co2"])+' ppm'
                     room_sensor_level = pyglet.text.Label(co2,
                                     font_name=gc.FONT_SYSTEM_INFO, font_size=gc.FONT_SIZE_SENSOR_LEVEL,
                                     color=gc.COLOR_FONT_SENSORS_VALUE,
@@ -566,13 +566,13 @@ class GUIWindow(pyglet.window.Window):
                     airsensor_dict[hum_name] = {}
                     airsensor_dict[hum_name]["humidity"] = humidity
         for co2 in co2_levels:
-            co2_name, co2level = co2[0], co2[1]
+            co2_name, co2 = co2[0], co2[1]
             if 'air' or 'co2' in co2_name:
                 try:
-                    airsensor_dict[co2_name]["co2level"] = co2level
+                    airsensor_dict[co2_name]["co2"] = co2
                 except KeyError:
                     airsensor_dict[co2_name] = {}
-                    airsensor_dict[co2_name]["co2level"] = co2level
+                    airsensor_dict[co2_name]["co2"] = co2
 
         if len(airsensor_dict) > 0:
             self.__display_airsensors_levels(airsensor_dict)

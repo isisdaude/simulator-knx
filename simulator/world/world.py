@@ -535,24 +535,6 @@ class AmbientCO2:
         """
         self.__co2_sensors.append(co2sensor)
     
-    def set_co2level(self, location: str, value: float) -> int:
-        """ 
-        Set the world indoor and/or outdoor co2 value, called only in Script Mode with API commands. 
-        Then updates the co2 levels measured by sensors.
-        
-        location should be 'in' or 'out'.
-        """
-        if location == 'in':
-            self.__co2_in = float(value)
-            for sensor in self.__co2_sensors:
-                sensor.device.co2level = int(self.__co2_in)
-        elif location == 'out':
-            self.co2_out = float(value)
-        else:
-            logging.error(f"The location should be 'in' or 'out' when setting CO2, but {location} was given.")
-            return 0
-        return 1
-    
     def update(self, first_update: bool=False) -> List[Tuple[str, float]]:
         """ 
         Update all co2 sensors of the world (the room), called at each World.update().
@@ -568,12 +550,30 @@ class AmbientCO2:
             self.__co2_in += (self.co2_out - self.__co2_in) * INSULATION_TO_CO2_FACTOR[self.__room_insulation] * self.__update_rule_ratio
         co2_levels = []
         for sensor in self.__co2_sensors:
-            sensor.device.co2level = int(self.__co2_in)
-            co2_levels.append((sensor.device.name, sensor.device.co2level))
+            sensor.device.co2 = int(self.__co2_in)
+            co2_levels.append((sensor.device.name, sensor.device.co2))
         return co2_levels
     
-    
-    def get_co2level(self, str_mode: bool=False) -> Union[str, float]:
+    # API, CLI
+    def set_co2(self, location: str, value: float) -> int:
+        """ 
+        Set the world indoor and/or outdoor co2 value, called only in Script Mode with API commands. 
+        Then updates the co2 levels measured by sensors.
+        
+        location should be 'in' or 'out'.
+        """
+        if location == 'in':
+            self.__co2_in = float(value)
+            for sensor in self.__co2_sensors:
+                sensor.device.co2 = int(self.__co2_in)
+        elif location == 'out':
+            self.co2_out = float(value)
+        else:
+            logging.error(f"The location should be 'in' or 'out' when setting CO2, but {location} was given.")
+            return 0
+        return 1
+
+    def get_co2(self, str_mode: bool=False) -> Union[str, float]:
         """ Return the current co2 value, called with CLI 'getinfo' command."""
         if str_mode:
             co2 = str(round(self.__co2_in, 2)) + " ppm"
@@ -689,7 +689,7 @@ class Presence:
                 return None
 
             self.presence = value_bool
-            for sensor in self.presence_sensors:
+            for sensor in self.__presence_sensors:
                 sensor.device.state = self.presence
             return 1
 
@@ -776,17 +776,19 @@ class World:
                 ret = self.ambient_humidity.set_humidity('in', value)
             elif ambient == 'humidity_out':
                 ret = self.ambient_humidity.set_humidity('out', value)
-        elif 'co2level' in ambient:
-            if ambient == 'co2level_in':
-                ret = self.ambient_co2.set_co2level('in', value)
-            elif ambient == 'co2level_out':
-                ret = self.ambient_co2.set_co2level('out', value)
+        elif 'co2' in ambient:
+            if ambient == 'co2_in':
+                ret = self.ambient_co2.set_co2('in', value)
+            elif ambient == 'co2_out':
+                ret = self.ambient_co2.set_co2('out', value)
         elif 'presence' in ambient:
             ret = self.presence.set_presence(value)
         elif 'weather' in ambient:
             ret = self.ambient_light.set_weather(self.time.date_time, value)
             if ret is not None:
                 self.__weather = value
+        else:
+            ret = None
         return ret # None or 1
     
     def get_info(self, ambient: str, room, str_mode: bool) -> Dict[str, str]:
@@ -801,8 +803,8 @@ class World:
             basic_dict.update({"humidity_in": self.ambient_humidity.get_humidity(str_mode=str_mode)})
             basic_dict.update({"humidity_out": basic_dict_out["humidity_out"]})
             return basic_dict
-        elif 'co2' in ambient: # just in case co2level is given
-            basic_dict.update({"co2_in": self.ambient_co2.get_co2level(str_mode=str_mode)})
+        elif 'co2' in ambient: # just in case co2 is given
+            basic_dict.update({"co2_in": self.ambient_co2.get_co2(str_mode=str_mode)})
             basic_dict.update({"co2_out": basic_dict_out["co2_out"]})
             return basic_dict
         elif 'brightness' == ambient:
@@ -820,7 +822,7 @@ class World:
         elif 'all' == ambient:
             ambient_dict = {"temperature_in": self.ambient_temperature.get_temperature(str_mode=str_mode),
                             "humidity_in": self.ambient_humidity.get_humidity(str_mode=str_mode),
-                            "co2_in": self.ambient_co2.get_co2level(str_mode=str_mode),
+                            "co2_in": self.ambient_co2.get_co2(str_mode=str_mode),
                             "brightness_in": self.ambient_light.get_global_brightness(room, str_mode=str_mode)}
             basic_dict.update(ambient_dict)
             basic_dict.update(basic_dict_out)

@@ -5,8 +5,8 @@ Module defining constant variables for the GUI Window and widgets
 ## GUI dimensions definitions
 WIN_WIDTH   = 1500  # [x axis] 
 WIN_LENGTH  = 1000  # [y axis]
-ROOM_WIDTH  = 1000  # [x axis] 
-ROOM_LENGTH = 800   # [y axis]
+ROOM_WIDTH  = 1000  # [x axis] ## NOTE, ROOM_WIDTH and ROOM_LENGTH used to define size ratio for windows, if value changed here, it needs to be changed in system.system_tools also 
+ROOM_LENGTH = 800   # [y axis] ## NOTE (problem of circular import and problems with pytest and github CI if import in system_tools
 WIN_BORDER  = 20            # [x & y axis] Window border reference, sometimes only half or third is used
 ROOM_BORDER = 40            # [x & y axis] Room walls
 BOX_BORDER  = WIN_BORDER/3  # [x & y axis] Border width of GUI boxes
